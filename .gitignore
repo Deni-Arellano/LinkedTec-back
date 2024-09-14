@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# Archivos de configuración del entorno
+.env
+
+# Archivos de logs
+*.log
+
+# Sistema de archivos de macOS
+.DS_Store
+
+# Sistema de archivos de Windows
+Thumbs.db

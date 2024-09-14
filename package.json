@@ -1,0 +1,38 @@
+{
+  "name": "linked-tec",
+  "version": "1.0.0",
+  "description": "Red social para el tecnologico de zacatecas su",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Linked-Tec/Linked-back.git"
+  },
+  "keywords": [
+    "social",
+    "network",
+    "messaging",
+    "jobs",
+    "employment",
+    "community",
+    "connections",
+    "chat"
+  ],
+  "author": "linked-tec",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Linked-Tec/Linked-back/issues"
+  },
+  "homepage": "https://github.com/Linked-Tec/Linked-back#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
