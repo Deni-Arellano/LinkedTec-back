@@ -1,5 +1,7 @@
 // Importa el módulo express
 const express = require('express');
+const sequelize = require('./config/database');
+
 
 // Crea una aplicación Express
 const app = express();
@@ -16,3 +18,14 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
+
+
+(async () => {
+  try {
+    // Probar la conexión a la base de datos
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+})();

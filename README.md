@@ -53,6 +53,15 @@ Para configurar y ejecutar el proyecto localmente, sigue estos pasos:
 - **start:** Inicia la aplicación con Node.js.
 - **start:dev:** Inicia la aplicación en modo desarrollo con Nodemon.
 
+## Configuración del Entorno
+
+1. Copia el archivo `.env.example` a un nuevo archivo llamado `.env`.
+2. Rellena los valores en el archivo `.env` con tus configuraciones específicas.
+
+```bash
+cp .env.example .env
+
+
 ## Contribuciones
 
 Las contribuciones son bienvenidas. Para contribuir:
