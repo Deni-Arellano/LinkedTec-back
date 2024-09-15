@@ -1,7 +1,7 @@
-// Importa el módulo express
+// Importa el módulo express y la configuración de la base de datos
 const express = require('express');
 const sequelize = require('./config/database');
-
+require('dotenv').config();
 
 // Crea una aplicación Express
 const app = express();
@@ -14,17 +14,17 @@ app.get('/', (req, res) => {
   res.send('Hola, Mundo!');
 });
 
-// Inicia el servidor
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
-
-
+// Prueba la conexión a la base de datos y luego inicia el servidor
 (async () => {
   try {
     // Probar la conexión a la base de datos
     await sequelize.authenticate();
     console.log('Connection has been established successfully.');
+
+    // Inicia el servidor
+    app.listen(PORT, () => {
+      console.log(`Servidor escuchando en el puerto ${PORT}`);
+    });
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }

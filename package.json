@@ -4,8 +4,15 @@
   "description": "Red social para el tecnologico de zacatecas su",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    
+  "start": "node src/index.js",
+  "dev": "nodemon src/index.js",
+  "db:migrate": "sequelize db:migrate",
+  "db:migrate:undo": "sequelize db:migrate:undo",
+  "db:seed": "sequelize db:seed:all",
+  "db:seed:undo": "sequelize db:seed:undo:all"
   },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Linked-Tec/Linked-back.git"
