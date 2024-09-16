@@ -42,3 +42,4 @@ Egresado.init({
 });
 
 module.exports = Egresado;
+  

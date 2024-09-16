@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 // Configura las rutas de egresados con el prefijo /egresados
-app.use('/egresados', egresadosRoutes);
+app.use('/', egresadosRoutes);
 
 // Configura una ruta que responde con "Hola, Mundo"
 app.get('/', (req, res) => {
