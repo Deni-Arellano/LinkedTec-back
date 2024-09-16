@@ -1,37 +1,38 @@
 // src/controllers/egresados_controller.js
-const Egresados = require('../models/egresados');
+const Egresado = require('../models/egresados');
 
-// Crear un nuevo egresado
-exports.createEgresado = async (req, res) => {
+// Obtener un egresado por ID
+exports.getEgresadoPorId = async (req, res) => {
   try {
-    const { id_usuario, telefono, sexo, fecha_nacimiento, biografia, carrera, ano_graduacion, puesto } = req.body;
+    const egresado = await Egresado.findByPk(req.params.id_usuario);
 
-    // Crear el nuevo egresado
-    const nuevoEgresado = await Egresados.create({
-      id_usuario,
-      telefono,
-      sexo,
-      fecha_nacimiento,
-      biografia,
-      carrera,
-      ano_graduacion,
-      puesto
-    });
+    if (!egresado) {
+      return res.status(404).json({ success: false, error: 'Egresado no encontrado' });
+    }
 
-    res.status(201).json(nuevoEgresado);
+    res.json(egresado);
   } catch (error) {
-    console.error('Error al crear el egresado:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ message: 'Error al obtener egresado', error: error.message });
   }
 };
 
 // Obtener todos los egresados
-exports.getEgresados = async (req, res) => {
+exports.getAllEgresados = async (req, res) => {
   try {
-    const egresados = await Egresados.findAll();
-    res.status(200).json(egresados);
+    const egresados = await Egresado.findAll();
+    res.json(egresados);
   } catch (error) {
-    console.error('Error al obtener los egresados:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ message: 'Error al obtener egresados' });
+  }
+};
+
+// Crear un nuevo egresado
+exports.createEgresado = async (req, res) => {
+  try {
+    const egresado = await Egresado.create(req.body);
+    res.status(201).json(egresado);
+  } catch (error) {
+    console.error('Error al crear egresado:', error); 
+    res.status(500).json({ message: 'Error al crear egresado', error: error.message });
   }
 };

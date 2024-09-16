@@ -1,26 +1,25 @@
-const Egresado = require('../models/egresados');
+const egresadoService = require('../services/egresados');
 
-// Servicio para crear un nuevo egresado
-exports.crearEgresado = async (data) => {
-    try {
-        const nuevoEgresado = await Egresado.create(data);
-        return { success: true, data: nuevoEgresado };
-    } catch (error) {
-        return { success: false, error: 'Error al crear el egresado' };
-    }
+// Obtener todos los egresados
+exports.getAllEgresados = async (req, res) => {
+  try {
+    const egresados = await egresadoService.obtenerEgresadoPorId(); // Puedes necesitar ajustar esta línea para obtener todos los egresados
+    res.json(egresados);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener egresados' });
+  }
 };
 
-// Servicio para obtener un egresado por ID
-exports.obtenerEgresadoPorId = async (id) => {
-    try {
-        const egresado = await Egresado.findByPk(id);
-
-        if (!egresado) {
-            return { success: false, error: 'Egresado no encontrado' };
-        }
-
-        return { success: true, data: egresado };
-    } catch (error) {
-        return { success: false, error: 'Error al obtener el egresado' };
+// Crear un nuevo egresado
+exports.createEgresado = async (req, res) => {
+  try {
+    const result = await egresadoService.crearEgresado(req.body);
+    if (result.success) {
+      res.status(201).json(result.data);
+    } else {
+      res.status(500).json({ message: result.error });
     }
+  } catch (error) {
+    res.status(500).json({ message: 'Error al crear egresado' });
+  }
 };
