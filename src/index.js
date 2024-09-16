@@ -2,6 +2,7 @@
 const express = require('express');
 const sequelize = require('./config/database');
 const egresadosRoutes = require('./routes/routes_egresados');  // Asegúrate de que la ruta sea correcta
+const empleosRoutes = require('./routes/routes_empleos');  // Asegúrate de que la ruta sea correcta
 require('dotenv').config();
 
 const app = express();
@@ -10,6 +11,7 @@ app.use(express.json());
 
 // Configura las rutas de egresados con el prefijo /egresados
 app.use('/', egresadosRoutes);
+app.use('/empleos', empleosRoutes);
 
 // Configura una ruta que responde con "Hola, Mundo"
 app.get('/', (req, res) => {
