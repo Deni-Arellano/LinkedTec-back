@@ -1,0 +1,12 @@
+const express = require('express');
+const { crearReclutador, obtenerReclutador } = require('../controllers/reclutadores_controllers');
+
+const router = express.Router();
+
+// Ruta para crear un reclutador
+router.post('/crear', crearReclutador);
+
+// Ruta para obtener un reclutador por ID
+router.get('/:id', obtenerReclutador);
+
+module.exports = router;
