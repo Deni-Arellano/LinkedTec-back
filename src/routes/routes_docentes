@@ -1,0 +1,9 @@
+const express = require('express');
+const router = express.Router();
+const docentesController = require('../controllers/docentes_controller');
+
+// Ruta POST para crear un nuevo docente
+router.post('/', docentesController.createDocente);
+
+
+module.exports = router;
