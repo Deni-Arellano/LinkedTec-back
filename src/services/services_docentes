@@ -1,0 +1,15 @@
+const { Docente } = require('../models/docentes'); // Ajusta la ruta aquí
+
+const createDocente = async (docenteData) => {
+    return await Docente.create(docenteData);
+};
+
+const getDocenteById = async (id) => {
+    return await Docente.findByPk(id);
+};
+
+
+module.exports = {
+    createDocente,
+    getDocenteById
+};
