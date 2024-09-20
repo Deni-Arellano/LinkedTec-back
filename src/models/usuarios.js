@@ -1,7 +1,10 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
 
-const Usuario = sequelize.define('Usuario', {
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database'); 
+
+class Usuario extends Model {}
+
+Usuario.init({
   id_usuario: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -25,16 +28,19 @@ const Usuario = sequelize.define('Usuario', {
     allowNull: false,
     unique: true
   },
-  contrasena: {
+  contraseña: {
     type: DataTypes.STRING,
     allowNull: false
   },
   tipo_usuario: {
     type: DataTypes.ENUM('egresado', 'reclutador', 'estudiante', 'docente'),
-    allowNull: false
-  }
+    allowNull: false,
+  },
 }, {
-  timestamps: false // Desactivar las columnas createdAt y updatedAt
+  sequelize,
+  modelName: 'Usuario',
+  tableName: 'Usuarios',
+  timestamps: false,
 });
 
 module.exports = { Usuario };
