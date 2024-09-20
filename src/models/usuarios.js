@@ -45,6 +45,7 @@ Usuario.init({
     type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa'),
     allowNull: false,
   },
+  
 }, {
   sequelize,
   modelName: 'Usuario',
