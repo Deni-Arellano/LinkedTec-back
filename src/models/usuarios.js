@@ -1,11 +1,10 @@
-
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
 
 class Usuario extends Model {}
 
 Usuario.init({
-  id_usuario: {
+  id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
@@ -26,18 +25,30 @@ Usuario.init({
     allowNull: false,
     unique: true,
   },
-  contrasena: {
+  contraseña: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  tipo_usuario: {
-    type: DataTypes.ENUM('egresado', 'reclutador', 'estudiante', 'docente'),
+  fecha_nacimiento: {
+    type: DataTypes.DATE,
+  },
+  telefono: {
+    type: DataTypes.STRING(20),
+  },
+  sexo: {
+    type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'),
+  },
+  biografia: {
+    type: DataTypes.TEXT,
+  },
+  role: {
+    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa'),
     allowNull: false,
   },
 }, {
   sequelize,
   modelName: 'Usuario',
-  tableName: 'Usuarios',
+  tableName: 'usuarios', // Asegúrate de que coincida con el nombre de la tabla en la base de datos
   timestamps: false,
 });
 
