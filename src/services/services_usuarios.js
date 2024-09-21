@@ -1,4 +1,4 @@
-// services/usuarioService.js
+
 const Usuario = require('../models/usuarios');
 
 const crearUsuario = async (usuarioData) => {
@@ -13,7 +13,7 @@ const crearUsuario = async (usuarioData) => {
 
 const obtenerUsuarioPorId = async (id) => {
     try {
-      const usuario = await Usuario.findByPk(id); // findByPk busca por la primary key (ID)
+      const usuario = await Usuario.findByPk(id); 
       if (!usuario) {
         throw new Error('Usuario no encontrado');
       }
@@ -23,7 +23,18 @@ const obtenerUsuarioPorId = async (id) => {
     }
   };
   
+
+const obtenerTodosLosUsuarios = async () => {
+    try {
+        const usuarios = await Usuario.findAll();
+        return usuarios;
+    } catch (error) {
+        throw new Error('Error al obtener los usuarios: ' + error.message);
+    }
+};
+
   module.exports = {
     crearUsuario,
-    obtenerUsuarioPorId
+    obtenerUsuarioPorId,
+    obtenerTodosLosUsuarios
   };
