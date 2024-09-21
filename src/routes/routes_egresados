@@ -6,10 +6,10 @@ const egresadosController = require('../controllers/egresados_controller');
 // Obtener todos los egresados
 router.get('/usuarios/egresados', egresadosController.getAllEgresados);
 
-// Crear un nuevo egresado
-router.post('/usuarios/egresados', egresadosController.createEgresado);
+// Obtener la información de un egresado por ID
+router.get('/usuarios/egresados/perfil/:id', egresadosController.getEgresadoPorId);
 
-// Obtener un egresado por ID
-router.get('/usuarios/egresados/:id_usuario', egresadosController.getEgresadoPorId);
+// Crear un nuevo egresado (si aplica)
+router.post('/usuarios/egresados', egresadosController.createEgresado);
 
 module.exports = router;

@@ -5,31 +5,16 @@ const sequelize = require('../config/database');
 class Egresado extends Model {}
 
 Egresado.init({
-  id_usuario: {
+  id: {
     type: DataTypes.INTEGER,
-    references: {
-      model: 'Usuarios',
-      key: 'id_usuario'
-    },
+    autoIncrement: true,
     primaryKey: true,
   },
-  telefono: {
-    type: DataTypes.STRING(20),
-  },
-  sexo: {
-    type: DataTypes.STRING(10),
-  },
-  fecha_nacimiento: {
-    type: DataTypes.STRING,
-  },
-  biografia: {
-    type: DataTypes.TEXT,
-  },
   carrera: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
   },
   ano_graduacion: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
   },
   puesto: {
     type: DataTypes.STRING(255),
@@ -42,4 +27,3 @@ Egresado.init({
 });
 
 module.exports = Egresado;
-  
