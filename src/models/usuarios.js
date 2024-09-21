@@ -42,14 +42,17 @@ Usuario.init({
     type: DataTypes.TEXT,
   },
   role: {
-    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa'),
+    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado'),
     allowNull: false,
+  },
+  imagen_usuario: {
+    type: DataTypes.STRING,
   },
   
 }, {
   sequelize,
   modelName: 'Usuario',
-  tableName: 'usuarios', // Asegúrate de que coincida con el nombre de la tabla en la base de datos
+  tableName: 'usuarios', 
   timestamps: false,
 });
 
