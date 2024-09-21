@@ -1,13 +1,10 @@
 // src/index.js
 const express = require('express');
 const sequelize = require('./config/database');
-<<<<<<< HEAD
+
 const comentariosRoutes = require('./routes/routes_comentarios'); // Ajusta la ruta aquí
 const reclutadoresRoutes = require('./routes/routes_reclutadores'); // Ajusta la ruta aquí
 
-=======
-const egresadosRoutes = require('./routes/routes_egresados');  // Asegúrate de que la ruta sea correcta
->>>>>>> main
 require('dotenv').config();
 
 const app = express();
@@ -26,10 +23,7 @@ app.get('/', (req, res) => {
   res.send('Hola, Mundo!');
 });
 
-// Configura las rutas de egresados sin el prefijo /api
-app.use('/', egresadosRoutes); // Cambia esto si es necesario
 
-// Prueba la conexión a la base de datos y luego inicia el servidor
 (async () => {
   try {
     await sequelize.authenticate();

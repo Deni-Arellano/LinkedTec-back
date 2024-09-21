@@ -1,7 +1,9 @@
 const express = require('express');
-const { crearReclutador, obtenerReclutador } = require('../controllers/reclutadores_controllers');
-
 const router = express.Router();
+const {
+  crearReclutador,
+  obtenerReclutador
+} = require('../controllers/reclutadores_controllers');
 
 // Ruta para crear un reclutador
 router.post('/crear', crearReclutador);

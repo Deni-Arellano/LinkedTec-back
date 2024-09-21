@@ -1,32 +1,30 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const Usuario = require('./usuarios'); // Asegúrate de que el modelo Usuario esté importado
 
 class Reclutador extends Model {}
 
 Reclutador.init({
-  id_usuario: {
+  id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-  },
-  telefono: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  sexo: {
-    type: DataTypes.STRING(10),
-    allowNull: true
+    references: {
+      model: Usuario, // Hace referencia al modelo Usuario
+      key: 'id',
+    },
+    onDelete: 'CASCADE', // Esto asegura que si un usuario es eliminado, el reclutador asociado también lo sea
   },
   nombre_empresa: {
     type: DataTypes.STRING(255),
-    allowNull: true
+    allowNull: false,
   },
-  fecha_fundacion: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  sector_comercial: {
+  sede: {
     type: DataTypes.STRING(255),
-    allowNull: true
+    allowNull: true,
+  },
+  giro: {
+    type: DataTypes.ENUM('Comercial', 'Servicio', 'Manufacturera', 'Agricultura'),
+    allowNull: false,
   }
 }, {
   sequelize,
@@ -35,5 +33,7 @@ Reclutador.init({
   timestamps: false,
 });
 
+// Relación entre Reclutador y Usuario
+Reclutador.belongsTo(Usuario, { foreignKey: 'id' });
 
 module.exports = Reclutador;
