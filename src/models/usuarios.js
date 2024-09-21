@@ -1,6 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
-const Publicacion = require('./publicaciones'); // Asegúrate de que la ruta sea correcta
 
 class Usuario extends Model {}
 
