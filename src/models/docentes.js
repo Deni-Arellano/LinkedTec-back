@@ -1,46 +1,43 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database'); // Ajusta la ruta según tu estructura de carpetas
 
-const Docente = sequelize.define('Docente', {
-  id_usuario: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    references: {
-      model: 'Usuario',
-      key: 'id_usuario'
+class Docente extends Model {}
+
+Docente.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    ultimo_nivel_estudios: {
+        type: DataTypes.ENUM('Licenciatura', 'Maestría', 'Doctorado'),
+        allowNull: false
+    },
+    numero_empleado: {
+        type: DataTypes.STRING(10),
+        unique: true,
+        allowNull: false
+    },
+    academia: {
+        type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
+        allowNull: false
+    },
+    id_usuario: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'usuarios',
+            key: 'id'
+        }
     }
-  },
-  fecha_nacimiento: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  biografia: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  telefono: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  ultimo_nivel_estudios: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  numero_empleado: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  rh: {
-    type: DataTypes.STRING(10),
-    allowNull: true
-  },
-  academia: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  }
 }, {
-  timestamps: false // Desactivar las columnas createdAt y updatedAt
+    sequelize,
+    modelName: 'Docente',
+    timestamps: false // Desactiva las marcas de tiempo
 });
 
+// Aquí puedes definir las asociaciones, si es necesario
+// Docente.associate = (models) => {
+//     Docente.belongsTo(models.Usuario, { foreignKey: 'id_usuario' });
+// };
 
-module.exports = { Docente };
+module.exports = Docente;

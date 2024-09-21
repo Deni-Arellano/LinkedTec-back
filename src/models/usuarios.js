@@ -1,56 +1,60 @@
 const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); 
+const sequelize = require('../config/database');
 
 class Usuario extends Model {}
 
 Usuario.init({
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  nombre: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  apellido_paterno: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  apellido_materno: {
-    type: DataTypes.STRING,
-  },
-  correo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  contraseña: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  fecha_nacimiento: {
-    type: DataTypes.DATE,
-  },
-  telefono: {
-    type: DataTypes.STRING(20),
-  },
-  sexo: {
-    type: DataTypes.ENUM('Masculino', 'Femenino', 'Otro'),
-  },
-  biografia: {
-    type: DataTypes.TEXT,
-  },
-  role: {
-    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa'),
-    allowNull: false,
-  },
-  
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    nombre: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    apellido_paterno: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    apellido_materno: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    correo: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    contraseña: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    fecha_nacimiento: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    telefono: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    sexo: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    biografia: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    role: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
 }, {
-  sequelize,
-  modelName: 'Usuario',
-  tableName: 'usuarios', // Asegúrate de que coincida con el nombre de la tabla en la base de datos
-  timestamps: false,
+    sequelize,
+    modelName: 'Usuario',
+    timestamps: false // Asegúrate de tener esto también
 });
+
+// Aquí puedes definir las asociaciones, si es necesario
 
 module.exports = Usuario;
