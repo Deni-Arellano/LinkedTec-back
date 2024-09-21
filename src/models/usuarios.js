@@ -49,7 +49,7 @@ Usuario.init({
 }, {
   sequelize,
   modelName: 'Usuario',
-  tableName: 'usuarios', // Asegúrate de que coincida con el nombre de la tabla en la base de datos
+  tableName: 'usuarios', 
   timestamps: false,
 });
 
