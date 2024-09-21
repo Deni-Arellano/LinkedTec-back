@@ -12,7 +12,9 @@ const createDocente = async (req, res) => {
         }
 
         // Crear el nuevo usuario
-        const nuevoUsuario = await Usuario.create(usuario);
+        const nuevoUsuario = await Usuario.create(usuario, {
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
+        });
 
         // Crear el nuevo docente usando el id del nuevo usuario
         const nuevoDocente = await Docente.create({
@@ -20,9 +22,15 @@ const createDocente = async (req, res) => {
             numero_empleado: docente.numero_empleado,
             academia: docente.academia,
             id: nuevoUsuario.id // Asociar el id del usuario creado
+        }, {
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
         });
 
-        res.status(201).json(nuevoDocente);
+        // Retornar tanto el nuevo usuario como el nuevo docente sin createdAt y updatedAt
+        res.status(201).json({
+            usuario: nuevoUsuario,
+            docente: nuevoDocente
+        });
     } catch (error) {
         console.error(error); // Imprime el error en la consola
         res.status(500).json({ error: error.errors ? error.errors.map(e => e.message) : error.message });
@@ -33,7 +41,11 @@ const createDocente = async (req, res) => {
 const getAllDocentes = async (req, res) => {
     try {
         const docentes = await Docente.findAll({
-            include: [Usuario] // Incluye los datos del usuario asociado
+            include: [{
+                model: Usuario,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }],
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
         });
         res.status(200).json(docentes);
     } catch (error) {
@@ -47,7 +59,11 @@ const getDocenteById = async (req, res) => {
         const id = req.params.id;
         const docente = await Docente.findOne({
             where: { id: id }, // Usar el ID del docente
-            include: [Usuario] // Incluye los datos del usuario asociado
+            include: [{
+                model: Usuario,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }],
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
         });
 
         if (!docente) {
