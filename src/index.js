@@ -1,4 +1,3 @@
-// src/index.js
 const express = require('express');
 const sequelize = require('./config/database');
 const egresadosRoutes = require('./routes/routes_egresados');  // Asegúrate de que la ruta sea correcta
@@ -9,8 +8,8 @@ const app = express();
 
 app.use(express.json());
 
-// Configura las rutas de egresados con el prefijo /egresados
-app.use('/', egresadosRoutes);
+// Configura las rutas de egresados con el prefijo /usuarios
+app.use('/usuarios/egresados', egresadosRoutes);  // Cambiado para usar el prefijo /usuarios
 app.use('/empleos', empleosRoutes);
 
 // Configura una ruta que responde con "Hola, Mundo"

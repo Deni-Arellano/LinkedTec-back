@@ -13,7 +13,7 @@ Egresado.init({
   carrera: {
     type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
   },
-  ano_graduacion: {
+  año_graduacion: {
     type: DataTypes.INTEGER,
   },
   puesto: {

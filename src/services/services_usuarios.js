@@ -13,7 +13,7 @@ const crearUsuario = async (usuarioData) => {
 
 const obtenerUsuarioPorId = async (id) => {
     try {
-      const usuario = await Usuario.findByPk(id); // findByPk busca por la primary key (ID)
+      const usuario = await Usuario.findByPk(id);
       if (!usuario) {
         throw new Error('Usuario no encontrado');
       }
