@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
+const Publicacion = require('./publicaciones'); // Asegúrate de que la ruta sea correcta
 
 class Usuario extends Model {}
 
@@ -48,12 +49,12 @@ Usuario.init({
   imagen_usuario: {
     type: DataTypes.STRING,
   },
-  
 }, {
   sequelize,
   modelName: 'Usuario',
   tableName: 'usuarios', 
   timestamps: false,
 });
+
 
 module.exports = Usuario;
