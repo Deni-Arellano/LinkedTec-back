@@ -52,9 +52,12 @@ Usuario.init({
 }, {
     sequelize,
     modelName: 'Usuario',
-    timestamps: false // Asegúrate de tener esto también
+    timestamps: false
 });
 
-// Aquí puedes definir las asociaciones, si es necesario
+// Asociación con Docente
+Usuario.associate = (models) => {
+    Usuario.hasOne(models.Docente, { foreignKey: 'id' }); // Cambiado a usar la clave primaria
+};
 
 module.exports = Usuario;
