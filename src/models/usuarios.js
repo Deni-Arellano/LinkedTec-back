@@ -1,63 +1,64 @@
-const { Model, DataTypes } = require('sequelize');
+// src/models/usuarios.js
+
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-class Usuario extends Model {}
-
-Usuario.init({
+const Usuario = sequelize.define('Usuario', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
     },
     nombre: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     apellido_paterno: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     apellido_materno: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     correo: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
     },
     contraseña: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     fecha_nacimiento: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: false,
     },
     telefono: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     sexo: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     biografia: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
     },
     role: {
         type: DataTypes.STRING,
-        allowNull: false
-    }
+        allowNull: false,
+    },
+    imagen_usuario: { // Nueva columna añadida
+        type: DataTypes.STRING(255),
+        allowNull: true,
+    },
 }, {
-    sequelize,
-    modelName: 'Usuario',
-    timestamps: false
+    tableName: 'usuarios',
+    timestamps: false, // Esto incluye createdAt y updatedAt, si no lo deseas, cámbialo a false
 });
 
-// Asociación con Docente
-Usuario.associate = (models) => {
-    Usuario.hasOne(models.Docente, { foreignKey: 'id' }); // Cambiado a usar la clave primaria
-};
+// Aquí puedes definir las asociaciones, si las hay
 
 module.exports = Usuario;
