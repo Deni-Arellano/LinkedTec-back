@@ -9,7 +9,7 @@ const egresadosRoutes = require('./routes/routes_egresados');
 const empleosRoutes = require('./routes/routes_empleos');
 const routesDocentes = require('./routes/routes_docentes'); // Importa las rutas de docentes
 const routesEstudiantes = require('./routes/routes_estudiantes'); // Importa las rutas de estudiantes
-
+const routesUsuarios = require('./routes/routes_usuario'); // Importa las rutas de usurious
 
 
 app.use(express.json());
@@ -24,6 +24,8 @@ app.use('/empleos', empleosRoutes);
 
 app.use('/api/docentes', routesDocentes);
 app.use('/api/estudiantes', routesEstudiantes);
+
+app.use('/usuarios', routesUsuarios);
 
 
 

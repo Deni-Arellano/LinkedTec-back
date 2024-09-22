@@ -26,6 +26,7 @@ Docente.init({
 }, {
     sequelize,
     modelName: 'Docente',
+    tableName: 'docentes',
     timestamps: false // Desactiva las marcas de tiempo
 });
 

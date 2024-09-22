@@ -1,4 +1,4 @@
-const usuarioService = require('../services/services_usuarios'); 
+const usuarioService = require('../services/services_usuarios');
 
 /**
  * Crea un nuevo usuario en la base de datos.
@@ -9,12 +9,12 @@ const crearUsuario = async (req, res) => {
   try {
     // Extrae los campos del cuerpo de la solicitud
     const { nombre, apellido_paterno, apellido_materno, correo, contraseña, fecha_nacimiento, telefono, sexo, biografia, role, imagen_usuario } = req.body;
-    
+
     // Validación de campos obligatorios
     if (!nombre || !apellido_paterno || !correo || !contraseña || !role) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
-    
+
     // Llama al servicio de usuariospara crear un nuevo usuario
     const nuevoUsuario = await usuarioService.crearUsuario({
       nombre,
