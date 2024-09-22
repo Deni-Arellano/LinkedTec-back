@@ -17,6 +17,7 @@ app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
+
 // Define las asociaciones
 Usuario.hasOne(Docente, { foreignKey: 'id' });
 Docente.belongsTo(Usuario, { foreignKey: 'id' });

@@ -25,4 +25,5 @@ const Estudiante = sequelize.define('Estudiante', {
     timestamps: false, // Cambia a true si deseas incluir createdAt y updatedAt
 });
 
+
 module.exports = Estudiante;
