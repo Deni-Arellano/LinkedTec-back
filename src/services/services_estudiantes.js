@@ -21,6 +21,7 @@ const createEstudiante = async (usuarioData, estudianteData) => {
     }
 };
 
+
 // Función para obtener todos los estudiantes
 const getAllEstudiantes = async () => {
     try {

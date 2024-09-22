@@ -104,7 +104,6 @@ const getEstudianteById = async (req, res) => {
     }
 };
 
-
 module.exports = {
     createEstudiante,
     getAllEstudiantes,

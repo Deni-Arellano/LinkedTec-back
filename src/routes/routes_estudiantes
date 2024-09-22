@@ -1,11 +1,14 @@
 const express = require('express');
-const { createEstudiante, getAllEstudiantes, getEstudianteById } = require('../controllers/estudiantes_controller');
-
 const router = express.Router();
+const EstudianteController = require('../controllers/estudiantes_controller');
 
-router.post('/api/estudiantes', createEstudiante);
-router.get('/api/estudiantes', getAllEstudiantes);
-router.get('/api/estudiantes/:id', getEstudianteById);
+// Ruta para crear un nuevo estudiante
+router.post('/', EstudianteController.createEstudiante);
 
+// Ruta para obtener todos los estudiantes
+router.get('/', EstudianteController.getAllEstudiantes);
+
+// Ruta para obtener un estudiante por ID
+router.get('/:id', EstudianteController.getEstudianteById);
 
 module.exports = router;

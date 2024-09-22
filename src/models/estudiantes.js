@@ -1,29 +1,36 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const Usuario = require('./usuarios');
 
-const Estudiante = sequelize.define('Estudiante', {
+class Estudiante extends Model {}
+
+Estudiante.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: true
     },
     no_control: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true, // Cambia a true para que no se repita
+        unique: true
     },
     carrera: {
-        type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: false
     },
     semestre: {
-        type: DataTypes.ENUM('I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'),
-        allowNull: false,
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
+    // No se incluye id_usuario
 }, {
-    tableName: 'estudiantes',
-    timestamps: false, // Cambia a true si deseas incluir createdAt y updatedAt
+    sequelize,
+    modelName: 'Estudiante',
+    timestamps: false
 });
 
+// Definir la asociación
+Estudiante.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' }); // Usar 'id' como clave foránea
 
 module.exports = Estudiante;

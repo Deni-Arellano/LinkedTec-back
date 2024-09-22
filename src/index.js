@@ -6,6 +6,7 @@ const routesEstudiantes = require('./routes/routes_estudiantes'); // Importa las
 const app = express();
 const port = 3000;
 
+
 app.use(express.json());
 
 // Ruta de prueba
