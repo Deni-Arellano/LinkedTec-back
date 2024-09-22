@@ -1,44 +1,29 @@
 // src/models/egresados.js
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Egresados = sequelize.define('Egresados', {
-  id_usuario: {
+class Egresado extends Model {}
+
+Egresado.init({
+  id: {
     type: DataTypes.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
-    allowNull: false
-  },
-  telefono: {
-    type: DataTypes.STRING(20),
-    allowNull: false
-  },
-  sexo: {
-    type: DataTypes.STRING(10),
-    allowNull: false
-  },
-  fecha_nacimiento: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  biografia: {
-    type: DataTypes.TEXT,
-    allowNull: true
   },
   carrera: {
-    type: DataTypes.STRING(255),
-    allowNull: false
+    type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
   },
-  ano_graduacion: {
-    type: DataTypes.INTEGER, // Cambiar de year a integer
-    allowNull: false
+  año_graduacion: {
+    type: DataTypes.INTEGER,
   },
   puesto: {
     type: DataTypes.STRING(255),
-    allowNull: false
-  }
+  },
 }, {
+  sequelize,
+  modelName: 'Egresado',
   tableName: 'egresados',
-  timestamps: false // Si no estás usando timestamps en tu tabla
+  timestamps: false,
 });
 
-module.exports = Egresados;
+module.exports = Egresado;

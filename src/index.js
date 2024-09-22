@@ -1,10 +1,14 @@
-// src/index.js
 const express = require('express');
 const sequelize = require('./config/database');
+<<<<<<< HEAD
 
 const comentariosRoutes = require('./routes/routes_comentarios'); // Ajusta la ruta aquí
 const reclutadoresRoutes = require('./routes/routes_reclutadores'); // Ajusta la ruta aquí
 
+=======
+const egresadosRoutes = require('./routes/routes_egresados');  // Asegúrate de que la ruta sea correcta
+const empleosRoutes = require('./routes/routes_empleos');  // Asegúrate de que la ruta sea correcta
+>>>>>>> MigueRosales
 require('dotenv').config();
 
 const app = express();
@@ -15,14 +19,20 @@ app.use('/usuarios/reclutadores', reclutadoresRoutes);
 
 app.use(express.json());
 
-// Define el puerto en el que el servidor escuchará
-const PORT = process.env.PORT || 3000;
+// Configura las rutas de egresados con el prefijo /usuarios
+app.use('/usuarios/egresados', egresadosRoutes);  // Cambiado para usar el prefijo /usuarios
+app.use('/empleos', empleosRoutes);
 
 // Configura una ruta que responde con "Hola, Mundo"
 app.get('/', (req, res) => {
   res.send('Hola, Mundo!');
 });
 
+<<<<<<< HEAD
+=======
+// Define el puerto en el que el servidor escuchará
+const PORT = process.env.PORT || 3000; // Cambia el puerto si es necesario
+>>>>>>> MigueRosales
 
 (async () => {
   try {
