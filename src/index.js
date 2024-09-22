@@ -1,23 +1,36 @@
 const express = require('express');
 const app = express();
-const sequelize = require('./config/database'); // Cambiado a la ruta correcta
+require('dotenv').config();
+const sequelize = require('./config/database');
 const port = 3000;
-
-const comentariosRoutes = require('./routes/routes_comentarios'); // Ajusta la ruta aquí
+const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores'); 
+const egresadosRoutes = require('./routes/routes_egresados');
+const empleosRoutes = require('./routes/routes_empleos');
+
+
+
 app.use(express.json());
 
-app.use('/publicaciones/comentarios', comentariosRoutes);
 
+
+app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
+
+app.use('/usuarios/egresados', egresadosRoutes);
+app.use('/empleos', empleosRoutes);
+
+
+
+
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.send('¡Hola, Mundo!');
 });
 
-// Conectar a la base de datos y arrancar el servidor
-sequelize.sync() // Sincroniza los modelos con la base de datos
+
+sequelize.sync()
   .then(() => sequelize.authenticate())
   .then(() => {
     console.log('Conexión a la base de datos exitosa y modelos sincronizados.');
