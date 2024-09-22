@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Usuario = require('./usuarios'); // Asegúrate de que el modelo Usuario esté importado
+const Usuario = require('./usuarios'); 
 
 class Reclutador extends Model {}
 
@@ -9,10 +9,10 @@ Reclutador.init({
     type: DataTypes.INTEGER,
     primaryKey: true,
     references: {
-      model: Usuario, // Hace referencia al modelo Usuario
+      model: Usuario, 
       key: 'id',
     },
-    onDelete: 'CASCADE', // Esto asegura que si un usuario es eliminado, el reclutador asociado también lo sea
+    onDelete: 'CASCADE', 
   },
   nombre_empresa: {
     type: DataTypes.STRING(255),
@@ -33,7 +33,7 @@ Reclutador.init({
   timestamps: false,
 });
 
-// Relación entre Reclutador y Usuario
+
 Reclutador.belongsTo(Usuario, { foreignKey: 'id' });
 
 module.exports = Reclutador;
