@@ -1,9 +1,5 @@
 const express = require('express');
-const sequelize = require('./config/database');
-const docentesRoutes = require('./routes/routes_docentes'); // Asegúrate de que la ruta sea correcta
-
 const app = express();
-const port = 3000;
 
 const sequelize = require('./config/database'); // Cambiado a la ruta correcta
 const docenteRoutes = require('./routes/routes_docentes');

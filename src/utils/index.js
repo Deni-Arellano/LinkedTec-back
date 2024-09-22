@@ -1,17 +1,16 @@
 const express = require('express');
 const sequelize = require('./config/database');
-const docentesRoutes = require('./routes/routes_docentes'); // Asegúrate de que la ruta sea correcta
+const docentesRoutes = require('./routes/routes_docentes'); 
 
 const app = express();
 const port = 3000;
 
-const sequelize = require('./config/database'); // Cambiado a la ruta correcta
+const sequelize = require('./config/database'); 
 const docenteRoutes = require('./routes/routes_docentes');
 
 // Middleware para parsear el cuerpo de las solicitudes en formato JSON
 app.use(express.json());
 
-// Usar las rutas para /api/docentes
 app.use('/api/docentes', docenteRoutes);
 
 // Ruta de prueba
