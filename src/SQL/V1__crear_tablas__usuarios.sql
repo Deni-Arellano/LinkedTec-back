@@ -45,4 +45,3 @@ CREATE TABLE docentes (
     academia ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE') NOT NULL,
     FOREIGN KEY (id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
-
