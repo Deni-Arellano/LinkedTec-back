@@ -1,14 +1,15 @@
+// routes/routes_docentes.js
 const express = require('express');
 const router = express.Router();
 const DocenteController = require('../controllers/docentes_controller');
 
 // Ruta para crear un nuevo docente
-router.post('/api/docentes', DocenteController.createDocente);
+router.post('/', DocenteController.createDocente); // Cambiado a '/' sin /api/docentes
 
 // Ruta para obtener todos los docentes
-router.get('/api/docentes', DocenteController.getAllDocentes);
+router.get('/', DocenteController.getAllDocentes);
 
 // Ruta para obtener un docente por ID
-router.get('/api/docentes/:id', DocenteController.getDocenteById);
+router.get('/:id', DocenteController.getDocenteById);
 
 module.exports = router;

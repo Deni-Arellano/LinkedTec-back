@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../config/database'); // Ajusta la ruta según tu estructura de carpetas
+const Usuario = require('./usuarios'); // Asegúrate de importar el modelo Usuario
 
 class Docente extends Model {}
 
@@ -7,7 +8,7 @@ Docente.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true // Asegúrate de que esté configurado
+        autoIncrement: true
     },
     ultimo_nivel_estudios: {
         type: DataTypes.ENUM('Licenciatura', 'Maestría', 'Doctorado'),
@@ -25,12 +26,10 @@ Docente.init({
 }, {
     sequelize,
     modelName: 'Docente',
-    timestamps: false
+    timestamps: false // Desactiva las marcas de tiempo
 });
 
 // Definir la asociación
-Docente.associate = (models) => {
-    Docente.belongsTo(models.Usuario, { foreignKey: 'id_usuario' });
-};
+Docente.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' }); // Usar 'id' como clave foránea
 
 module.exports = Docente;
