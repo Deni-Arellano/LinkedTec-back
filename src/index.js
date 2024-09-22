@@ -7,7 +7,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(express.json());
-print("Hola Ariel")
+
 app.use('/usuarios/egresados', egresadosRoutes);
 app.use('/empleos', empleosRoutes);
 
