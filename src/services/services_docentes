@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { Usuario } = require('../models/usuarios');
 const { Docente } = require('../models/docentes');
 
@@ -31,20 +30,5 @@ module.exports = {
     createUsuario,
     createDocente,
     getAllDocentes,
-=======
-const { Docente } = require('../models/docentes'); // Ajusta la ruta aquí
-
-const createDocente = async (docenteData) => {
-    return await Docente.create(docenteData);
-};
-
-const getDocenteById = async (id) => {
-    return await Docente.findByPk(id);
-};
-
-
-module.exports = {
-    createDocente,
->>>>>>> 4a821861ab694e0a2a71d467ad6aa804d8891410
     getDocenteById
 };
