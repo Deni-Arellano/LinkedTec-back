@@ -7,6 +7,8 @@ const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores'); 
 const egresadosRoutes = require('./routes/routes_egresados');
 const empleosRoutes = require('./routes/routes_empleos');
+const routesDocentes = require('./routes/routes_docentes'); // Importa las rutas de docentes
+const routesEstudiantes = require('./routes/routes_estudiantes'); // Importa las rutas de estudiantes
 
 
 
@@ -19,6 +21,9 @@ app.use('/usuarios/reclutadores', reclutadoresRoutes);
 
 app.use('/usuarios/egresados', egresadosRoutes);
 app.use('/empleos', empleosRoutes);
+
+app.use('/api/docentes', routesDocentes);
+app.use('/api/estudiantes', routesEstudiantes);
 
 
 
