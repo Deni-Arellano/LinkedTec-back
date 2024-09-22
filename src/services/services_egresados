@@ -1,11 +1,14 @@
 const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 
-// Obtener todos los egresados
+/**
+ * @async
+ * Obtener todos los egresados
+ */
 exports.obtenerTodosLosEgresados = async () => {
   try {
     const egresados = await Egresado.findAll({
-      include: [Usuario] // Suponiendo que ya tienes la relación definida
+      include: [Usuario]
     });
     return { success: true, data: egresados };
   } catch (error) {
@@ -13,10 +16,13 @@ exports.obtenerTodosLosEgresados = async () => {
   }
 };
 
-// Obtener un egresado por ID
+/**
+ * @async
+ * Obtener un egresado por ID
+ */
 exports.getEgresadoPorId = async (req, res) => {
   const { id } = req.params;
-  console.log('ID recibido:', id);  // Para verificar el ID recibido
+  console.log('ID recibido:', id);
 
   try {
     const [egresado] = await db.query(`
@@ -25,20 +31,22 @@ exports.getEgresadoPorId = async (req, res) => {
       WHERE eg.id = ?
     `, {
       replacements: [id],
-      type: db.QueryTypes.SELECT // Indica que es una consulta de selección
+      type: db.QueryTypes.SELECT 
     });
 
     if (egresado.length === 0) {
       return res.status(404).json({ message: 'Egresado no encontrado' });
     }
-    return res.json(egresado[0]); // Devuelve los datos del egresado por ID
+    return res.json(egresado[0]);
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener el egresado', error: error.message });
   }
 };
 
-
-// Crear un nuevo egresado y usuario
+/**
+ * @async
+ * Crear un nuevo egresado y usuario
+ */
 exports.crearEgresado = async (usuarioData, egresadoData) => {
   try {
     const usuarioExistente = await Usuario.findOne({ where: { correo: usuarioData.correo } });

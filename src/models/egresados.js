@@ -2,8 +2,15 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
+/**
+ * Modelo de datos de Egresado
+ */
 class Egresado extends Model {}
 
+/**
+ * Inicialización del modelo de Egresado.
+ * Definición de los atributos del egresado, tales como ID, carrera, año de graduación y puesto.
+ */
 Egresado.init({
   id: {
     type: DataTypes.INTEGER,

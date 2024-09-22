@@ -1,11 +1,17 @@
 // src/controllers/egresados_controller.js
 const egresadosService = require('../services/services_egresados');
-const usuarioService = require('../services/services_usuarios'); // Importar el servicio de usuarios
+const usuarioService = require('../services/services_usuarios');
 const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
 
-// Obtener todos los egresados
+/**
+ * @async
+ * Controlador para obtener todos los egresados.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con los egresados o un error.
+ */
 exports.getAllEgresados = async (req, res) => {
   try {
     const [egresados] = await db.query(`
@@ -20,17 +26,23 @@ exports.getAllEgresados = async (req, res) => {
   }
 };
 
-// Obtener un egresado por ID
+/**
+ * @async
+ * Controlador para obtener un egresado por ID.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con los datos del egresado o un error.
+ */
 exports.getEgresadoById = async (req, res) => {
-  const { id } = req.params; // Obtener el ID de los parámetros de la solicitud
+  const { id } = req.params;
 
   try {
-    const egresado = await Egresado.findByPk(id); // Buscar el egresado por ID
+    const egresado = await Egresado.findByPk(id);
     if (!egresado) {
       return res.status(404).json({ message: 'Egresado no encontrado' });
     }
 
-    const usuario = await usuarioService.obtenerUsuarioPorId(id); // Obtener el usuario asociado
+    const usuario = await usuarioService.obtenerUsuarioPorId(id);
     const perfil = {
       nombre: usuario.nombre,
       apellido_paterno: usuario.apellido_paterno,
@@ -44,24 +56,28 @@ exports.getEgresadoById = async (req, res) => {
       sexo: usuario.sexo,
     };
 
-    return res.json(perfil); // Devolver la información del perfil
+    return res.json(perfil);
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener el egresado', error: error.message });
   }
 };
 
-// Crear un nuevo egresado y usuario desde un JSON anidado
+/**
+ * @async
+ * Controlador para crear un nuevo egresado y usuario.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con el egresado y usuario creados o un error.
+ */
 exports.createEgresado = async (req, res) => {
   const { usuario, egresado } = req.body;
 
   try {
-    // Verificar si el correo ya existe
     const existingUser = await Usuario.findOne({ where: { correo: usuario.correo } });
     if (existingUser) {
       return res.status(400).json({ message: 'El correo ya está en uso.' });
     }
 
-    // Crear un nuevo usuario
     const nuevoUsuario = await Usuario.create({
       nombre: usuario.nombre,
       apellido_paterno: usuario.apellido_paterno,
@@ -76,9 +92,8 @@ exports.createEgresado = async (req, res) => {
       imagen_usuario: usuario.imagen_usuario
     });
 
-    // Crear un nuevo egresado asociado al nuevo usuario
     const nuevoEgresado = await Egresado.create({
-      id: nuevoUsuario.id, // Usa el ID del usuario recién creado
+      id: nuevoUsuario.id,
       carrera: egresado.carrera,
       año_graduacion: egresado.año_graduacion,
       puesto: egresado.puesto

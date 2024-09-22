@@ -1,6 +1,6 @@
 const Empleo = require('../models/empleos');
 
-// Servicio para obtener todos los empleos
+
 exports.obtenerTodosLosEmpleos = async () => {
   try {
     const empleos = await Empleo.findAll();
@@ -10,7 +10,6 @@ exports.obtenerTodosLosEmpleos = async () => {
   }
 };
 
-// Servicio para crear un nuevo empleo
 exports.crearEmpleo = async (datosEmpleo) => {
   try {
     const empleo = await Empleo.create(datosEmpleo);
@@ -20,7 +19,7 @@ exports.crearEmpleo = async (datosEmpleo) => {
   }
 };
 
-// Servicio para obtener empleo por ID
+
 exports.obtenerEmpleoPorId = async (id_empleo) => {
   try {
     const empleo = await Empleo.findByPk(id_empleo);
@@ -33,7 +32,6 @@ exports.obtenerEmpleoPorId = async (id_empleo) => {
   }
 };
 
-// Servicio para eliminar un empleo por ID
 exports.eliminarEmpleo = async (id_empleo) => {
   try {
     const empleo = await Empleo.findByPk(id_empleo);
