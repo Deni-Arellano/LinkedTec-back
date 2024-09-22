@@ -1,29 +1,26 @@
 const express = require('express');
 const app = express();
-
 const sequelize = require('./config/database'); // Cambiado a la ruta correcta
-const docenteRoutes = require('./routes/routes_docentes');
+const port = 3000;
 
-// Middleware para parsear el cuerpo de las solicitudes en formato JSON
 app.use(express.json());
 
-// Usar las rutas para /api/docentes
-app.use('/api/docentes', docenteRoutes);
+
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.send('¡Hola, Mundo!');
 });
 
-
 // Conectar a la base de datos y arrancar el servidor
-sequelize.authenticate()
+sequelize.sync() // Sincroniza los modelos con la base de datos
+  .then(() => sequelize.authenticate())
   .then(() => {
-    console.log('Conexión a la base de datos exitosa.');
+    console.log('Conexión a la base de datos exitosa y modelos sincronizados.');
     app.listen(port, () => {
       console.log(`Servidor escuchando en http://localhost:${port}`);
     });
   })
   .catch(err => {
-    console.error('No se pudo conectar a la base de datos:', err);
+    console.error('No se pudo conectar a la base de datos o sincronizar los modelos:', err);
   });

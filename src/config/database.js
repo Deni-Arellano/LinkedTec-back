@@ -1,8 +1,29 @@
+require('dotenv').config(); // Carga las variables de entorno del archivo .env
+
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize('linked_tec', 'root', '1234', {
-    host: 'localhost',
-    dialect: 'mysql', // o el dialecto que estés usando
-});
+require('dotenv').config();
 
-module.exports = sequelize; // Asegúrate de exportar la instancia
+const sequelize = new Sequelize(
+  process.env.DB_DATABASE,
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  {
+    host: process.env.DB_HOST,
+    dialect: process.env.DB_DIALECT,
+  }
+);
+
+module.exports = sequelize;
+
+
+// Probar la conexión
+sequelize.authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+
+module.exports = sequelize;
