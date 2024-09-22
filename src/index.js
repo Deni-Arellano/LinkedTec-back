@@ -2,6 +2,7 @@ const express = require('express');
 const sequelize = require('./config/database');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 const comentariosRoutes = require('./routes/routes_comentarios'); // Ajusta la ruta aquí
 const reclutadoresRoutes = require('./routes/routes_reclutadores'); // Ajusta la ruta aquí
@@ -24,17 +25,33 @@ app.use(express.json());
 app.use('/publicaciones/comentarios', comentariosRoutes);
 
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
+=======
+const routesDocentes = require('./routes/routes_docentes');
+const routesEstudiantes = require('./routes/routes_estudiantes');
+const Usuario = require('./models/usuarios');
+const Docente = require('./models/docentes');
+const Estudiante = require('./models/estudiantes');
+
+const app = express();
+const PORT = 3000;
+>>>>>>> Jony
 
 app.use(express.json());
+app.use(routesDocentes);
+app.use(routesEstudiantes); // Asegúrate de incluir las rutas de estudiantes
 
+<<<<<<< HEAD
 // Configura las rutas de egresados con el prefijo /usuarios
 app.use('/usuarios/egresados', egresadosRoutes);  // Cambiado para usar el prefijo /usuarios
 app.use('/empleos', empleosRoutes);
 
+=======
+>>>>>>> Jony
 app.get('/', (req, res) => {
-  res.send('Hola, Mundo!');
+    res.send('¡Hola, Mundo!');
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -54,13 +71,22 @@ app.use('/publicaciones', publicacionRoutes);
   try {
     await sequelize.authenticate();
     console.log('Connection has been established successfully.');
+=======
 
-    await sequelize.sync();
+// Define las asociaciones
+Usuario.hasOne(Docente, { foreignKey: 'id' });
+Docente.belongsTo(Usuario, { foreignKey: 'id' });
+>>>>>>> Jony
 
-    app.listen(PORT, () => {
-      console.log(`Servidor escuchando en el puerto ${PORT}`);
+Usuario.hasOne(Estudiante, { foreignKey: 'id' });
+Estudiante.belongsTo(Usuario, { foreignKey: 'id' });
+
+sequelize.sync({ force: false })
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Servidor corriendo en http://localhost:${PORT}`);
+        });
+    })
+    .catch(error => {
+        console.error('Error al sincronizar la base de datos:', error);
     });
-  } catch (error) {
-    console.error('Unable to connect to the database:', error);
-  }
-})();
