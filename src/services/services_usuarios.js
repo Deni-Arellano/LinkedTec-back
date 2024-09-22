@@ -51,7 +51,7 @@ const obtenerTodosLosUsuarios = async () => {
     const usuario = await Usuario.findByPk(id); // Busca el usuario por su ID
     if (!usuario) {
       throw new Error('Usuario no encontrado'); // Lanza un error si el usuario no existe
->>>>>>> louis-alamo
+>>>>>>> louis-alamoD
     }
     return usuario; // Retorna el usuario encontrado
   } catch (error) {

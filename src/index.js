@@ -3,9 +3,13 @@ const app = express();
 const sequelize = require('./config/database'); // Cambiado a la ruta correcta
 const port = 3000;
 
+const comentariosRoutes = require('./routes/routes_comentarios'); // Ajusta la ruta aquí
+const reclutadoresRoutes = require('./routes/routes_reclutadores'); 
 app.use(express.json());
 
+app.use('/publicaciones/comentarios', comentariosRoutes);
 
+app.use('/usuarios/reclutadores', reclutadoresRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
