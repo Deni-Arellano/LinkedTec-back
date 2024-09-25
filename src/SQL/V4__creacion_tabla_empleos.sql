@@ -1,4 +1,4 @@
-CREATE TABLE Empleos (
+CREATE TABLE empleos (
   id_empleo INT PRIMARY KEY AUTO_INCREMENT,
   titulo VARCHAR(255),
   empresa VARCHAR(255),
