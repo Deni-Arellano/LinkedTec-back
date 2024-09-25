@@ -37,6 +37,6 @@ router.get('/perfil/:id', obtenerReclutador);
  * @param {Object} res - El objeto de respuesta de Express.
  * @param {function} next - La función de middleware.
  */
-router.get('', obtenerTodosReclutadores);
+router.get('/info', obtenerTodosReclutadores);
 
 module.exports = router;
