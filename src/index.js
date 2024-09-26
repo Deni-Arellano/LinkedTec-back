@@ -1,10 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-require('dotenv').config();
 const sequelize = require('./config/database');
-const port = 3000;
+require('dotenv').config();
 
+// Rutas
 const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores');
 const egresadosRoutes = require('./routes/routes_egresados');
@@ -13,6 +12,9 @@ const routesDocentes = require('./routes/routes_docentes');
 const routesEstudiantes = require('./routes/routes_estudiantes');
 const routesUsuarios = require('./routes/routes_usuario');
 
+const app = express();
+const port = 3000;
+
 // Configuración de CORS para permitir solicitudes desde localhost:3001
 app.use(cors({
     origin: 'http://localhost:3001'
@@ -20,6 +22,7 @@ app.use(cors({
 
 app.use(express.json());
 
+// Definición de rutas
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
 app.use('/usuarios/egresados', egresadosRoutes);
@@ -33,6 +36,7 @@ app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
+// Sincronización de la base de datos y servidor
 sequelize.sync()
     .then(() => sequelize.authenticate())
     .then(() => {
