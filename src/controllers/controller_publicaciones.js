@@ -2,7 +2,9 @@ const {
   crearPublicacionService,
   obtenerTodasLasPublicacionesService,
   obtenerPublicacionesPorUsuarioService,
-  obtenerPublicacionPorIdService
+  obtenerPublicacionPorIdService,
+  actualizarPublicacionCompletaService,
+  actualizarPublicacionParcialService
 } = require('../services/services_publicaciones'); // Importa los servicios correspondientes
 
 /**
@@ -71,10 +73,60 @@ const obtenerTodasLasPublicaciones = async (req, res) => {
   }
 };
 
+/**
+ * Controlador para actualizar completamente una publicación (PUT).
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ */
+const actualizarPublicacionCompleta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const datosPublicacion = req.body;
+
+    const publicacionActualizada = await actualizarPublicacionCompletaService(id, datosPublicacion);
+
+    if (!publicacionActualizada) {
+      return res.status(404).json({ mensaje: 'Publicación no encontrada' });
+    }
+
+    res.json(publicacionActualizada);
+  } catch (error) {
+    if (error.message === 'Todos los campos son requeridos para una actualización completa') {
+      res.status(400).json({ mensaje: error.message });
+    } else {
+      res.status(500).json({ mensaje: 'Error al actualizar la publicación', error: error.message });
+    }
+  }
+};
+
+/**
+ * Controlador para actualizar parcialmente una publicación (PATCH).
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ */
+const actualizarPublicacionParcial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const datosPublicacion = req.body;
+
+    const publicacionActualizada = await actualizarPublicacionParcialService(id, datosPublicacion);
+
+    if (!publicacionActualizada) {
+      return res.status(404).json({ mensaje: 'Publicación no encontrada' });
+    }
+
+    res.json(publicacionActualizada);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al actualizar la publicación', error: error.message });
+  }
+};
+
 // Exporta las funciones para usarlas en otras partes de la aplicación
 module.exports = {
   crearPublicacion,
   obtenerPublicacionesPorUsuario,
   obtenerPublicacionPorId,
-  obtenerTodasLasPublicaciones
+  obtenerTodasLasPublicaciones,
+  actualizarPublicacionCompleta,
+  actualizarPublicacionParcial
 };

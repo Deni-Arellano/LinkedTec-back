@@ -44,5 +44,7 @@ const Publicacion = sequelize.define('Publicacion', {
   timestamps: false // Desactiva los timestamps automáticos
 });
 
+Publicacion.belongsTo(Usuario, { foreignKey: 'id_usuario', targetKey: 'id' });
+
 // Exporta el modelo para su uso en otras partes de la aplicación
 module.exports = Publicacion;

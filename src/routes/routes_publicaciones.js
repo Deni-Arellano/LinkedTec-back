@@ -3,7 +3,9 @@ const {
   crearPublicacion,
   obtenerPublicacionPorId,
   obtenerTodasLasPublicaciones,
-  obtenerPublicacionesPorUsuario
+  obtenerPublicacionesPorUsuario,
+  actualizarPublicacionCompleta,
+  actualizarPublicacionParcial
 } = require('../controllers/controller_publicaciones'); // Importa los controladores de publicaciones
 
 const router = express.Router(); // Crea un nuevo enrutador
@@ -24,13 +26,33 @@ router.get('/usuario/:id_usuario', obtenerPublicacionesPorUsuario); // Maneja la
  * Ruta para obtener una publicación específica por su ID.
  * Se espera que el ID de la publicación se pase como un parámetro en la URL.
  */
-router.get('/id/:id_publicacion', obtenerPublicacionPorId); // Maneja las solicitudes GET para obtener una publicación por ID
+router.get('/:id_publicacion', obtenerPublicacionPorId); // Maneja las solicitudes GET para obtener una publicación por ID
 
 /**
  * Ruta para obtener todas las publicaciones.
  * Responde con un arreglo de todas las publicaciones existentes.
  */
 router.get('/', obtenerTodasLasPublicaciones); // Maneja las solicitudes GET para obtener todas las publicaciones
+
+// Nuevas rutas para actualización
+
+/**
+ * Ruta para actualizar completamente una publicación (PUT).
+ * Se espera que el ID de la publicación se pase como un parámetro en la URL
+ * y los datos completos de la publicación en el cuerpo de la solicitud.
+ */
+router.put('/:id', actualizarPublicacionCompleta);
+
+/**
+ * Ruta para actualizar parcialmente una publicación (PATCH).
+ * Se espera que el ID de la publicación se pase como un parámetro en la URL
+ * y los datos parciales de la publicación en el cuerpo de la solicitud.
+ */
+router.patch('/:id', actualizarPublicacionParcial);
+
+//pendiente de eliminar
+//router.delete('/:id', eliminarPublicacion);
+
 
 // Exporta el enrutador para que pueda ser utilizado en otras partes de la aplicación
 module.exports = router;
