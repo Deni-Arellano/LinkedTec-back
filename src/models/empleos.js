@@ -30,7 +30,7 @@ Empleo.init({
     allowNull: false,
   },
   nivel_de_ingles: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.ENUM('Avanzado', 'Intermedio', 'Básico', 'No aplica'),
     allowNull: true,
   },
 }, {
