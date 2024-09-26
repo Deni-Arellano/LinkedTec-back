@@ -1,4 +1,4 @@
-const EmpleoService = require('../services/services_empleos');
+const EmpleoService = require('../services/services_empleos.js');
 
 // Obtener todos los empleos
 exports.getAllEmpleos = async (req, res) => {
