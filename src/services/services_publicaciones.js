@@ -6,14 +6,16 @@ const Publicacion = require('../models/publicaciones');
  * @returns {Promise<Object>} La nueva publicación creada.
  */
 const crearPublicacionService = async (datosPublicacion) => {
-  const { texto, imagen, id_usuario } = datosPublicacion; // Desestructura los datos de la publicación
+  const { descripcion, imagen, id_usuario } = datosPublicacion; // Desestructura los datos de la publicación
 
   // Crea una nueva publicación en la base de datos
   const nuevaPublicacion = await Publicacion.create({
-    texto,
+    descripcion,
     imagen,
     fecha: new Date(), // Establece la fecha actual
     id_usuario,
+    me_gusta: 0, // Inicializa me_gusta en 0
+    disgusta: 0 // Inicializa disgusta en 0
   });
 
   return nuevaPublicacion; // Devuelve la nueva publicación creada
