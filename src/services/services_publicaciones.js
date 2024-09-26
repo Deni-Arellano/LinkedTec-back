@@ -119,7 +119,6 @@ const actualizarPublicacionCompletaService = async (id_publicacion, datosPublica
  * @returns {Promise<Object|null>} La publicación actualizada o null si no existe.
  */
 
-
 const actualizarPublicacionParcialService = async (id_publicacion, datosPublicacion) => {
   try {
 
@@ -167,6 +166,26 @@ const actualizarPublicacionParcialService = async (id_publicacion, datosPublicac
   }
 };
 
+const eliminarPublicacionService = async (id_publicacion) => {
+  try {
+    const publicacion = await Publicacion.findByPk(id_publicacion);
+
+    if (!publicacion) {
+      console.log('Publicación no encontrada');
+      return null;
+    }
+
+    await publicacion.destroy();
+
+    console.log('Publicación eliminada exitosamente');
+    return publicacion;
+
+
+  } catch (error) {
+    console.error('Error al eliminar la publicación:', error);
+    throw error;
+  }
+};
 
 // Exporta las funciones para que puedan ser utilizadas en otros módulos
 module.exports = {
@@ -175,5 +194,6 @@ module.exports = {
   obtenerPublicacionPorIdService,
   obtenerTodasLasPublicacionesService,
   actualizarPublicacionCompletaService,
-  actualizarPublicacionParcialService
+  actualizarPublicacionParcialService,
+  eliminarPublicacionService
 };

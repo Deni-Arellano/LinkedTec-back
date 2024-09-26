@@ -4,7 +4,8 @@ const {
   obtenerPublicacionesPorUsuarioService,
   obtenerPublicacionPorIdService,
   actualizarPublicacionCompletaService,
-  actualizarPublicacionParcialService
+  actualizarPublicacionParcialService,
+  eliminarPublicacionService
 } = require('../services/services_publicaciones'); // Importa los servicios correspondientes
 
 /**
@@ -121,6 +122,22 @@ const actualizarPublicacionParcial = async (req, res) => {
   }
 };
 
+const eliminarPublicacion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const publicacionEliminada = await eliminarPublicacionService(id);
+
+    if (!publicacionEliminada) {
+      return res.status(404).json({ mensaje: 'Publicación no encontrada' });
+    }
+
+    res.json({ mensaje: 'Publicación eliminada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al eliminar la publicación', error: error.message });
+  }
+};
+
 // Exporta las funciones para usarlas en otras partes de la aplicación
 module.exports = {
   crearPublicacion,
@@ -128,5 +145,6 @@ module.exports = {
   obtenerPublicacionPorId,
   obtenerTodasLasPublicaciones,
   actualizarPublicacionCompleta,
-  actualizarPublicacionParcial
+  actualizarPublicacionParcial,
+  eliminarPublicacion
 };

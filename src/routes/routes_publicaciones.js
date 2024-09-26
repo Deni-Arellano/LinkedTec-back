@@ -5,7 +5,8 @@ const {
   obtenerTodasLasPublicaciones,
   obtenerPublicacionesPorUsuario,
   actualizarPublicacionCompleta,
-  actualizarPublicacionParcial
+  actualizarPublicacionParcial,
+  eliminarPublicacion // Asegúrate de que esta función esté definida e importada
 } = require('../controllers/controller_publicaciones'); // Importa los controladores de publicaciones
 
 const router = express.Router(); // Crea un nuevo enrutador
@@ -50,9 +51,8 @@ router.put('/:id', actualizarPublicacionCompleta);
  */
 router.patch('/:id', actualizarPublicacionParcial);
 
-//pendiente de eliminar
-//router.delete('/:id', eliminarPublicacion);
-
+// Ruta DELETE
+router.delete('/:id', eliminarPublicacion); // Asegúrate de que eliminarPublicacion esté definido
 
 // Exporta el enrutador para que pueda ser utilizado en otras partes de la aplicación
 module.exports = router;
