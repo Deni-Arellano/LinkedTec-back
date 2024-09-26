@@ -1,4 +1,6 @@
 const Publicacion = require('../models/publicaciones'); 
+const { Sequelize } = require('sequelize');
+const sequelize = require('../config/database');
 
 /**
  * Función para crear una nueva publicación.
@@ -6,14 +8,16 @@ const Publicacion = require('../models/publicaciones');
  * @returns {Promise<Object>} La nueva publicación creada.
  */
 const crearPublicacionService = async (datosPublicacion) => {
-  const { texto, imagen, id_usuario } = datosPublicacion; // Desestructura los datos de la publicación
+  const { descripcion, imagen, id_usuario } = datosPublicacion; // Desestructura los datos de la publicación
 
   // Crea una nueva publicación en la base de datos
   const nuevaPublicacion = await Publicacion.create({
-    texto,
+    descripcion,
     imagen,
     fecha: new Date(), // Establece la fecha actual
     id_usuario,
+    me_gusta: 0, // Inicializa me_gusta en 0
+    disgusta: 0 // Inicializa disgusta en 0
   });
 
   return nuevaPublicacion; // Devuelve la nueva publicación creada
@@ -53,10 +57,143 @@ const obtenerTodasLasPublicacionesService = async () => {
   return publicaciones; // Devuelve la lista de todas las publicaciones
 };
 
+/**
+ * Función para actualizar completamente una publicación (PUT).
+ * @param {number} id_publicacion - ID de la publicación a actualizar.
+ * @param {Object} datosPublicacion - Nuevos datos completos de la publicación.
+ * @returns {Promise<Object|null>} La publicación actualizada o null si no existe.
+ */
+const actualizarPublicacionCompletaService = async (id_publicacion, datosPublicacion) => {
+  try {
+
+    const publicacion = await Publicacion.findByPk(id_publicacion);
+
+    if (!publicacion) {
+      console.log('Publicación no encontrada');
+      return null;
+    }
+
+    
+    const { descripcion, imagen, id_usuario } = datosPublicacion;
+
+    if (!descripcion || !imagen || !id_usuario) {
+      throw new Error('Todos los campos son requeridos para una actualización completa');
+    }
+
+    const query = `
+      UPDATE publicaciones
+      SET descripcion = :descripcion,
+          imagen = :imagen,
+          id_usuario = :id_usuario,
+          fecha = NOW() 
+      WHERE id_publicacion = :id_publicacion
+    `;
+
+    const [results, metadata] = await sequelize.query(query, {
+      replacements: {
+        descripcion,
+        imagen,
+        id_usuario,
+        id_publicacion
+      }
+    });
+
+    
+    if (metadata.rowCount === 0) {
+      return null;
+    }
+
+    // Retorna la publicación actualizada (puedes volver a buscarla si necesitas los datos actualizados)
+    return await Publicacion.findByPk(id_publicacion);
+
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+/**
+ * Función para actualizar parcialmente una publicación (PATCH).
+ * @param {number} id_publicacion - ID de la publicación a actualizar.
+ * @param {Object} datosPublicacion - Datos parciales de la publicación a actualizar.
+ * @returns {Promise<Object|null>} La publicación actualizada o null si no existe.
+ */
+
+const actualizarPublicacionParcialService = async (id_publicacion, datosPublicacion) => {
+  try {
+
+    const publicacion = await Publicacion.findByPk(id_publicacion);
+
+    if (!publicacion) {
+      console.log('Publicación no encontrada');
+      return null;
+    }
+
+    
+    const { descripcion, imagen } = datosPublicacion;
+
+    if (!descripcion || !imagen) {
+      throw new Error('Tanto la descripción como la imagen son requeridos para esta actualización');
+    }
+
+    const query = `
+      UPDATE publicaciones
+      SET descripcion = :descripcion,
+          imagen = :imagen,
+          fecha = NOW()
+      WHERE id_publicacion = :id_publicacion
+    `;
+
+    const [results, metadata] = await sequelize.query(query, {
+      replacements: {
+        descripcion,
+        imagen,
+        id_publicacion
+      }
+    });
+
+    
+    if (metadata.rowCount === 0) {
+      console.log('No se pudo actualizar la publicación');
+      return null;
+    }
+
+    return await Publicacion.findByPk(id_publicacion);
+
+  } catch (error) {
+    console.error('Error al actualizar la publicación:', error);
+    throw error;
+  }
+};
+
+const eliminarPublicacionService = async (id_publicacion) => {
+  try {
+    const publicacion = await Publicacion.findByPk(id_publicacion);
+
+    if (!publicacion) {
+      console.log('Publicación no encontrada');
+      return null;
+    }
+
+    await publicacion.destroy();
+
+    console.log('Publicación eliminada exitosamente');
+    return publicacion;
+
+
+  } catch (error) {
+    console.error('Error al eliminar la publicación:', error);
+    throw error;
+  }
+};
+
 // Exporta las funciones para que puedan ser utilizadas en otros módulos
 module.exports = {
   crearPublicacionService,
   obtenerPublicacionesPorUsuarioService,
   obtenerPublicacionPorIdService,
-  obtenerTodasLasPublicacionesService
+  obtenerTodasLasPublicacionesService,
+  actualizarPublicacionCompletaService,
+  actualizarPublicacionParcialService,
+  eliminarPublicacionService
 };

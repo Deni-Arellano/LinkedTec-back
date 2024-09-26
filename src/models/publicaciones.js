@@ -10,7 +10,7 @@ const Publicacion = sequelize.define('Publicacion', {
     autoIncrement: true, 
     allowNull: false 
   },
-  texto: {
+  descripcion: {
     type: DataTypes.STRING(255), 
     allowNull: true 
   },
@@ -19,7 +19,7 @@ const Publicacion = sequelize.define('Publicacion', {
     allowNull: true 
   },
   fecha: {
-    type: DataTypes.DATEONLY,
+    type: DataTypes.DATE,
     allowNull: true 
   },
   id_usuario: {
@@ -43,6 +43,8 @@ const Publicacion = sequelize.define('Publicacion', {
   modelName: 'Publicacion', // Nombre del modelo
   timestamps: false // Desactiva los timestamps automáticos
 });
+
+Publicacion.belongsTo(Usuario, { foreignKey: 'id_usuario', targetKey: 'id' });
 
 // Exporta el modelo para su uso en otras partes de la aplicación
 module.exports = Publicacion;

@@ -14,14 +14,14 @@ const routesUsuarios = require('./routes/routes_usuario');
 
 const app = express();
 const port = 3000;
-
+const publicacionesRoutes = require('./routes/routes_publicaciones');
 // Configuración de CORS para permitir solicitudes desde localhost:3001
 app.use(cors({
     origin: 'http://localhost:3001'
 }));
 
 app.use(express.json());
-
+app.use('/publicaciones', publicacionesRoutes);
 // Definición de rutas
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
