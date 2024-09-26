@@ -47,5 +47,24 @@ const obtenerComentariosPorPublicacion = async (id_publicacion) => {
   }
 };
 
+const obtenerComentarioPorPublicacionYComentario = async (id_publicacion, id_comentario) => {
+  return await Comentario.findOne({
+      where: {
+          id_publicacion: id_publicacion,
+          id_comentario: id_comentario
+      },
+      include: [{
+          model: Usuario, // Asegúrate de que este es el nombre correcto de tu modelo
+          as: 'usuario', // Asegúrate de que el alias coincida con el definido en tu modelo
+          attributes: ['imagen_usuario', 'nombre']
+      }]
+  });
+};
 
-module.exports = { crearComentario, eliminarComentario, obtenerComentariosPorPublicacion };
+
+module.exports = { 
+  crearComentario, 
+  eliminarComentario, 
+  obtenerComentariosPorPublicacion,
+  obtenerComentarioPorPublicacionYComentario
+ };
