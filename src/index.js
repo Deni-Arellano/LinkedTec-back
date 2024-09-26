@@ -12,14 +12,14 @@ const empleosRoutes = require('./routes/routes_empleos');
 const routesDocentes = require('./routes/routes_docentes');
 const routesEstudiantes = require('./routes/routes_estudiantes');
 const routesUsuarios = require('./routes/routes_usuario');
-
+const publicacionesRoutes = require('./routes/routes_publicaciones');
 // Configuración de CORS para permitir solicitudes desde localhost:3001
 app.use(cors({
     origin: 'http://localhost:3001'
 }));
 
 app.use(express.json());
-
+app.use('/publicaciones', publicacionesRoutes);
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
 app.use('/usuarios/egresados', egresadosRoutes);
