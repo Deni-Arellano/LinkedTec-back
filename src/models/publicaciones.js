@@ -10,7 +10,7 @@ const Publicacion = sequelize.define('Publicacion', {
     autoIncrement: true, 
     allowNull: false 
   },
-  texto: {
+  descripcion: {
     type: DataTypes.STRING(255), 
     allowNull: true 
   },
@@ -19,7 +19,7 @@ const Publicacion = sequelize.define('Publicacion', {
     allowNull: true 
   },
   fecha: {
-    type: DataTypes.DATEONLY,
+    type: DataTypes.DATE,
     allowNull: true 
   },
   id_usuario: {
