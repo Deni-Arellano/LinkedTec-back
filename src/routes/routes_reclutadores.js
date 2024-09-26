@@ -3,7 +3,10 @@ const router = express.Router();
 const {
   crearReclutador,
   obtenerReclutador,
-  obtenerTodosReclutadores
+  obtenerTodosReclutadores,
+  obtenerUsuariosYReclutadores,
+  obtenerReclutadorPorId,
+  obtenerReclutadorDetalladoPorId
 } = require('../controllers/reclutadores_controllers');
 
 /**
@@ -37,6 +40,11 @@ router.get('/perfil/:id', obtenerReclutador);
  * @param {Object} res - El objeto de respuesta de Express.
  * @param {function} next - La función de middleware.
  */
-router.get('', obtenerTodosReclutadores);
+router.get('/info', obtenerTodosReclutadores);
+router.get('/', obtenerUsuariosYReclutadores);
 
+router.get('/:id/info', obtenerReclutadorPorId);
+
+
+router.get('/:id/', obtenerReclutadorDetalladoPorId);
 module.exports = router;

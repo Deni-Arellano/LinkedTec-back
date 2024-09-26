@@ -36,4 +36,5 @@ Reclutador.init({
 
 Reclutador.belongsTo(Usuario, { foreignKey: 'id' });
 
+
 module.exports = Reclutador;

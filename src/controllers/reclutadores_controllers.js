@@ -1,4 +1,4 @@
-const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio } = require('../services/services_reclutadores');
+const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio } = require('../services/services_reclutadores');
 
 /**
  * Controlador para crear un reclutador.
@@ -74,8 +74,94 @@ const obtenerTodosReclutadores = async (req, res) => {
   }
 };
 
+const obtenerUsuariosYReclutadores = async (req, res) => {
+  try {
+    const reclutadores = await obtenerTodosUsuariosYReclutadores();
+
+    // Procesamos la respuesta para obtener un formato adecuado
+    const response = reclutadores.map(reclutador => ({
+      id: reclutador.Usuario.id,
+      nombre: reclutador.Usuario.nombre,
+      apellido_paterno: reclutador.Usuario.apellido_paterno,
+      apellido_materno: reclutador.Usuario.apellido_materno,
+      correo: reclutador.Usuario.correo,
+      contraseña: reclutador.Usuario.contraseña,
+      fecha_nacimiento: reclutador.Usuario.fecha_nacimiento,
+      telefono: reclutador.Usuario.telefono,
+      sexo: reclutador.Usuario.sexo,
+      biografia: reclutador.Usuario.biografia,
+      role: reclutador.Usuario.role,
+      imagen_usuario: reclutador.Usuario.imagen_usuario,
+      nombre_empresa: reclutador.nombre_empresa,
+      sede: reclutador.sede,
+      giro: reclutador.giro
+    }));
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error al obtener usuarios y reclutadores:', error);
+    res.status(500).json({ message: 'Error al obtener usuarios y reclutadores', error: error.message });
+  }
+};
+const obtenerReclutadorPorId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const reclutador = await obtenerReclutadorPorIdServicio(id);
+
+    res.status(200).json({
+      id: reclutador.id,
+      nombre_empresa: reclutador.nombre_empresa,
+      sede: reclutador.sede,
+      giro: reclutador.giro
+    });
+  } catch (error) {
+    console.error('Error al obtener reclutador:', error);
+    res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
+  }
+};
+
+
+const obtenerReclutadorDetalladoPorId = async (req, res) => {
+  const { id } = req.params; // Asegúrate de que estás recibiendo el id correctamente
+  try {
+    const reclutador = await obtenerReclutadorDetalladoPorIdServicio(id);
+
+    if (!reclutador) {
+      return res.status(404).json({ message: 'Reclutador no encontrado' });
+    }
+
+    // Procesamos la respuesta para un formato adecuado
+    const response = {
+      id: reclutador.Usuario.id,
+      nombre: reclutador.Usuario.nombre,
+      apellido_paterno: reclutador.Usuario.apellido_paterno,
+      apellido_materno: reclutador.Usuario.apellido_materno,
+      correo: reclutador.Usuario.correo,
+      contraseña: reclutador.Usuario.contraseña,
+      fecha_nacimiento: reclutador.Usuario.fecha_nacimiento,
+      telefono: reclutador.Usuario.telefono,
+      sexo: reclutador.Usuario.sexo,
+      biografia: reclutador.Usuario.biografia,
+      role: reclutador.Usuario.role,
+      imagen_usuario: reclutador.Usuario.imagen_usuario,
+      nombre_empresa: reclutador.nombre_empresa,
+      sede: reclutador.sede,
+      giro: reclutador.giro
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error al obtener reclutador por ID:', error);
+    res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
+  }
+};
+
 module.exports = {
   crearReclutador,
   obtenerReclutador,
-  obtenerTodosReclutadores
+  obtenerTodosReclutadores,
+  obtenerUsuariosYReclutadores,
+  obtenerReclutadorPorId,
+  obtenerReclutadorDetalladoPorId
 };
