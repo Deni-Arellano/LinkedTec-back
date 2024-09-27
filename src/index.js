@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
+const ftpClient = require('./config/ftp');
 require('dotenv').config();
 
 // Rutas
@@ -11,18 +12,19 @@ const empleosRoutes = require('./routes/routes_empleos');
 const routesDocentes = require('./routes/routes_docentes');
 const routesEstudiantes = require('./routes/routes_estudiantes');
 const routesUsuarios = require('./routes/routes_usuario');
-
+const publicacionesRoutes = require('./routes/routes_publicaciones');
+const routesImagenes = require('./routes/routes_imagenes');
 const app = express();
 const port = 3000;
-const publicacionesRoutes = require('./routes/routes_publicaciones');
+
 // Configuración de CORS para permitir solicitudes desde localhost:3001
 app.use(cors({
     origin: 'http://localhost:3001'
 }));
 
+// Configuración de express para recibir y enviar datos en formato JSON
 app.use(express.json());
 app.use('/publicaciones', publicacionesRoutes);
-// Definición de rutas
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
 app.use('/usuarios/egresados', egresadosRoutes);
@@ -30,21 +32,41 @@ app.use('/empleos', empleosRoutes);
 app.use('/api/docentes', routesDocentes);
 app.use('/api/estudiantes', routesEstudiantes);
 app.use('/usuarios', routesUsuarios);
+app.use('/imagenes', routesImagenes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
-// Sincronización de la base de datos y servidor
+async function testFTPConnection() {
+  try {
+    await ftpClient.connect();
+    return true;
+  } catch (err) {
+    console.error('Error al probar la conexión FTP:', err.message);
+    return false;
+  } finally {
+    await ftpClient.disconnect();
+  }
+}
+
+// Sincronización de la base de datos, prueba FTP y servidor
 sequelize.sync()
     .then(() => sequelize.authenticate())
-    .then(() => {
+    .then(() => testFTPConnection())
+    .then((ftpSuccess) => {
         console.log('Conexión a la base de datos exitosa y modelos sincronizados.');
-        app.listen(port, () => {
-            console.log(`Servidor escuchando en http://localhost:${port}`);
-        });
+        if (ftpSuccess) {
+            app.listen(port, () => {
+                console.log(`Servidor escuchando en http://localhost:${port}`);
+            });
+        } else {
+            console.error('No se pudo iniciar el servidor debido a un error en la conexión FTP.');
+            process.exit(1);
+        }
     })
     .catch(err => {
-        console.error('No se pudo conectar a la base de datos o sincronizar los modelos:', err);
+        console.error('Error al iniciar la aplicación:', err);
+        process.exit(1);
     });
