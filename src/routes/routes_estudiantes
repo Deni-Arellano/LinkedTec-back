@@ -18,4 +18,6 @@ router.get('/:id', EstudianteController.getEstudianteById);
 // Nueva ruta para obtener el perfil del estudiante
 router.get('/perfil/:id', EstudianteController.getEstudiantePerfilById);
 
+router.get('/:id/info', EstudianteController.getEstudianteInfoById); 
+
 module.exports = router;

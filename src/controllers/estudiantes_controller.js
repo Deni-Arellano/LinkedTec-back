@@ -157,6 +157,26 @@ const getEstudiantePerfilById = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Función para obtener información específica del estudiante por ID
+const getEstudianteInfoById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const estudiante = await Estudiante.findOne({
+            where: { id: id },
+            attributes: ['id', 'no_control', 'carrera', 'semestre'] // Solo los atributos necesarios
+        });
+
+        if (!estudiante) {
+            return res.status(404).json({ error: "Estudiante no encontrado." });
+        }
+
+        res.status(200).json(estudiante);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Exportar funciones
 module.exports = {
     createEstudiante,
@@ -164,4 +184,5 @@ module.exports = {
     getEstudianteById,
     getAllEstudiantesInfo, // Exportar la nueva función
     getEstudiantePerfilById,
+    getEstudianteInfoById
 };
