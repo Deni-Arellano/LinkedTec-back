@@ -107,8 +107,31 @@ const getEstudianteById = async (req, res) => {
     }
 };
 
+// Función para obtener información específica de los estudiantes
+const getAllEstudiantesInfo = async (req, res) => {
+    try {
+        const estudiantes = await Estudiante.findAll({
+            include: [Usuario] // Incluye los datos del usuario asociado
+        });
+
+        const estudiantesConInfoUnica = estudiantes.map(estudiante => ({
+            id: estudiante.id,               // ID del estudiante
+            no_control: estudiante.no_control, // NO_CONTROL del estudiante
+            carrera: estudiante.carrera,       // CARRERA del estudiante
+            semestre: estudiante.semestre       // SEMESTRE del estudiante
+        }));
+
+        res.status(200).json(estudiantesConInfoUnica);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Exportar funciones
 module.exports = {
     createEstudiante,
     getAllEstudiantes,
-    getEstudianteById
+    getEstudianteById,
+    getAllEstudiantesInfo, // Exportar la nueva función
+    //getEstudiantePerfilById,
 };
