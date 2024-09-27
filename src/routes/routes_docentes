@@ -15,4 +15,10 @@ router.get('/info', DocenteController.getAllDocentesInfo); // Nueva ruta para in
 // Ruta para obtener un docente por ID
 router.get('/:id', DocenteController.getDocenteById);
 
+// Nueva ruta para obtener el perfil del docente (usando el ID del cuerpo de la solicitud)
+// Nueva ruta para obtener el perfil del docente por ID
+router.get('/perfil/:id', DocenteController.getDocentePerfilById);
+
+
+
 module.exports = router;

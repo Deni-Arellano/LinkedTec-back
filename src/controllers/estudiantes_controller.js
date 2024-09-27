@@ -45,6 +45,7 @@ const createEstudiante = async (req, res) => {
 };
 
 // Función para obtener todos los estudiantes
+// Función para obtener todos los estudiantes
 const getAllEstudiantes = async (req, res) => {
     try {
         const estudiantes = await Estudiante.findAll({
@@ -53,11 +54,13 @@ const getAllEstudiantes = async (req, res) => {
 
         const estudiantesCompletos = estudiantes.map(estudiante => ({
             id: estudiante.id, // ID del estudiante
+            no_control: estudiante.no_control, // No de control del estudiante
             nombre: estudiante.Usuario.nombre,
             apellido_paterno: estudiante.Usuario.apellido_paterno,
             apellido_materno: estudiante.Usuario.apellido_materno,
             rol: estudiante.Usuario.role,
-            carrera: estudiante.carrera,
+            carrera: estudiante.carrera, // Carrera del estudiante
+            semestre: estudiante.semestre, // Semestre del estudiante
             biografia: estudiante.Usuario.biografia,
             telefono: estudiante.Usuario.telefono,
             correo: estudiante.Usuario.correo,

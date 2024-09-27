@@ -128,11 +128,48 @@ const getAllDocentesInfo = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// Función para obtener el perfil del docente usando el ID del cuerpo de la solicitud
+// Función para obtener el perfil del docente
+// Función para obtener el perfil del docente
+const getDocentePerfilById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const docente = await Docente.findOne({
+            where: { id: id },
+            include: [Usuario] // Incluye los datos del usuario asociado
+        });
+
+        if (!docente) {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        }
+
+        // Perfil del docente
+        const perfilDocente = {
+            nombre: docente.Usuario.nombre,
+            apellido_paterno: docente.Usuario.apellido_paterno,
+            apellido_materno: docente.Usuario.apellido_materno,
+            rol: docente.Usuario.role,
+            academia: docente.academia,
+            biografia: docente.Usuario.biografia,
+            telefono: docente.Usuario.telefono,
+            correo: docente.Usuario.correo,
+            fecha_nacimiento: docente.Usuario.fecha_nacimiento,
+            sexo: docente.Usuario.sexo
+        };
+
+        res.status(200).json(perfilDocente);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
 
 module.exports = {
     createDocente,
     getAllDocentes,
     getDocenteById,
-    getAllDocentesInfo // Exportar la nueva función
+    getAllDocentesInfo, // Exportar la nueva función
+    getDocentePerfilById
 };
 
