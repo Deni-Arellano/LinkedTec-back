@@ -1,6 +1,10 @@
 const Empleo = require('../models/empleos');
 
-// Servicio para obtener todos los empleos
+/**
+ * @async
+ * Servicio para obtener todos los empleos.
+ * @returns {Promise<Object>} Devuelve un objeto con los empleos o un error.
+ */
 exports.obtenerTodosLosEmpleos = async () => {
   try {
     const empleos = await Empleo.findAll();
@@ -10,10 +14,14 @@ exports.obtenerTodosLosEmpleos = async () => {
   }
 };
 
-// Servicio para crear un nuevo empleo
+/**
+ * @async
+ * Servicio para crear un nuevo empleo.
+ * @param {Object} datosEmpleo - Los datos del nuevo empleo.
+ * @returns {Promise<Object>} Devuelve el empleo creado o un error.
+ */
 exports.crearEmpleo = async (datosEmpleo) => {
   try {
-    // Validaciones de campos
     const { titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles } = datosEmpleo;
 
     if (!titulo || titulo.length < 5 || titulo.length > 255) {
@@ -42,7 +50,12 @@ exports.crearEmpleo = async (datosEmpleo) => {
   }
 };
 
-// Servicio para obtener empleo por ID
+/**
+ * @async
+ * Servicio para obtener un empleo por ID.
+ * @param {number} id_empleo - El ID del empleo.
+ * @returns {Promise<Object>} Devuelve el empleo o un error.
+ */
 exports.obtenerEmpleoPorId = async (id_empleo) => {
   try {
     const empleo = await Empleo.findByPk(id_empleo);
@@ -55,7 +68,13 @@ exports.obtenerEmpleoPorId = async (id_empleo) => {
   }
 };
 
-// Servicio para editar un empleo
+/**
+ * @async
+ * Servicio para editar un empleo por ID.
+ * @param {number} id_empleo - El ID del empleo a editar.
+ * @param {Object} datosActualizados - Los nuevos datos del empleo.
+ * @returns {Promise<Object>} Devuelve el empleo actualizado o un error.
+ */
 exports.editarEmpleo = async (id_empleo, datosActualizados) => {
   try {
     const empleo = await Empleo.findByPk(id_empleo);
@@ -63,7 +82,6 @@ exports.editarEmpleo = async (id_empleo, datosActualizados) => {
       return { success: false, error: 'Empleo no encontrado' };
     }
 
-    // Validaciones de campos para edición
     const { titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles } = datosActualizados;
 
     if (titulo && (titulo.length < 5 || titulo.length > 255)) {
@@ -92,7 +110,12 @@ exports.editarEmpleo = async (id_empleo, datosActualizados) => {
   }
 };
 
-// Servicio para eliminar un empleo por ID
+/**
+ * @async
+ * Servicio para eliminar un empleo por ID.
+ * @param {number} id_empleo - El ID del empleo a eliminar.
+ * @returns {Promise<Object>} Devuelve un mensaje de éxito o un error.
+ */
 exports.eliminarEmpleo = async (id_empleo) => {
   try {
     const empleo = await Empleo.findByPk(id_empleo);
