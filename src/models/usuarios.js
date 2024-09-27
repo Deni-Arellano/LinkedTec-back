@@ -47,7 +47,6 @@ Usuario.init({
   role: {
     type: DataTypes.ENUM('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados'),
     allowNull: false, 
-    allowNull: false,
   },
   imagen_usuario: {
     type: DataTypes.STRING, // Tipo de dato para la imagen de usuario

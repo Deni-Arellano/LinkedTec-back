@@ -85,6 +85,9 @@ exports.editarEmpleo = async (id_empleo, datosActualizados) => {
       return { success: false, error: 'Empleo no encontrado' };
     }
 
+    // Extraer los datos del empleo a editar
+    const { titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles, id_usuario } = datosActualizados;
+
     // Validaciones
     if (!titulo || titulo.length < 5 || titulo.length > 255) {
       return { success: false, error: 'El título debe tener entre 5 y 255 caracteres' };
@@ -108,13 +111,13 @@ exports.editarEmpleo = async (id_empleo, datosActualizados) => {
       return { success: false, error: 'El id_usuario es requerido' };
     }
 
-    
     await empleo.update(datosActualizados);
     return { success: true, message: 'Empleo actualizado correctamente', data: empleo };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
+
 
 /**
  * @async

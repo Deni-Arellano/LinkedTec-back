@@ -181,7 +181,6 @@ exports.createEgresado = async (req, res) => {
     res.status(500).json({ message: 'Error al crear egresado y usuario', error: error.message });
   }
 };
-};
 
 /**
  * @async

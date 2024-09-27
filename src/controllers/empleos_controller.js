@@ -83,12 +83,14 @@ exports.updateEmpleo = async (req, res) => {
     return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden editar empleos' });
   }
 
+  // Editar el empleo utilizando el id_empleo de los parámetros
   const resultado = await EmpleoService.editarEmpleo(req.params.id_empleo, req.body);
   if (resultado.success) {
     return res.json({ message: resultado.message, data: resultado.data });
   }
   return res.status(400).json({ message: resultado.error });
 };
+
 
 // Controlador para eliminar un empleo por su ID
 /**
