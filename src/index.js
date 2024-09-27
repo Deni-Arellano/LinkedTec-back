@@ -15,8 +15,8 @@ app.get('/', (req, res) => {
 });
 
 // Usa las rutas importadas
-app.use('/api/docentes', routesDocentes);
-app.use('/api/estudiantes', routesEstudiantes);
+app.use('/usuarios/docentes', routesDocentes);
+app.use('/usuarios/estudiantes', routesEstudiantes);
 
 // Conectar a la base de datos y arrancar el servidor
 sequelize.sync() // Sincroniza los modelos con la base de datos

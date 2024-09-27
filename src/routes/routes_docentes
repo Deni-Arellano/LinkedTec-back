@@ -4,10 +4,13 @@ const router = express.Router();
 const DocenteController = require('../controllers/docentes_controller');
 
 // Ruta para crear un nuevo docente
-router.post('/', DocenteController.createDocente); // Cambiado a '/' sin /api/docentes
+router.post('/', DocenteController.createDocente);
 
 // Ruta para obtener todos los docentes
-router.get('/', DocenteController.getAllDocentes);
+router.get('/', DocenteController.getAllDocentes); // Esta ya existe
+
+// Nueva ruta para obtener todos los docentes con su información única
+router.get('/info', DocenteController.getAllDocentesInfo); // Nueva ruta para información única
 
 // Ruta para obtener un docente por ID
 router.get('/:id', DocenteController.getDocenteById);
