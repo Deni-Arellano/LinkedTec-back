@@ -1,8 +1,15 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
+/**
+ * Modelo de datos de Empleo
+ */
 class Empleo extends Model {}
 
+/**
+ * Inicialización del modelo de Empleo.
+ * Definición de los atributos del empleo, tales como ID, título, empresa, salario, descripción, ubicación y nivel de inglés.
+ */
 Empleo.init({
   id_empleo: {
     type: DataTypes.INTEGER,
@@ -32,6 +39,10 @@ Empleo.init({
   nivel_de_ingles: {
     type: DataTypes.ENUM('Avanzado', 'Intermedio', 'Básico', 'No aplica'),
     allowNull: true,
+  },
+  id_usuario: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
 }, {
   sequelize,

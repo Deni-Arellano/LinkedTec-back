@@ -2,19 +2,29 @@ const express = require('express');
 const router = express.Router();
 const empleosController = require('../controllers/empleos_controller');
 
-// Obtener todos los empleos
+/** 
+ * Ruta para crear empleos
+ */
 router.get('/', empleosController.getAllEmpleos);
 
-// Crear un nuevo empleo
+/** 
+ * Ruta para obtener todos los empleos
+ */
 router.post('/', empleosController.createEmpleo);
 
-// Obtener un empleo por ID
+/**
+ * Ruta para obtener un empleo por ID
+ */
 router.get('/:id_empleo', empleosController.getEmpleoPorId);
 
-// Editar un empleo por ID (actualizar)
+/**
+ * Ruta para editar un empleo
+ */
 router.put('/:id_empleo', empleosController.updateEmpleo);
 
-// Eliminar un empleo por ID
+/**
+ * Ruta para eliminar un empleo
+ */
 router.delete('/:id_empleo', empleosController.deleteEmpleo);
 
 module.exports = router;

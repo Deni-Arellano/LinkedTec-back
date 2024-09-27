@@ -1,6 +1,14 @@
 const EmpleoService = require('../services/services_empleos.js');
+const UsuarioService = require('../services/services_usuarios.js'); 
 
-// Obtener todos los empleos
+// Controlador para obtener todos los empleos
+/**
+ * @async
+ * Obtiene todos los empleos de la base de datos.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con todos los empleos o un error.
+ */
 exports.getAllEmpleos = async (req, res) => {
   const resultado = await EmpleoService.obtenerTodosLosEmpleos();
   if (resultado.success) {
@@ -9,22 +17,47 @@ exports.getAllEmpleos = async (req, res) => {
   return res.status(500).json({ message: 'Error al obtener empleos', error: resultado.error });
 };
 
-// Crear un nuevo empleo
+// Controlador para crear un nuevo empleo
+/**
+ * @async
+ * Crea un nuevo empleo en la base de datos.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con el empleo creado o un error.
+ */
 exports.createEmpleo = async (req, res) => {
-  const role = req.body.role || 'Empresa';
+  const { id_usuario, titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles } = req.body;
 
-  if (role !== 'Empresa') {
-    return res.status(403).json({ message: 'Solo los usuarios con rol Empresa pueden crear empleos' });
+  // Verificar el rol del usuario
+  const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
+  if (!usuario || usuario.role !== 'Reclutadores') {
+    return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden crear empleos' });
   }
 
-  const resultado = await EmpleoService.crearEmpleo(req.body);
+  const resultado = await EmpleoService.crearEmpleo({
+    id_usuario,
+    titulo,
+    empresa,
+    salario,
+    descripcion,
+    ubicacion,
+    nivel_de_ingles,
+  });
+
   if (resultado.success) {
     return res.status(201).json(resultado.data);
   }
   return res.status(400).json({ message: resultado.error });
 };
 
-// Obtener un empleo por ID
+// Controlador para obtener un empleo por su ID
+/**
+ * @async
+ * Obtiene un empleo específico por su ID.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con el empleo encontrado o un error.
+ */
 exports.getEmpleoPorId = async (req, res) => {
   const resultado = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
   if (resultado.success) {
@@ -33,12 +66,21 @@ exports.getEmpleoPorId = async (req, res) => {
   return res.status(404).json({ message: resultado.error });
 };
 
-// Editar un empleo
+// Controlador para editar un empleo
+/**
+ * @async
+ * Edita un empleo existente en la base de datos.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con el mensaje de éxito y los datos actualizados o un error.
+ */
 exports.updateEmpleo = async (req, res) => {
-  const role = req.body.role || 'Empresa';
+  const { id_usuario } = req.body;
 
-  if (role !== 'Empresa') {
-    return res.status(403).json({ message: 'Solo los usuarios con rol Empresa pueden editar empleos' });
+  // Verificar el rol del usuario
+  const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
+  if (!usuario || usuario.role !== 'Reclutadores') {
+    return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden editar empleos' });
   }
 
   const resultado = await EmpleoService.editarEmpleo(req.params.id_empleo, req.body);
@@ -48,7 +90,14 @@ exports.updateEmpleo = async (req, res) => {
   return res.status(400).json({ message: resultado.error });
 };
 
-// Eliminar un empleo por ID
+// Controlador para eliminar un empleo por su ID
+/**
+ * @async
+ * Elimina un empleo específico por su ID.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con un mensaje de éxito o un error.
+ */
 exports.deleteEmpleo = async (req, res) => {
   const resultado = await EmpleoService.eliminarEmpleo(req.params.id_empleo);
   if (resultado.success) {
