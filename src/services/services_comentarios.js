@@ -1,54 +1,70 @@
 const Comentario = require('../models/comentarios');
+const Usuario = require('../models/usuarios'); // Asegúrate de tener el modelo de usuario
 
-// Obtener todos los comentarios
-exports.getAllComentarios = async () => {
-  try {
-    return await Comentario.findAll();
-  } catch (error) {
-    throw new Error('Error al obtener los comentarios: ' + error.message);
-  }
+// Crear un comentario
+const crearComentario = async (data) => {
+    return await Comentario.create(data);
 };
 
-// Obtener un comentario por ID
-exports.getComentarioPorId = async (id_comentario) => {
-  try {
-    const comentario = await Comentario.findByPk(id_comentario);
-    if (!comentario) {
-      throw new Error('Comentario no encontrado');
-    }
-    return comentario;
-  } catch (error) {
-    throw new Error('Error al obtener el comentario: ' + error.message);
-  }
+// Eliminar un comentario
+const eliminarComentario = async (id) => {
+    return await Comentario.destroy({
+        where: { id_comentario: id }
+    });
 };
 
-// Crear un nuevo comentario
-exports.createComentario = async (data) => {
+const sequelize = require('../config/database'); // Asegúrate de importar correctamente tu instancia de sequelize
+const obtenerComentariosPorPublicacion = async (id_publicacion) => {
   try {
-    const { texto, id_usuario, id_publicacion } = data;
-    const fecha = new Date();
+    const comentarios = await Comentario.findAll({
+      where: { id_publicacion },
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario', // Debe coincidir con la asociación
+          attributes: ['imagen_usuario', 'nombre', 'apellido_paterno', 'apellido_materno']
+        }
+      ]
+    });
 
-    if (!texto || !id_usuario || !id_publicacion) {
-      throw new Error('Faltan datos obligatorios');
-    }
-
-    return await Comentario.create({ texto, fecha, id_usuario, id_publicacion });
-  } catch (error) {
-    throw new Error('Error al crear el comentario: ' + error.message);
-  }
-};
-
-// Eliminar un comentario por ID
-exports.deleteComentario = async (id_comentario) => {
-  try {
-    const comentario = await Comentario.findByPk(id_comentario);
-    if (!comentario) {
-      throw new Error('Comentario no encontrado');
+    if (comentarios.length === 0) {
+      throw new Error('No se encontraron comentarios para esta publicación');
     }
 
-    await comentario.destroy();
-    return { message: 'Comentario eliminado exitosamente' };
+    // Transformar los comentarios para incluir la información del usuario
+    const comentariosConUsuario = comentarios.map(comentario => {
+      return {
+        texto: comentario.texto, // Asegúrate de que 'texto' es el nombre correcto de la columna
+        fecha: comentario.fecha,
+        usuario: comentario.usuario // Esto incluirá la información del usuario
+      };
+    });
+
+    return comentariosConUsuario;
   } catch (error) {
-    throw new Error('Error al eliminar el comentario: ' + error.message);
+    console.error('Error en obtenerComentariosPorPublicacion:', error);
+    throw new Error('Error al obtener comentarios');
   }
 };
+
+const obtenerComentarioPorPublicacionYComentario = async (id_publicacion, id_comentario) => {
+  return await Comentario.findOne({
+      where: {
+          id_publicacion: id_publicacion,
+          id_comentario: id_comentario
+      },
+      include: [{
+          model: Usuario, // Asegúrate de que este es el nombre correcto de tu modelo
+          as: 'usuario', // Asegúrate de que el alias coincida con el definido en tu modelo
+          attributes: ['imagen_usuario', 'nombre']
+      }]
+  });
+};
+
+
+module.exports = { 
+  crearComentario, 
+  eliminarComentario, 
+  obtenerComentariosPorPublicacion,
+  obtenerComentarioPorPublicacionYComentario
+ };
