@@ -40,6 +40,10 @@ Empleo.init({
     type: DataTypes.ENUM('Avanzado', 'Intermedio', 'Básico', 'No aplica'),
     allowNull: true,
   },
+  id_usuario: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'Empleo',

@@ -42,7 +42,7 @@ Usuario.init({
     type: DataTypes.TEXT,
   },
   role: {
-    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado'),
+    type: DataTypes.ENUM('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados'),
     allowNull: false,
   },
   imagen_usuario: {

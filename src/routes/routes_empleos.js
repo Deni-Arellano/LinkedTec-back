@@ -3,7 +3,7 @@ const router = express.Router();
 const empleosController = require('../controllers/empleos_controller');
 
 /** 
- * Ruta para ecrear mpleos
+ * Ruta para crear empleos
  */
 router.get('/', empleosController.getAllEmpleos);
 
