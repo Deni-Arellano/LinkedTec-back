@@ -20,4 +20,6 @@ router.get('/perfil/:id', EstudianteController.getEstudiantePerfilById);
 
 router.get('/:id/info', EstudianteController.getEstudianteInfoById); 
 
+router.get('/:id/', EstudianteController.getEstudianteRolById); //
+
 module.exports = router;
