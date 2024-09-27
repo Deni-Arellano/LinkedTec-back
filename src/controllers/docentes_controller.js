@@ -189,6 +189,41 @@ const getinfoDocenteById = async (req, res) => {
     }
 };
 
+// Función para obtener toda la información del usuario y su rol mediante ID
+const getUsuariRolById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const docente = await Docente.findOne({
+            where: { id: id }, // Usar el ID del docente
+            include: [Usuario] // Incluye los datos del usuario asociado
+        });
+
+        if (!docente) {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        }
+
+        const respuesta = {
+            id: docente.id,
+            nombre: docente.Usuario.nombre,
+            apellido_paterno: docente.Usuario.apellido_paterno,
+            apellido_materno: docente.Usuario.apellido_materno,
+            rol: docente.Usuario.role,
+            biografia: docente.Usuario.biografia,
+            telefono: docente.Usuario.telefono,
+            correo: docente.Usuario.correo,
+            fecha_nacimiento: docente.Usuario.fecha_nacimiento,
+            sexo: docente.Usuario.sexo,
+            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
+            numero_empleado: docente.numero_empleado,
+            academia: docente.academia,
+        };
+
+        res.status(200).json(respuesta);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 
 module.exports = {
@@ -197,6 +232,7 @@ module.exports = {
     getDocenteById,
     getAllDocentesInfo, // Exportar la nueva función
     getDocentePerfilById,
-    getinfoDocenteById
+    getinfoDocenteById,
+    getUsuariRolById
 };
 

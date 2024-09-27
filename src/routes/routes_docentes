@@ -21,6 +21,6 @@ router.get('/perfil/:id', DocenteController.getDocentePerfilById);
 
 router.get('/:id/info', DocenteController.getinfoDocenteById); // Nueva ruta para obtener el rol
 
-
+router.get('/:id/', DocenteController.getUsuariRolById); // Nueva ruta
 
 module.exports = router;
