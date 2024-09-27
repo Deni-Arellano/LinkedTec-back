@@ -127,11 +127,41 @@ const getAllEstudiantesInfo = async (req, res) => {
     }
 };
 
+const getEstudiantePerfilById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const estudiante = await Estudiante.findOne({
+            where: { id: id },
+            include: [Usuario] // Incluye los datos del usuario asociado
+        });
+
+        if (!estudiante) {
+            return res.status(404).json({ error: "Estudiante no encontrado." });
+        }
+
+        // Perfil del estudiante
+        const perfilEstudiante = {
+            nombre: estudiante.Usuario.nombre,
+            apellido_paterno: estudiante.Usuario.apellido_paterno,
+            apellido_materno: estudiante.Usuario.apellido_materno,
+            rol : estudiante.Usuario.role,
+            biografia: estudiante.Usuario.biografia,
+            telefono: estudiante.Usuario.telefono,
+            correo: estudiante.Usuario.correo,
+            fecha_nacimiento: estudiante.Usuario.fecha_nacimiento,
+            sexo: estudiante.Usuario.sexo
+        };
+
+        res.status(200).json(perfilEstudiante);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 // Exportar funciones
 module.exports = {
     createEstudiante,
     getAllEstudiantes,
     getEstudianteById,
     getAllEstudiantesInfo, // Exportar la nueva función
-    //getEstudiantePerfilById,
+    getEstudiantePerfilById,
 };
