@@ -163,6 +163,32 @@ const getDocentePerfilById = async (req, res) => {
     }
 };
 
+// Función para obtener la información única del docente por ID
+const getinfoDocenteById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const docente = await Docente.findOne({
+            where: { id: id }, // Buscar por ID del docente
+        });
+
+        if (!docente) {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        }
+
+        // Retornar solo los datos solicitados
+        const docenteInfoUnica = {
+            id: docente.id,
+            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
+            numero_empleado: docente.numero_empleado,
+            academia: docente.academia
+        };
+
+        res.status(200).json(docenteInfoUnica);
+    } catch (error) {
+        res.status(500).json({ error: "Error en la consulta." });
+    }
+};
+
 
 
 module.exports = {
@@ -170,6 +196,7 @@ module.exports = {
     getAllDocentes,
     getDocenteById,
     getAllDocentesInfo, // Exportar la nueva función
-    getDocentePerfilById
+    getDocentePerfilById,
+    getinfoDocenteById
 };
 
