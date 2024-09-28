@@ -24,7 +24,7 @@ const createDocente = async (req, res) => {
 
         // Retornar todos los datos
         const docenteCompleto = {
-            id: nuevoDocente.id,
+            id: nuevoDocente.id, // ID del docente
             nombre: nuevoUsuario.nombre,
             apellido_paterno: nuevoUsuario.apellido_paterno,
             apellido_materno: nuevoUsuario.apellido_materno,
@@ -54,7 +54,7 @@ const getAllDocentes = async (req, res) => {
         });
 
         const docentesCompletos = docentes.map(docente => ({
-            id: docente.id,
+            id: docente.id, // ID del docente
             nombre: docente.Usuario.nombre,
             apellido_paterno: docente.Usuario.apellido_paterno,
             apellido_materno: docente.Usuario.apellido_materno,
@@ -81,7 +81,7 @@ const getDocenteById = async (req, res) => {
         const id = req.params.id;
         const docente = await Docente.findOne({
             where: { id: id },
-            include: [Usuario]
+            include: [Usuario] // Incluye los datos del usuario asociado
         });
 
         if (!docente) {
@@ -89,7 +89,7 @@ const getDocenteById = async (req, res) => {
         }
 
         const docenteCompleto = {
-            id: docente.id,
+            id: docente.id, // ID del docente
             nombre: docente.Usuario.nombre,
             apellido_paterno: docente.Usuario.apellido_paterno,
             apellido_materno: docente.Usuario.apellido_materno,
@@ -109,6 +109,7 @@ const getDocenteById = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 const getAllDocentesInfo = async (req, res) => {
     try {

@@ -1,5 +1,8 @@
 require('dotenv').config(); // Carga las variables de entorno del archivo .env
+
 const { Sequelize } = require('sequelize');
+
+require('dotenv').config();
 
 const sequelize = new Sequelize(
   process.env.DB_DATABASE,
@@ -11,13 +14,16 @@ const sequelize = new Sequelize(
   }
 );
 
+module.exports = sequelize;
+
+
 // Probar la conexión
 sequelize.authenticate()
   .then(() => {
-    console.log('Conexión a la base de datos establecida con éxito.');
+    console.log('Connection has been established successfully.');
   })
   .catch(err => {
-    console.error('No se pudo conectar a la base de datos:', err);
+    console.error('Unable to connect to the database:', err);
   });
 
 module.exports = sequelize;
