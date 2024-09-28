@@ -1,5 +1,6 @@
 const Docente = require('../models/docentes');
 const Usuario = require('../models/usuarios');
+const { docenteSchema } = require('../middlewares/validations/validaciones_docentes');
 
 // Función para crear un nuevo docente
 const createDocente = async (req, res) => {
@@ -9,6 +10,14 @@ const createDocente = async (req, res) => {
         // Verifica si los datos de 'usuario' y 'docente' existen
         if (!usuario || !docente) {
             return res.status(400).json({ error: "El cuerpo de la solicitud está incompleto." });
+        }
+
+        const { error: docenteError } = docenteSchema.validate(docente);
+
+        if (docenteError) {
+            return res.status(400).json({
+                error: docenteError.details[0].message
+            });
         }
 
         // Crear el nuevo usuario
