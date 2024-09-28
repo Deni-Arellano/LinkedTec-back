@@ -7,7 +7,7 @@ exports.uploadImage = async (req, res) => {
     }
 
     try {
-        const result = await imageService.uploadImage(req.file);
+        const result = await imagenesService.uploadImage(req.file);
         res.status(200).json(result);
     } catch (error) {
         console.error('Error en el controlador al subir la imagen:', error);
