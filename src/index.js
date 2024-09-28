@@ -1,11 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
-const routesDocentes = require('./routes/routes_docentes'); // Importa las rutas de docentes
-const routesEstudiantes = require('./routes/routes_estudiantes'); // Importa las rutas de estudiantes
-
-
-
 const ftpClient = require('./config/ftp');
 require('dotenv').config();
 
@@ -34,21 +29,15 @@ app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
 app.use('/usuarios/egresados', egresadosRoutes);
 app.use('/empleos', empleosRoutes);
-app.use('/api/docentes', routesDocentes);
-app.use('/api/estudiantes', routesEstudiantes);
+app.use('/usuarios/docentes', routesDocentes);
+app.use('/usuarios/estudiantes', routesEstudiantes);
 app.use('/usuarios', routesUsuarios);
 app.use('/imagenes', routesImagenes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.send('¡Hola, Mundo!');
+    res.send('¡Hola, Mundo!');
 });
-
-// Usa las rutas importadas
-app.use('/usuarios/docentes', routesDocentes);
-app.use('/usuarios/estudiantes', routesEstudiantes);
-
-// Conectar a la base de datos y arrancar el servidor
 
 async function testFTPConnection() {
   try {
@@ -80,4 +69,4 @@ sequelize.sync()
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
         process.exit(1);
-    });
+    });

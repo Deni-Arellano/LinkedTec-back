@@ -1,4 +1,3 @@
-// routes/routes_estudiantes.js
 const express = require('express');
 const router = express.Router();
 const EstudianteController = require('../controllers/estudiantes_controller');
