@@ -22,7 +22,7 @@ const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
       sexo: usuarioData.sexo,
       biografia: usuarioData.biografia,
       fecha_nacimiento: usuarioData.fecha_nacimiento,
-      role: 'Empleador',
+      role: 'Reclutadores',
       imagen_usuario: usuarioData.imagen_usuario
     });
 
