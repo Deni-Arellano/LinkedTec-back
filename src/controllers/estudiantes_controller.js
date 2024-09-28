@@ -1,5 +1,6 @@
 const Estudiante = require('../models/estudiantes');
 const Usuario = require('../models/usuarios');
+const {estudianteSchema} = require('../middlewares/validations/validaciones_estudiantes');
 
 // Función para crear un nuevo estudiante
 const createEstudiante = async (req, res) => {
@@ -9,6 +10,14 @@ const createEstudiante = async (req, res) => {
         // Verifica si los datos de 'usuario' y 'estudiante' existen
         if (!usuario || !estudiante) {
             return res.status(400).json({ error: "El cuerpo de la solicitud está incompleto." });
+        }
+
+        const { error: estudianteError } = estudianteSchema.validate(estudiante);
+
+        if (estudianteError) {
+            return res.status(400).json({
+                error: estudianteError.details[0].message
+            });
         }
 
         // Crear el nuevo usuario
