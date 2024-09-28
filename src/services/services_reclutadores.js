@@ -22,7 +22,7 @@ const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
       sexo: usuarioData.sexo,
       biografia: usuarioData.biografia,
       fecha_nacimiento: usuarioData.fecha_nacimiento,
-      role: 'Reclutadores',
+      role: 'Empleador',
       imagen_usuario: usuarioData.imagen_usuario
     });
 
@@ -59,8 +59,9 @@ const obtenerReclutadorServicio = async (id) => {
       where: { id },
       include: [
         {
-          model: Usuario, 
-          attributes: ['nombre', 'apellido_paterno', 'apellido_materno', 'correo', 'telefono', 'fecha_nacimiento', 'sexo', 'role']
+          model: Usuario,
+          attributes: ['nombre', 'apellido_paterno', 'apellido_materno', 'correo', 'telefono', 'fecha_nacimiento', 'sexo', 'role'],
+          // Asegúrate de que la asociación se haga con la clave foránea correcta
         }
       ]
     });
@@ -92,8 +93,80 @@ const obtenerTodosReclutadoresServicio = async () => {
   }
 };
 
+
+const obtenerTodosUsuariosYReclutadores = async () => {
+  try {
+    const reclutadores = await Reclutador.findAll({
+      include: [
+        {
+          model: Usuario,
+          attributes: ['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'correo', 'contraseña', 'fecha_nacimiento', 'telefono', 'sexo', 'biografia', 'role', 'imagen_usuario']
+        }
+      ]
+    });
+    return reclutadores;
+  } catch (error) {
+    console.error('Error en obtenerTodosUsuariosYReclutadores:', error);
+    throw new Error('Error al obtener todos los reclutadores');
+  }
+};
+const obtenerReclutadorPorIdServicio = async (id) => {
+  try {
+    const reclutador = await Reclutador.findOne({
+      where: { id }
+    });
+
+    if (!reclutador) {
+      throw new Error('Reclutador no encontrado');
+    }
+
+    return reclutador;
+  } catch (error) {
+    console.error('Error en obtenerReclutadorPorIdServicio:', error);
+    throw new Error('Error al obtener reclutador');
+  }
+};
+
+const obtenerReclutadorDetalladoPorIdServicio = async (id) => {
+  try {
+    const reclutador = await Reclutador.findOne({
+      where: { id },
+      include: {
+        model: Usuario,
+        attributes: [
+          'id', 
+          'nombre', 
+          'apellido_paterno', 
+          'apellido_materno', 
+          'correo', 
+          'contraseña', 
+          'fecha_nacimiento', 
+          'telefono', 
+          'sexo', 
+          'biografia', 
+          'role', 
+          'imagen_usuario'
+        ]
+      }
+    });
+
+    return reclutador;
+  } catch (error) {
+    console.error('Error al obtener reclutador por ID en el servicio:', error);
+    throw error; // Lanzamos el error para que sea manejado por el controlador
+  }
+};
+
 module.exports = {
+  obtenerReclutadorDetalladoPorIdServicio,
+};
+
+module.exports = {
+
   crearReclutadorServicio,
   obtenerReclutadorServicio,
-  obtenerTodosReclutadoresServicio 
+  obtenerTodosReclutadoresServicio,
+  obtenerTodosUsuariosYReclutadores,
+  obtenerReclutadorPorIdServicio,
+  obtenerReclutadorDetalladoPorIdServicio
 };
