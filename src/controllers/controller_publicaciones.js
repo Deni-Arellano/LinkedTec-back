@@ -8,7 +8,11 @@ const {
   eliminarPublicacionService
 } = require('../services/services_publicaciones'); // Importa los servicios correspondientes
 
+const { validarPublicacion } = require('../middlewares/validations/validaciones_publicaciones');
+
+
 /**
+ * 
  * Crea una nueva publicación.
  * @param {Object} req - El objeto de la solicitud HTTP.
  * @param {Object} res - El objeto de la respuesta HTTP.
@@ -16,6 +20,12 @@ const {
  */
 const crearPublicacion = async (req, res) => {
   try {
+
+    const { error } = await validarPublicacion(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
     const nuevaPublicacion = await crearPublicacionService(req.body); // Llama al servicio para crear la publicación
     res.status(201).json(nuevaPublicacion); // Responde con la nueva publicación
   } catch (error) {
