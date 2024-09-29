@@ -1,6 +1,8 @@
 const Joi = require('joi');
+const sequelize = require('../../config/database');
 
-const validarRegistroUsuario = (data) => {
+
+const validarRegistroUsuario =  async (data) => {
   const schema = Joi.object({
     nombre: Joi.string().min(2).max(255).required().messages({
       'string.base': 'El nombre debe ser una cadena de texto.',
@@ -48,9 +50,10 @@ const validarRegistroUsuario = (data) => {
       'string.min': 'La imagen debe tener al menos 2 caracteres.',
       'string.max': 'La imagen debe tener menos de 255 caracteres.',
     }),
-    fecha_nacimiento: Joi.date().required().messages({
+    fecha_nacimiento: Joi.date().less('now').required().messages({
       'date.base': 'La fecha de nacimiento debe ser una fecha válida.',
-      'any.required': 'La fecha de nacimiento es requerida.'
+      'any.required': 'La fecha de nacimiento es requerida.',
+      'date.less': 'La fecha de nacimiento debe ser menor a la fecha actual.'
     }),
     telefono: Joi.string().min(10).max(15).required().messages({
       'string.base': 'El teléfono debe ser una cadena de texto.',
@@ -72,9 +75,59 @@ const validarRegistroUsuario = (data) => {
     }),
   });
 
+  // Validar si el correo ya existe en la base de datos
+  try {
+     await validarCorreoExistente(data.correo);
+  } catch (error) {
+    return { error: { details: [{ message: error.message }] } };
+  }
+
   return schema.validate(data, { abortEarly: false });
 };
 
+const validarCorreoExistente = async (correo) => {
+    const results = await sequelize.query(`SELECT * FROM usuarios WHERE correo = ?`, {
+      replacements: [correo],
+      type: sequelize.QueryTypes.SELECT
+    });
+  
+    // results será undefined si no se encuentran resultados
+    if (results.length > 0) {
+      throw new Error('El correo ya está registrado.');
+    }
+  };
+  
+
+const validarConsultaUsuario = async (data) => {
+
+    try {
+        await validarUsuarioExistente(data.id);
+
+    } catch (error) {
+        return { error: { details: [{ message: error.message }] } };
+    }
+
+    return {error: null}
+
+}
+
+const validarUsuarioExistente = async (id) => {
+    const results = await sequelize.query(`SELECT * FROM usuarios WHERE id = ?`, {
+      replacements: [id],
+      type: sequelize.QueryTypes.SELECT
+    });
+  
+    if (!results || results.length === 0) {
+      throw new Error('El usuario no existe. Compruebe si el ID es correcto o que cumpla con lo siguiente: ID: Debe ser un número entero positivo. ');
+    }
+  }
+  
+
+
+
 module.exports = {
-  validarRegistroUsuario
-};
+    validarRegistroUsuario,
+    validarConsultaUsuario,
+    validarUsuarioExistente,
+    validarCorreoExistente
+}
