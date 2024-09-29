@@ -45,9 +45,20 @@ class FTPClient {
         console.error('Error al descargar archivo:', err);
         throw err;
     }
-}
+    
+  }
 
-  // Añade más métodos según necesites (descargar, listar archivos, etc.)
+  async searchFile(remotePath) {
+    try {
+      const file = await this.client.list(remotePath);
+      return file;
+    } catch (err) {
+      console.error('Error al buscar archivo:', err);
+      throw err;
+    }
+  }
+
+
 }
 
 module.exports = new FTPClient();
