@@ -1,5 +1,8 @@
 const EmpleoService = require('../services/services_empleos.js');
 const UsuarioService = require('../services/services_usuarios.js'); 
+const { validarEmpleo } = require('../middlewares/validations/validaciones_empleos');
+
+
 
 // Controlador para obtener todos los empleos
 /**
@@ -25,8 +28,25 @@ exports.getAllEmpleos = async (req, res) => {
  * @param {Object} res - El objeto de respuesta HTTP.
  * @returns {Promise<void>} Responde con el empleo creado o un error.
  */
+
+
+
+
+
+
+
+
+
+
+
 exports.createEmpleo = async (req, res) => {
   const { id_usuario, titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles } = req.body;
+
+  // Validar los datos del empleo
+  const error = validarEmpleo(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
 
   // Verificar el rol del usuario
   const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
@@ -50,6 +70,15 @@ exports.createEmpleo = async (req, res) => {
   return res.status(400).json({ message: resultado.error });
 };
 
+
+
+
+
+
+
+
+
+
 // Controlador para obtener un empleo por su ID
 /**
  * @async
@@ -65,6 +94,18 @@ exports.getEmpleoPorId = async (req, res) => {
   }
   return res.status(404).json({ message: resultado.error });
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Controlador para editar un empleo
 /**
@@ -90,6 +131,18 @@ exports.updateEmpleo = async (req, res) => {
   }
   return res.status(400).json({ message: resultado.error });
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Controlador para eliminar un empleo por su ID
