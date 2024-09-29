@@ -81,8 +81,6 @@ const obtenerUsuarioPorId = async (id) => {
       ...usuario,
       ...infoAdicional[0] // Asegúrate de obtener el primer elemento del array si es necesario
     };
-    console.log(infoAdicional);
-    console.log(resultadoFinal);
 
     return resultadoFinal; // Retorna el objeto combinado
   } catch (error) {
