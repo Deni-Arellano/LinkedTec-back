@@ -1,4 +1,7 @@
 const usuarioService = require('../services/services_usuarios');
+const { validarRegistroUsuario, validarConsultaUsuario } = require('../middlewares/validations/validaciones_usuarios');
+
+
 
 /**
  * Crea un nuevo usuario en la base de datos.
@@ -7,13 +10,13 @@ const usuarioService = require('../services/services_usuarios');
  */
 const crearUsuario = async (req, res) => {
   try {
-    // Extrae los campos del cuerpo de la solicitud
     const { nombre, apellido_paterno, apellido_materno, correo, contraseña, fecha_nacimiento, telefono, sexo, biografia, role, imagen_usuario } = req.body;
 
-    // Validación de campos obligatorios
-    if (!nombre || !apellido_paterno || !correo || !contraseña || !role) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    const {error} = await validarRegistroUsuario(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
+
 
     // Llama al servicio de usuariospara crear un nuevo usuario
     const nuevoUsuario = await usuarioService.crearUsuario({
@@ -32,6 +35,7 @@ const crearUsuario = async (req, res) => {
 
     // Responde con el nuevo usuario creado
     res.status(201).json(nuevoUsuario);
+
   } catch (error) {
     // Manejo de errores
     res.status(500).json({ error: error.message });
@@ -45,7 +49,19 @@ const crearUsuario = async (req, res) => {
  */
 const obtenerUsuarioPorId = async (req, res) => {
   try {
-    const { id } = req.params; // Extrae el ID de los parámetros de la solicitud
+    const { id } = req.params; 
+
+    data = {
+      id: id
+    }
+
+    const {error} = await validarConsultaUsuario(data);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+      
+    }
+
+
     const usuario = await usuarioService.obtenerUsuarioPorId(id); // Llama al servicio para obtener el usuario
     res.status(200).json(usuario); // Responde con la información del usuario
   } catch (error) {
