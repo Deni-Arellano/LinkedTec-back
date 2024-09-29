@@ -1,4 +1,5 @@
 const imagenesService = require('../services/services_imagenes');
+const {validarImagenNoExistente} = require('../middlewares/validations/validaciones_imagenes');
 const path = require('path');
 
 exports.uploadImage = async (req, res) => {
@@ -19,12 +20,20 @@ exports.uploadImage = async (req, res) => {
 exports.getImage = async (req, res) => {
     try {
         const { fileName } = req.params;
+
+        try {
+            await validarImagenNoExistente(fileName);
+        } catch (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
         const { url, file } = await imagenesService.downloadImage(fileName);
         
         const contentType = getContentType(fileName);
         
         res.contentType(contentType);
         res.send(file);
+
     } catch (error) {
         console.error('Error al obtener la imagen:', error);
         res.status(500).send('Error al obtener la imagen');
