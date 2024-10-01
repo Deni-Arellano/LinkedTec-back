@@ -9,6 +9,8 @@ const {
 } = require('../services/services_publicaciones'); // Importa los servicios correspondientes
 
 const { validarPublicacion } = require('../middlewares/validations/validaciones_publicaciones');
+const { validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
+const {validarImagenExistente} = require('../middlewares/validations/validaciones_imagenes');
 
 
 /**
@@ -26,10 +28,23 @@ const crearPublicacion = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const nuevaPublicacion = await crearPublicacionService(req.body); // Llama al servicio para crear la publicación
-    res.status(201).json(nuevaPublicacion); // Responde con la nueva publicación
+    await validarUsuarioExistente(req.body.id_usuario);
+    await validarImagenExistente(req.body.imagen);
+
+
+    const nuevaPublicacion = await crearPublicacionService(req.body); 
+    res.status(201).json(nuevaPublicacion); 
+    
   } catch (error) {
-    console.error(error); // Registra el error en la consola
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    } else if (error.name === 'ImageNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    }
+
     res.status(500).json({ mensaje: 'Error al crear la publicación' }); // Responde con un mensaje de error
   }
 };
