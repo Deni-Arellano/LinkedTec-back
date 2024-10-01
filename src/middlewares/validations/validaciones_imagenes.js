@@ -1,5 +1,5 @@
 const FTPClient = require('../../config/ftp');
-
+const FileNotFoundError = require('../exceptions/FileNotFoundError');
 
 const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se vuelva a subir otra imagen igual 
 
@@ -11,20 +11,26 @@ const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se
     }
 }
 
-const validarImagenNoExistente = async (nombreArchivo) => { // Comprobamos si la imagen que pasaron si existe
+const validarImagenExistente = async (nombreArchivo) => { // Comprobamos si la imagen que pasaron si existe
 
-    await FTPClient.connect(); //Abrimos la coneccion FTP
-    console.log("Nombre del archivo: " + nombreArchivo);
+    await FTPClient.connect(); 
     const path = `/imagenes/${nombreArchivo}`;
     try {
         await FTPClient.searchFile(path);
 
     } catch (error) {
-        throw new Error('El archivo no existe.');
+
+        if (error instanceof FileNotFoundError) {
+            throw new Error('El archivo no existe.');
+        }
+
+        throw new Error('Error: ' + error.message);
+
+    } finally {
+        await FTPClient.disconnect();
 
     }
 
-    await FTPClient.disconnect();
     return {value: null};
 
 }
@@ -55,6 +61,6 @@ const validarPesoImagen = (nombreArchivo) => {
 
 module.exports = {
 
-    validarImagenNoExistente,
+    validarImagenExistente,
     validarExtension
 }
