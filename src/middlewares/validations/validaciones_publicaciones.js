@@ -39,17 +39,14 @@ const validarPublicacion = async(data) => {
         }),
     });
 
-    try {
-        await validarUsuarioExistente(data.id_usuario);
-
-    } catch (error) {
-        return { error: { details: [{ message: error.message }] } };
-    }
 
     return schema.validate(data);
 
 
 }
+
+
+
 
 module.exports = {
     validarPublicacion
