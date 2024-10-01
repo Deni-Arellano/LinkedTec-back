@@ -1,5 +1,5 @@
 const usuarioService = require('../services/services_usuarios');
-const { validarRegistroUsuario, validarConsultaUsuario } = require('../middlewares/validations/validaciones_usuarios');
+const { validarRegistroUsuario, validarUsuarioExistente, validarCorreoExistente, validarUsuariosExistentes } = require('../middlewares/validations/validaciones_usuarios');
 
 
 
@@ -12,13 +12,18 @@ const crearUsuario = async (req, res) => {
   try {
     const { nombre, apellido_paterno, apellido_materno, correo, contraseña, fecha_nacimiento, telefono, sexo, biografia, role, imagen_usuario } = req.body;
 
-    const {error} = await validarRegistroUsuario(req.body);
+    const { error } = await validarRegistroUsuario(req.body);
+
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
 
-    // Llama al servicio de usuariospara crear un nuevo usuario
+    await validarCorreoExistente(correo);
+    
+
+
+    //Si no hay errores, se crea el usuario
     const nuevoUsuario = await usuarioService.crearUsuario({
       nombre,
       apellido_paterno,
@@ -33,14 +38,27 @@ const crearUsuario = async (req, res) => {
       imagen_usuario
     });
 
-    // Responde con el nuevo usuario creado
+    // Retorna el usuario creado
     res.status(201).json(nuevoUsuario);
 
   } catch (error) {
-    // Manejo de errores
-    res.status(500).json({ error: error.message });
+
+    if (error.name === 'EmailExistsError') {
+      return res.status(400).json({ error: error.message });
+    }
+
+
+
+    res.status(500).json({ error: error.message});
+    
   }
 };
+
+
+
+
+
+
 
 /**
  * Obtiene un usuario por su ID.
@@ -49,26 +67,34 @@ const crearUsuario = async (req, res) => {
  */
 const obtenerUsuarioPorId = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
 
     data = {
       id: id
     }
 
-    const {error} = await validarConsultaUsuario(data);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-      
-    }
-
+    await validarUsuarioExistente(id);
 
     const usuario = await usuarioService.obtenerUsuarioPorId(id); // Llama al servicio para obtener el usuario
     res.status(200).json(usuario); // Responde con la información del usuario
+
   } catch (error) {
-    // Manejo de errores
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    }
+
+
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
+
+
+
 
 /**
  * Obtiene todos los usuarios de la base de datos.
@@ -78,14 +104,28 @@ const obtenerUsuarioPorId = async (req, res) => {
 const obtenerTodosLosUsuarios = async (req, res) => {
   try {
     const usuarios = await usuarioService.obtenerTodosLosUsuarios(); // Llama al servicio para obtener todos los usuarios
+
+    await validarUsuariosExistentes(usuarios);
+    
+
+
     res.status(200).json(usuarios); // Responde con la lista de usuarios
   } catch (error) {
-    // Manejo de errores
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    }
+
     res.status(500).json({ error: error.message });
   }
 };
 
-// Exporta las funciones para usarlas en otras partes de la aplicación
+
+
+
+
+
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
