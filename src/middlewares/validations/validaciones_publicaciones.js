@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const {validarUsuarioExistente} = require('./validaciones_usuarios');
 const {sequelize} = require('../../config/database');
+const PublicationNotFoundError = require('../exceptions/PublicationNotFoundError');
 
 const validarPublicacion = async(data) => {
 
@@ -45,9 +46,20 @@ const validarPublicacion = async(data) => {
 
 }
 
+const validarPublicacionExistente = async (id) => {
+    const publicacion = await sequelize.query('SELECT * FROM publicaciones WHERE id = :id',
+        {
+            replacements: { id: id },
+            type: sequelize.QueryTypes.SELECT
+        });
 
+    if (publicacion.length === 0) {
+        throw new PublicationNotFoundError();
+    }
+}
 
 
 module.exports = {
-    validarPublicacion
+    validarPublicacion,
+    validarPublicacionExistente
 };
