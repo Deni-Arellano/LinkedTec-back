@@ -2,8 +2,7 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 const UserNotFoundError = require('../exceptions/UserNotFoundError');
 const UserExistsError = require('../exceptions/UserExistsError');
-const EmailExistsError = require('../exceptions/EmailExistsError');
-
+const EmailExistsError = require('../exceptions/EmailExistsError')
 
 const validarRegistroUsuario =  async (data) => {
 
@@ -83,6 +82,7 @@ const validarRegistroUsuario =  async (data) => {
 
 };
 
+//Busca si el correo ya esta en uso
 const validarCorreoExistente = async (correo) => {
     const results = await sequelize.query(`SELECT * FROM usuarios WHERE correo = ?`, {
       replacements: [correo],
@@ -95,20 +95,6 @@ const validarCorreoExistente = async (correo) => {
     }
   };
   
-
-const validarConsultaUsuario = async (data) => {
-
-    try {
-        await validarUsuarioExistente(data.id);
-
-    } catch (error) {
-        return { error: { details: [{ message: error.message }] } };
-    }
-
-    return {error: null}
-
-}
-
 //Buscar si el usuario existe o no
 const validarUsuarioExistente = async (id) => {
 
@@ -135,13 +121,13 @@ const validarUsuarioEnUso = async (id) => {
     if (results.length > 0) {
       throw new UserExistsError();
     }
-  }
+}
 
 
 
 module.exports = {
     validarRegistroUsuario,
-    validarConsultaUsuario,
+    validarUsuarioEnUso,
     validarUsuarioExistente,
     validarCorreoExistente
 }
