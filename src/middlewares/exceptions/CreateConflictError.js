@@ -1,5 +1,5 @@
 class CreateConflictError extends Error {
-    constructor(message = 'Hubo un error de creación') {
+    constructor(message = 'Error al crear el recurso') {
         super(message);
         this.name = 'CreateConflictError';
         this.statusCode = 409; 
