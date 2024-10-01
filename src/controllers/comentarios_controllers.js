@@ -1,7 +1,7 @@
 const Comentario = require('../models/comentarios'); // Asegúrate de que sea Comentario
 const Usuario = require('../models/usuarios'); // Asegúrate de importar el modelo Usuario
 const { obtenerComentariosPorPublicacion: obtenerComentariosPorPublicacionServicio } = require('../services/services_comentarios');
-
+const { validarComentario } = require('../middlewares/validations/validaciones_comentarios');
 // Función para obtener todos los comentarios de una publicación
 const obtenerComentarios = async (req, res) => {
     const { id } = req.params; 
@@ -23,13 +23,25 @@ const obtenerComentarios = async (req, res) => {
     }
 };
 
-// Función para crear un nuevo comentario
 const crearComentario = async (req, res) => {
-    const { id } = req.params; // ID de la publicación
-    const { texto, id_usuario } = req.body; // Asegúrate de que el cuerpo de la solicitud tenga estos campos
+    const { texto, id_usuario, fecha } = req.body; // Extraer todos los campos del cuerpo
+    const id_publicacion = req.params.id; // ID de la publicación
+
+    // Validar los datos del comentario
+    const { error } = validarComentario({ texto, id_usuario, fecha, id_publicacion });
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message }); // Manejo de errores de validación
+    }
 
     try {
-        const nuevoComentario = await Comentario.create({ texto, id_usuario, id_publicacion: id });
+        // Verificar si el usuario existe
+        const usuarioExistente = await Usuario.findOne({ where: { id: id_usuario } });
+        if (!usuarioExistente) {
+            return res.status(404).json({ message: 'El usuario no existe.' });
+        }
+
+        // Crear el nuevo comentario
+        const nuevoComentario = await Comentario.create({ texto, id_usuario, fecha, id_publicacion });
         res.status(201).json(nuevoComentario);
     } catch (error) {
         console.error('Error al crear comentario:', error);
@@ -93,5 +105,5 @@ module.exports = {
     obtenerComentarios,
     crearComentario,
     eliminarComentario,
-    obtenerComentarioPorPublicacionYComentario // Exporta esta nueva función
+    obtenerComentarioPorPublicacionYComentario 
 };

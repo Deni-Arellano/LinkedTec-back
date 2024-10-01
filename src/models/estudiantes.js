@@ -16,22 +16,22 @@ Estudiante.init({
         unique: true
     },
     carrera: {
-        type: DataTypes.ENUM('IE', 'ISC', 'II', 'IA', 'CP', 'IGE'),
+        type: DataTypes.STRING,
         allowNull: false
     },
     semestre: {
-        type: DataTypes.ENUM('I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'),
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     // No se incluye id_usuario
 }, {
     sequelize,
     modelName: 'Estudiante',
-    tableName: 'estudiantes',
+    tableName: 'Estudiantes',
     timestamps: false
 });
 
 // Definir la asociación
-Estudiante.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' });
+Estudiante.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' }); // Usar 'id' como clave foránea
 
 module.exports = Estudiante;

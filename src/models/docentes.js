@@ -26,11 +26,11 @@ Docente.init({
 }, {
     sequelize,
     modelName: 'Docente',
-    tableName: 'docentes',
+    tableName: 'Docentes', // Para asegurarnos de que esté usando el nombre correcto de la tabla
     timestamps: false // Desactiva las marcas de tiempo
 });
 
 // Definir la asociación
-Docente.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' }); // Usar 'id' como clave foránea
+Docente.belongsTo(Usuario, { foreignKey: 'id', targetKey: 'id' }); // Mapeo de 'id' de Docente a 'id' de Usuario
 
 module.exports = Docente;
