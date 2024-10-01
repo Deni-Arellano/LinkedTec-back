@@ -4,6 +4,8 @@ const usuarioService = require('../services/services_usuarios');
 const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
+const { validateEgresado } = require('../middlewares/validations/validaciones_egresados');
+
 
 /**
  * @async
@@ -134,6 +136,7 @@ exports.getEgresadoWithUserInfoById = async (req, res) => {
   }
 };
 
+
 /**
  * @async
  * Controlador para crear un nuevo egresado y usuario.
@@ -143,6 +146,12 @@ exports.getEgresadoWithUserInfoById = async (req, res) => {
  */
 exports.createEgresado = async (req, res) => {
   const { usuario, egresado } = req.body;
+
+  // Validar el objeto egresado
+  const error = validateEgresado(egresado);
+  if (error) {
+    return res.status(400).json({ message: error.message });
+  }
 
   try {
     const existingUser = await Usuario.findOne({ where: { correo: usuario.correo } });
@@ -181,6 +190,7 @@ exports.createEgresado = async (req, res) => {
     res.status(500).json({ message: 'Error al crear egresado y usuario', error: error.message });
   }
 };
+
 
 /**
  * @async
