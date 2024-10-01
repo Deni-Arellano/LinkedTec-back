@@ -124,10 +124,18 @@ const validarUsuarioEnUso = async (id) => {
 }
 
 
+const validarUsuariosExistentes = async (usuarios) => {
+
+  if (usuarios.length === 0) {
+    throw new UserNotFoundError('No se encontraron usuarios.');
+  }
+}
+
 
 module.exports = {
     validarRegistroUsuario,
     validarUsuarioEnUso,
     validarUsuarioExistente,
-    validarCorreoExistente
+    validarCorreoExistente,
+    validarUsuariosExistentes
 }
