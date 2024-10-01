@@ -2,6 +2,7 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 
 
+
 const validarRegistroUsuario =  async (data) => {
   const schema = Joi.object({
     nombre: Joi.string().min(2).max(255).required().messages({
@@ -78,6 +79,7 @@ const validarRegistroUsuario =  async (data) => {
   // Validar si el correo ya existe en la base de datos
   try {
      await validarCorreoExistente(data.correo);
+
   } catch (error) {
     return { error: { details: [{ message: error.message }] } };
   }
