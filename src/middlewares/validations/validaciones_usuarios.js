@@ -1,9 +1,12 @@
 const Joi = require('joi');
 const sequelize = require('../../config/database');
-
+const UserNotFoundError = require('../exceptions/UserNotFoundError');
+const UserExistsError = require('../exceptions/UserExistsError');
+const EmailExistsError = require('../exceptions/EmailExistsError');
 
 
 const validarRegistroUsuario =  async (data) => {
+
   const schema = Joi.object({
     nombre: Joi.string().min(2).max(255).required().messages({
       'string.base': 'El nombre debe ser una cadena de texto.',
@@ -76,15 +79,8 @@ const validarRegistroUsuario =  async (data) => {
     }),
   });
 
-  // Validar si el correo ya existe en la base de datos
-  try {
-     await validarCorreoExistente(data.correo);
-
-  } catch (error) {
-    return { error: { details: [{ message: error.message }] } };
-  }
-
   return schema.validate(data, { abortEarly: false });
+
 };
 
 const validarCorreoExistente = async (correo) => {
@@ -93,9 +89,9 @@ const validarCorreoExistente = async (correo) => {
       type: sequelize.QueryTypes.SELECT
     });
   
-    // results será undefined si no se encuentran resultados
     if (results.length > 0) {
-      throw new Error('El correo ya está registrado.');
+      throw new EmailExistsError();
+
     }
   };
   
@@ -113,17 +109,33 @@ const validarConsultaUsuario = async (data) => {
 
 }
 
+//Buscar si el usuario existe o no
 const validarUsuarioExistente = async (id) => {
+
+    const results = await sequelize.query(`SELECT * FROM usuarios WHERE id = ?`, {
+      replacements: [id],
+      type: sequelize.QueryTypes.SELECT
+    });
+
+
+  
+    if (!results || results.length === 0) {
+      throw new UserNotFoundError('No se encontro el usuario, verifique que el id pertenezca a un usuario existente.');
+
+    }
+}
+
+//Buscar si el usuario ya esta en uso
+const validarUsuarioEnUso = async (id) => {
     const results = await sequelize.query(`SELECT * FROM usuarios WHERE id = ?`, {
       replacements: [id],
       type: sequelize.QueryTypes.SELECT
     });
   
-    if (!results || results.length === 0) {
-      throw new Error('El usuario no existe. Compruebe si el ID es correcto o que cumpla con lo siguiente: ID: Debe ser un número entero positivo. ');
+    if (results.length > 0) {
+      throw new UserExistsError();
     }
-}
-  
+  }
 
 
 
