@@ -122,7 +122,7 @@ const validarUsuarioExistente = async (id) => {
     if (!results || results.length === 0) {
       throw new Error('El usuario no existe. Compruebe si el ID es correcto o que cumpla con lo siguiente: ID: Debe ser un número entero positivo. ');
     }
-  }
+}
   
 
 
