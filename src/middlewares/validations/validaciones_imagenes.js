@@ -1,5 +1,6 @@
 const FTPClient = require('../../config/ftp');
 
+
 const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se vuelva a subir otra imagen igual 
 
     const path = `/imagenes/${nombreArchivo}`;
@@ -29,8 +30,31 @@ const validarImagenNoExistente = async (nombreArchivo) => { // Comprobamos si la
 }
 
 
+const validarExtension = (nombreArchivo) => {
+
+    const extensionesPermitidas = ['jpg', 'jpeg', 'png'];
+    const extension = nombreArchivo.split('.').pop();
+
+    if (!extensionesPermitidas.includes(extension)) {
+        throw new Error('La extensión del archivo no es válida.');
+    }
+    return {value: null};
+}
+
+const validarPesoImagen = (nombreArchivo) => {
+    const pesoMaximo = 5 * 1024 * 1024; // 10 MB en bytes
+    const pesoArchivo = nombreArchivo.size;
+
+    if (pesoArchivo > pesoMaximo) {
+        throw new Error('El tamaño del archivo excede el límite permitido.');
+    }
+
+    return {value: null};
+
+}
 
 module.exports = {
 
-    validarImagenNoExistente
+    validarImagenNoExistente,
+    validarExtension
 }
