@@ -1,9 +1,9 @@
 const ftp = require('basic-ftp');
 
-const FileNotFoundError = require('../exceptions/FileNotFoundError');
-const FileDownloadError = require('../exceptions/FileDownloadError');
-const FileUploadError = require('../exceptions/FileUploadError');
-const ConexionFtpError = require('../exceptions/ConexionFtpError');
+const FileNotFoundError = require('../middlewares/exceptions/FileNotFoundError');
+const FileDownloadError = require('../middlewares/exceptions/FileDownloadError');
+const FileUploadError = require('../middlewares/exceptions/FileUploadError');
+const ConexionFtpError = require('../middlewares/exceptions/ConexionFtpError');
 
 require('dotenv').config();
 
