@@ -1,4 +1,5 @@
 const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio } = require('../services/services_reclutadores');
+const { validarReclutador } = require('../middlewares/validations/validaciones_reclutadores');
 
 /**
  * Controlador para crear un reclutador.
@@ -11,6 +12,12 @@ const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutad
 const crearReclutador = async (req, res) => {
   const { usuario, reclutador } = req.body;
 
+ 
+  const { error } = validarReclutador(reclutador);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message }); 
+  }
+
   try {
     const result = await crearReclutadorServicio(usuario, reclutador);
     res.status(201).json(result);
@@ -19,6 +26,7 @@ const crearReclutador = async (req, res) => {
     res.status(500).json({ message: 'Error al crear reclutador', error: error.message });
   }
 };
+
 
 /**
  * Controlador para obtener un reclutador por su ID.
@@ -78,7 +86,6 @@ const obtenerUsuariosYReclutadores = async (req, res) => {
   try {
     const reclutadores = await obtenerTodosUsuariosYReclutadores();
 
-    // Procesamos la respuesta para obtener un formato adecuado
     const response = reclutadores.map(reclutador => ({
       id: reclutador.Usuario.id,
       nombre: reclutador.Usuario.nombre,
