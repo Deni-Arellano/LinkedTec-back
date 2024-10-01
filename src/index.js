@@ -29,8 +29,8 @@ app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
 app.use('/usuarios/egresados', egresadosRoutes);
 app.use('/empleos', empleosRoutes);
-app.use('/api/docentes', routesDocentes);
-app.use('/api/estudiantes', routesEstudiantes);
+app.use('/usuarios/docentes', routesDocentes);
+app.use('/usuarios/estudiantes', routesEstudiantes);
 app.use('/usuarios', routesUsuarios);
 app.use('/imagenes', routesImagenes);
 
@@ -69,4 +69,4 @@ sequelize.sync()
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
         process.exit(1);
-    });
+    });

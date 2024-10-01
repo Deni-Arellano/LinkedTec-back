@@ -1,4 +1,3 @@
-// Importa las dependencias necesarias
 const { Model, DataTypes } = require('sequelize'); 
 const sequelize = require('../config/database'); 
 
@@ -45,7 +44,7 @@ Usuario.init({
     type: DataTypes.TEXT, 
   },
   role: {
-    type: DataTypes.ENUM('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados'),
+    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado'), // Tipo de dato para el rol con opciones limitadas
     allowNull: false, 
   },
   imagen_usuario: {
@@ -59,4 +58,4 @@ Usuario.init({
 });
 
 // Exporta el modelo para su uso en otras partes de la aplicación
-module.exports = Usuario;
+module.exports = Usuario;
