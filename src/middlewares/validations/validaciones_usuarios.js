@@ -103,8 +103,6 @@ const validarUsuarioExistente = async (id) => {
       type: sequelize.QueryTypes.SELECT
     });
 
-
-  
     if (!results || results.length === 0) {
       throw new UserNotFoundError('No se encontro el usuario, verifique que el id pertenezca a un usuario existente.');
 
@@ -123,7 +121,7 @@ const validarUsuarioEnUso = async (id) => {
     }
 }
 
-
+//Valida si hay usuarios existentes
 const validarUsuariosExistentes = async (usuarios) => {
 
   if (usuarios.length === 0) {
