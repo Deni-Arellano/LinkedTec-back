@@ -29,11 +29,13 @@ const crearPublicacionService = async (datosPublicacion) => {
  * @returns {Promise<Array>} Lista de publicaciones del usuario.
  */
 const obtenerPublicacionesPorUsuarioService = async (id_usuario) => {
+  
   // Busca todas las publicaciones que pertenecen al usuario indicado
   const publicaciones = await Publicacion.findAll({
     where: { id_usuario }
   });
   return publicaciones; // Devuelve la lista de publicaciones
+
 };
 
 /**
@@ -65,7 +67,6 @@ const obtenerTodasLasPublicacionesService = async () => {
  */
 const actualizarPublicacionCompletaService = async (id_publicacion, datosPublicacion) => {
   try {
-
     const publicacion = await Publicacion.findByPk(id_publicacion);
 
     if (!publicacion) {
@@ -73,40 +74,33 @@ const actualizarPublicacionCompletaService = async (id_publicacion, datosPublica
       return null;
     }
 
-    
     const { descripcion, imagen, id_usuario } = datosPublicacion;
 
-    if (!descripcion || !imagen || !id_usuario) {
+    // Verificamos si todos los campos necesarios están presentes
+    if (descripcion === undefined || imagen === undefined || id_usuario === undefined) {
       throw new Error('Todos los campos son requeridos para una actualización completa');
     }
 
-    const query = `
-      UPDATE publicaciones
-      SET descripcion = :descripcion,
-          imagen = :imagen,
-          id_usuario = :id_usuario,
-          fecha = NOW() 
-      WHERE id_publicacion = :id_publicacion
-    `;
-
-    const [results, metadata] = await sequelize.query(query, {
-      replacements: {
-        descripcion,
-        imagen,
-        id_usuario,
-        id_publicacion
-      }
+    // Actualizamos la publicación usando el modelo Sequelize
+    const [numFilasActualizadas] = await Publicacion.update({
+      descripcion,
+      imagen,
+      id_usuario,
+      fecha: Sequelize.literal('NOW()')
+    }, {
+      where: { id_publicacion }
     });
 
-    
-    if (metadata.rowCount === 0) {
+    if (numFilasActualizadas === 0) {
+      console.log('No se pudo actualizar la publicación');
       return null;
     }
 
-    // Retorna la publicación actualizada (puedes volver a buscarla si necesitas los datos actualizados)
+    // Retornamos la publicación actualizada
     return await Publicacion.findByPk(id_publicacion);
 
   } catch (error) {
+    console.error('Error al actualizar la publicación:', error);
     throw error;
   }
 };
@@ -121,7 +115,6 @@ const actualizarPublicacionCompletaService = async (id_publicacion, datosPublica
 
 const actualizarPublicacionParcialService = async (id_publicacion, datosPublicacion) => {
   try {
-
     const publicacion = await Publicacion.findByPk(id_publicacion);
 
     if (!publicacion) {
@@ -129,31 +122,26 @@ const actualizarPublicacionParcialService = async (id_publicacion, datosPublicac
       return null;
     }
 
-    
+    console.log(datosPublicacion);
+    console.log(id_publicacion);
     const { descripcion, imagen } = datosPublicacion;
 
-    if (!descripcion || !imagen) {
-      throw new Error('Tanto la descripción como la imagen son requeridos para esta actualización');
+    // Modificamos esta parte para permitir actualizaciones parciales
+    let camposActualizar = {};
+    if (descripcion) camposActualizar.descripcion = descripcion;
+    if (imagen) camposActualizar.imagen = imagen;
+
+    if (Object.keys(camposActualizar).length === 0) {
+      throw new Error('Se requiere al menos un campo para actualizar');
     }
 
-    const query = `
-      UPDATE publicaciones
-      SET descripcion = :descripcion,
-          imagen = :imagen,
-          fecha = NOW()
-      WHERE id_publicacion = :id_publicacion
-    `;
+    camposActualizar.fecha = Sequelize.literal('NOW()');
 
-    const [results, metadata] = await sequelize.query(query, {
-      replacements: {
-        descripcion,
-        imagen,
-        id_publicacion
-      }
+    const [numFilasActualizadas] = await Publicacion.update(camposActualizar, {
+      where: { id_publicacion }
     });
 
-    
-    if (metadata.rowCount === 0) {
+    if (numFilasActualizadas === 0) {
       console.log('No se pudo actualizar la publicación');
       return null;
     }
