@@ -1,27 +1,33 @@
 const Docente = require('../models/docentes');
 const Usuario = require('../models/usuarios');
-const { docenteSchema } = require('../middlewares/validations/validaciones_docentes');
+const { validarRegistroDocente } = require('../middlewares/validations/validaciones_docentes');
+const {validarRegistroUsuario, validarUsuarioEnUso, validarUsuarioExistente, validarCorreoExistente, validarUsuariosExistentes} = require('../middlewares/validations/validaciones_usuarios');
 
 // Función para crear un nuevo docente
 const createDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
 
-        // Verifica si los datos de 'usuario' y 'docente' existen
-        if (!usuario || !docente) {
-            return res.status(400).json({ error: "El cuerpo de la solicitud está incompleto." });
+        const { error} = validarRegistroDocente(docente);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { error: docenteError } = docenteSchema.validate(docente);
-
-        if (docenteError) {
-            return res.status(400).json({
-                error: docenteError.details[0].message
-            });
+        const { errorUsuario } = validarRegistroUsuario(usuario);
+        if (errorUsuario) {
+            return res.status(400).json({ error: errorUsuario.details[0].message });
         }
+
+        await validarCorreoExistente(usuario.correo);
+        await validarUsuarioEnUso(usuario.id);
+    
+
 
         // Crear el nuevo usuario
         const nuevoUsuario = await Usuario.create(usuario);
+
+        await validarUsuarioExistente(nuevoUsuario.id);
+
 
         // Crear el nuevo docente usando el id del nuevo usuario
         const nuevoDocente = await Docente.create({
@@ -50,17 +56,27 @@ const createDocente = async (req, res) => {
 
         res.status(201).json(docenteCompleto);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.errors ? error.errors.map(e => e.message) : error.message });
+        if (error.name === 'EmailExistsError') {
+            return res.status(409).json({ error: error.message });
+        } else if (error.name === 'UserExistsError') {
+            return res.status(409).json({ error: error.message });
+        } else if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: error.message });
+        }else {res.status(500).json({error:error.message});}
     }
 };
 
 // Función para obtener todos los docentes
 const getAllDocentes = async (req, res) => {
     try {
+
+
         const docentes = await Docente.findAll({
             include: [Usuario] // Incluye los datos del usuario asociado
         });
+
+        await validarUsuariosExistentes(Usuario);
+
 
         const docentesCompletos = docentes.map(docente => ({
             id: docente.id,
@@ -80,7 +96,9 @@ const getAllDocentes = async (req, res) => {
 
         res.status(200).json(docentesCompletos);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: error.message });
+        } else {res.status(500).json({error:error.message});}
     }
 };
 
@@ -96,6 +114,8 @@ const getDocenteById = async (req, res) => {
         if (!docente) {
             return res.status(404).json({ error: "Docente no encontrado." });
         }
+
+        await validarUsuarioExistente(Usuario);
 
         const docenteCompleto = {
             id: docente.id,

@@ -1,5 +1,6 @@
 const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio } = require('../services/services_reclutadores');
 const { validarReclutador } = require('../middlewares/validations/validaciones_reclutadores');
+const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, validarUsuariosExistentes  } = require('../middlewares/validations/validaciones_usuarios');
 
 /**
  * Controlador para crear un reclutador.
@@ -12,18 +13,34 @@ const { validarReclutador } = require('../middlewares/validations/validaciones_r
 const crearReclutador = async (req, res) => {
   const { usuario, reclutador } = req.body;
 
- 
+  // Validamos el objeto reclutador primero
   const { error } = validarReclutador(reclutador);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message }); 
+    return res.status(400).json({ message: error.details[0].message });
   }
 
   try {
+    // Validamos que el correo y el usuario no existan antes de continuar
+    await validarCorreoExistente(usuario.correo);
+    await validarUsuarioEnUso(usuario.id);
+
+    // Intentamos crear el reclutador si no hubo errores en las validaciones
     const result = await crearReclutadorServicio(usuario, reclutador);
-    res.status(201).json(result);
+    return res.status(201).json(result);
+
   } catch (error) {
+    // Si el correo ya está en uso
+    if (error.name === 'EmailExistsError') {
+      return res.status(409).json({ message: 'El correo ya está en uso' });
+    }
+    // Si el usuario ya existe
+    if (error.name === 'UserExistsError') {
+      return res.status(409).json({ message: 'El usuario ya existe' });
+    }
+
+    // Otros errores
     console.error('Error al crear reclutador:', error);
-    res.status(500).json({ message: 'Error al crear reclutador', error: error.message });
+    return res.status(500).json({ message: 'Error al crear reclutador', error: error.message });
   }
 };
 
@@ -41,6 +58,8 @@ const obtenerReclutador = async (req, res) => {
 
   try {
     const reclutador = await obtenerReclutadorServicio(id);
+    await validarUsuarioExistente(id);
+   
 
     if (reclutador) {
       res.status(200).json({
@@ -59,6 +78,10 @@ const obtenerReclutador = async (req, res) => {
       res.status(404).json({ message: 'Reclutador no encontrado' });
     }
   } catch (error) {
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Reclutadr' });
+    }
+
     console.error('Error al obtener reclutador:', error);
     res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
   }
@@ -74,9 +97,16 @@ const obtenerReclutador = async (req, res) => {
  */
 const obtenerTodosReclutadores = async (req, res) => {
   try {
+    await validarUsuariosExistentes();
     const reclutadores = await obtenerTodosReclutadoresServicio();
+   
+
     res.status(200).json(reclutadores);
   } catch (error) {
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Reclutadores no encontrados' });
+    }
+
     console.error('Error al obtener todos los reclutadores:', error);
     res.status(500).json({ message: 'Error al obtener reclutadores', error: error.message });
   }
@@ -84,7 +114,10 @@ const obtenerTodosReclutadores = async (req, res) => {
 
 const obtenerUsuariosYReclutadores = async (req, res) => {
   try {
+    await validarUsuariosExistentes();
     const reclutadores = await obtenerTodosUsuariosYReclutadores();
+    
+   
 
     const response = reclutadores.map(reclutador => ({
       id: reclutador.Usuario.id,
@@ -106,39 +139,63 @@ const obtenerUsuariosYReclutadores = async (req, res) => {
 
     res.status(200).json(response);
   } catch (error) {
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Usuarios y reclutadores no encontrados' });
+    }
+
+
     console.error('Error al obtener usuarios y reclutadores:', error);
     res.status(500).json({ message: 'Error al obtener usuarios y reclutadores', error: error.message });
   }
 };
+//insomnia Obtener rol epecifico
 const obtenerReclutadorPorId = async (req, res) => {
   const { id } = req.params;
 
   try {
+  
+    await validarCorreoExistente(id);
+    
+    // Obtiene el reclutador por ID
     const reclutador = await obtenerReclutadorPorIdServicio(id);
 
-    res.status(200).json({
-      id: reclutador.id,
-      nombre_empresa: reclutador.nombre_empresa,
-      sede: reclutador.sede,
-      giro: reclutador.giro
-    });
+   
+    if (!reclutador) {
+      return res.status(404).json({ message: 'Reclutador no encontrada' });
+    } else {
+      return res.status(200).json({
+        id: reclutador.id,
+        nombre_empresa: reclutador.nombre_empresa,
+        sede: reclutador.sede,
+        giro: reclutador.giro
+      });
+    }
   } catch (error) {
-    console.error('Error al obtener reclutador:', error);
-    res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
+    
+    
+    // Manejar errores específicos
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Reclutador no encontrado' });
+    } else {
+      return res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
   }
 };
 
 
+// en insomnia Obtener usuario espeficio con rol
 const obtenerReclutadorDetalladoPorId = async (req, res) => {
   const { id } = req.params; // Asegúrate de que estás recibiendo el id correctamente
   try {
+    await validarUsuariosExistentes(id);
+    
     const reclutador = await obtenerReclutadorDetalladoPorIdServicio(id);
-
+    
+    // Verificar si se encontró el reclutador
     if (!reclutador) {
       return res.status(404).json({ message: 'Reclutador no encontrado' });
     }
 
-    // Procesamos la respuesta para un formato adecuado
     const response = {
       id: reclutador.Usuario.id,
       nombre: reclutador.Usuario.nombre,
@@ -159,10 +216,15 @@ const obtenerReclutadorDetalladoPorId = async (req, res) => {
 
     res.status(200).json(response);
   } catch (error) {
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Reclutador no encontrado' });
+    }
+
     console.error('Error al obtener reclutador por ID:', error);
     res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
   }
 };
+
 
 module.exports = {
   crearReclutador,
