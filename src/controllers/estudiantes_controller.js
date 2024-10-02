@@ -1,27 +1,35 @@
 const Estudiante = require('../models/estudiantes');
 const Usuario = require('../models/usuarios');
-const {estudianteSchema} = require('../middlewares/validations/validaciones_estudiantes');
+const {validarRegistroEstudiante} = require('../middlewares/validations/validaciones_estudiantes');
+const {validarNumeroControl} = require('../middlewares/validations/validaciones_estudiantes');
+const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuarioEnUsoPlanB, validarUsuariosExistentes} = require('../middlewares/validations/validaciones_usuarios');
 
 // Función para crear un nuevo estudiante
 const createEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
-
-        // Verifica si los datos de 'usuario' y 'estudiante' existen
-        if (!usuario || !estudiante) {
-            return res.status(400).json({ error: "El cuerpo de la solicitud está incompleto." });
+        
+        const { error } = validarRegistroEstudiante(estudiante);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { error: estudianteError } = estudianteSchema.validate(estudiante);
-
-        if (estudianteError) {
-            return res.status(400).json({
-                error: estudianteError.details[0].message
-            });
+        const { errorUsuario } = validarRegistroUsuario(usuario);
+        if (errorUsuario) {
+            return res.status(400).json({ error: errorUsuario.details[0].message });
         }
+
+        await validarCorreoExistente(usuario.correo);
+
+        await validarNumeroControl(estudiante.no_control);
+
+
+        
 
         // Crear el nuevo usuario
         const nuevoUsuario = await Usuario.create(usuario);
+
+        await validarUsuarioEnUsoPlanB(nuevoUsuario.id);
 
         // Crear el nuevo estudiante usando el id del nuevo usuario
         const nuevoEstudiante = await Estudiante.create({
@@ -48,8 +56,15 @@ const createEstudiante = async (req, res) => {
 
         res.status(201).json(estudianteCompleto);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.errors ? error.errors.map(e => e.message) : error.message });
+        if (error.name ==='EmailExistsError') {
+            return res.status(400).json({ error: 'El correo ya está en uso.' });
+        }else if (error.name === 'UserExistsError') {
+            return res.status(400).json({ error: 'El usuario ya está en uso.' });
+        }else if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else if (error.name === 'ValidationNumberStudentError') {
+            return res.status(400).json({ error: 'El número de control no debe de repetirse.' });
+        }else {res.status(500).json({ error: error.message });}  
     }
 };
 
@@ -60,6 +75,8 @@ const getAllEstudiantes = async (req, res) => {
         const estudiantes = await Estudiante.findAll({
             include: [Usuario] // Incluye los datos del usuario asociado
         });
+
+        await validarUsuariosExistentes(estudiantes);
 
         const estudiantesCompletos = estudiantes.map(estudiante => ({
             id: estudiante.id, // ID del estudiante
@@ -79,6 +96,9 @@ const getAllEstudiantes = async (req, res) => {
 
         res.status(200).json(estudiantesCompletos);
     } catch (error) {
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
         res.status(500).json({ error: error.message });
     }
 };
@@ -92,9 +112,12 @@ const getEstudianteById = async (req, res) => {
             include: [Usuario] // Incluye los datos del usuario asociado
         });
 
+
         if (!estudiante) {
             return res.status(404).json({ error: "Estudiante no encontrado." });
         }
+
+        await validarUsuarioExistente(estudiante.id);
 
         const estudianteCompleto = {
             id: estudiante.id, // ID del estudiante
@@ -112,7 +135,9 @@ const getEstudianteById = async (req, res) => {
 
         res.status(200).json(estudianteCompleto);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else {res.status(500).json({ error: error.message });} 
     }
 };
 
@@ -123,6 +148,8 @@ const getAllEstudiantesInfo = async (req, res) => {
             include: [Usuario] // Incluye los datos del usuario asociado
         });
 
+        await validarUsuariosExistentes(estudiantes);
+
         const estudiantesConInfoUnica = estudiantes.map(estudiante => ({
             id: estudiante.id,               // ID del estudiante
             no_control: estudiante.no_control, // NO_CONTROL del estudiante
@@ -132,7 +159,9 @@ const getAllEstudiantesInfo = async (req, res) => {
 
         res.status(200).json(estudiantesConInfoUnica);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else {res.status(500).json({ error: error.message });}
     }
 };
 
@@ -147,6 +176,8 @@ const getEstudiantePerfilById = async (req, res) => {
         if (!estudiante) {
             return res.status(404).json({ error: "Estudiante no encontrado." });
         }
+
+        await validarUsuarioExistente(estudiante.id);
 
         // Perfil del estudiante
         const perfilEstudiante = {
@@ -163,7 +194,9 @@ const getEstudiantePerfilById = async (req, res) => {
 
         res.status(200).json(perfilEstudiante);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else {res.status(500).json({ error: error.message });}
     }
 };
 
@@ -176,13 +209,17 @@ const getEstudianteInfoById = async (req, res) => {
             attributes: ['id', 'no_control', 'carrera', 'semestre'] // Solo los atributos necesarios
         });
 
+        await validarUsuarioExistente(estudiante.id);
+
         if (!estudiante) {
             return res.status(404).json({ error: "Estudiante no encontrado." });
         }
 
         res.status(200).json(estudiante);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else {res.status(500).json({ error: error.message });}
     }
 };
 
@@ -197,6 +234,8 @@ const getEstudianteRolById = async (req, res) => {
         if (!estudiante) {
             return res.status(404).json({ error: "Estudiante no encontrado." });
         }
+
+        await validarUsuarioExistente(estudiante.id);
 
         const respuesta = {
             id: estudiante.id,
@@ -216,7 +255,9 @@ const getEstudianteRolById = async (req, res) => {
 
         res.status(200).json(respuesta);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.name === 'UserNotFoundError') {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }else {res.status(500).json({ error: error.message });}
     }
 };
 // Exportar funciones

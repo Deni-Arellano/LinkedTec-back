@@ -2,7 +2,8 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 const UserNotFoundError = require('../exceptions/UserNotFoundError');
 const UserExistsError = require('../exceptions/UserExistsError');
-const EmailExistsError = require('../exceptions/EmailExistsError')
+const EmailExistsError = require('../exceptions/EmailExistsError');
+const Usuario = require('../../models/usuarios');
 
 const validarRegistroUsuario =  async (data) => {
 
@@ -121,6 +122,17 @@ const validarUsuarioEnUso = async (id) => {
     }
 }
 
+const validarUsuarioEnUsoPlanB = async (id) => {
+  const results = await Usuario.findAll({
+    where: {
+      id: id
+    }
+  });
+  if (results.length === 0) {
+    throw new UserExistsError();
+  }
+}
+
 //Valida si hay usuarios existentes
 const validarUsuariosExistentes = async (usuarios) => {
 
@@ -135,5 +147,6 @@ module.exports = {
     validarUsuarioEnUso,
     validarUsuarioExistente,
     validarCorreoExistente,
-    validarUsuariosExistentes
+    validarUsuariosExistentes,
+    validarUsuarioEnUsoPlanB
 }
