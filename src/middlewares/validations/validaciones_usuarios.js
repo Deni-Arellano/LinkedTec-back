@@ -29,12 +29,15 @@ const validarRegistroUsuario =  async (data) => {
       'string.max': 'El apellido materno debe tener menos de 255 caracteres.',
       'any.required': 'El apellido materno es requerido.'
     }),
-    correo: Joi.string().email().required().messages({
+    
+    correo: Joi.string().pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$/).required().messages({
       'string.base': 'El correo debe ser una cadena de texto.',
       'string.empty': 'El correo no puede estar vacío.',
-      'string.email': 'El correo debe ser una dirección de correo electrónico válida.',
+      'string.pattern.base': 'El correo debe ser una dirección de correo electrónico válida y no puede tener un dominio que comience con un número.',
       'any.required': 'El correo es requerido.'
     }),
+    
+    
     contraseña: Joi.string().min(8).max(20).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).required().messages({
       'string.base': 'La contraseña debe ser una cadena de texto.',
       'string.empty': 'La contraseña no puede estar vacía.',
@@ -59,11 +62,12 @@ const validarRegistroUsuario =  async (data) => {
       'any.required': 'La fecha de nacimiento es requerida.',
       'date.less': 'La fecha de nacimiento debe ser menor a la fecha actual.'
     }),
-    telefono: Joi.string().min(10).max(15).required().messages({
-      'string.base': 'El teléfono debe ser una cadena de texto.',
+    telefono: Joi.string().pattern(/^[0-9]+$/).min(10).max(15).required().messages({
+      'string.base': 'El teléfono debe ser una cadena de números.',
       'string.empty': 'El teléfono no puede estar vacío.',
       'string.min': 'El teléfono debe tener al menos 10 caracteres.',
       'string.max': 'El teléfono debe tener menos de 15 caracteres.',
+      'string.pattern.base': 'El teléfono solo puede contener caracteres numéricos.',
       'any.required': 'El teléfono es requerido.'
     }),
     sexo: Joi.string().required().valid('Masculino', 'Femenino', 'Otro').messages({
@@ -79,7 +83,7 @@ const validarRegistroUsuario =  async (data) => {
     }),
   });
 
-  return schema.validate(data, { abortEarly: false });
+  return schema.validate(data);
 
 };
 
@@ -136,7 +140,7 @@ const validarUsuarioEnUsoPlanB = async (id) => {
 //Valida si hay usuarios existentes
 const validarUsuariosExistentes = async (usuarios) => {
 
-  if (usuarios.length === 0) {
+  if (usuarios.length === 0 || !usuarios) {
     throw new UserNotFoundError('No se encontraron usuarios.');
   }
 }
