@@ -5,7 +5,7 @@ const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
 const { validateEgresado,validateId } = require('../middlewares/validations/validaciones_egresados');
-const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes } = require('../middlewares/validations/validaciones_usuarios');
+const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
 
 
 
@@ -25,7 +25,6 @@ exports.getAllEgresadosWithUserInfo = async (req, res) => {
       JOIN egresados eg ON u.id = eg.id
     `);
 
-    // Validar si hay egresados existentes
     await validarUsuariosExistentes(egresados);
 
     return res.json(egresados);
@@ -49,7 +48,6 @@ exports.getEgresadosInfo = async (req, res) => {
       FROM egresados
     `);
     
-    // Validar si hay egresados existentes
     await validarUsuariosExistentes(egresados);
     return res.json(egresados);
   }catch (error) {
@@ -68,7 +66,6 @@ exports.getEgresadosInfo = async (req, res) => {
 exports.getEgresadoRoleInfoById = async (req, res) => {
   const { id } = req.params;
 
-  // Validar el ID usando Joi
   const idError = validateId(id);
   if (idError) {
     return res.status(400).json({ message: idError.message });
@@ -101,23 +98,19 @@ exports.getEgresadoRoleInfoById = async (req, res) => {
 exports.createEgresado = async (req, res) => {
   const { usuario, egresado } = req.body;
 
-  // Validar el objeto usuario
   const { error: usuarioError } = await validarRegistroUsuario(usuario);
   if (usuarioError) {
     return res.status(400).json({ message: usuarioError.details.map(err => err.message) });
   }
 
-  // Validar el objeto egresado
   const egresadoError = validateEgresado(egresado);
   if (egresadoError) {
     return res.status(400).json({ message: egresadoError.message });
   }
 
   try {
-    // Verificar si el correo ya existe
     await validarCorreoExistente(usuario.correo);
 
-    // Crear el nuevo usuario
     const nuevoUsuario = await Usuario.create({
       nombre: usuario.nombre,
       apellido_paterno: usuario.apellido_paterno,
@@ -132,7 +125,6 @@ exports.createEgresado = async (req, res) => {
       imagen_usuario: usuario.imagen_usuario
     });
 
-    // Crear el nuevo egresado
     const nuevoEgresado = await Egresado.create({
       id: nuevoUsuario.id,
       carrera: egresado.carrera,
@@ -152,41 +144,6 @@ exports.createEgresado = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @async
  * Controlador para obtener tanto la información de usuario como del rol de un egresado por ID.
@@ -195,8 +152,7 @@ exports.createEgresado = async (req, res) => {
  * @returns {Promise<void>} Devuelve una respuesta JSON con la información completa del egresado o un error.
  */
 exports.getEgresadoWithUserInfoById = async (req, res) => {
-  const { id } = req.params;
-
+  const { id } = req.params; 
   try {
     const egresado = await Egresado.findByPk(id);
     if (!egresado) {
@@ -208,7 +164,9 @@ exports.getEgresadoWithUserInfoById = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    return res.json({
+    await validarUsuarioExistente(usuario.id);
+
+    const respuesta = {
       id: usuario.id,
       nombre: usuario.nombre,
       apellido_paterno: usuario.apellido_paterno,
@@ -224,20 +182,17 @@ exports.getEgresadoWithUserInfoById = async (req, res) => {
       carrera: egresado.carrera,
       año_graduacion: egresado.año_graduacion,
       puesto: egresado.puesto,
-    });
+    };
+
+    return res.status(200).json(respuesta);
+
   } catch (error) {
+    if (error.message === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
     return res.status(500).json({ message: 'Error al obtener la información del egresado', error: error.message });
   }
 };
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -251,19 +206,19 @@ exports.getEgresadoProfileById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Buscar el egresado por ID
+
     const egresado = await Egresado.findByPk(id);
     if (!egresado) {
       return res.status(404).json({ message: 'Egresado no encontrado' });
     }
 
-    // Buscar el usuario asociado al egresado
+    await validarUsuarioExistente(id);
+
     const usuario = await Usuario.findByPk(id);
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Responder con la información requerida
     return res.json({
       nombre: usuario.nombre,
       apellido_paterno: usuario.apellido_paterno,
@@ -277,6 +232,10 @@ exports.getEgresadoProfileById = async (req, res) => {
       sexo: usuario.sexo
     });
   } catch (error) {
+
+    if (error.message === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
     return res.status(500).json({ message: 'Error al obtener el perfil del egresado', error: error.message });
   }
 };

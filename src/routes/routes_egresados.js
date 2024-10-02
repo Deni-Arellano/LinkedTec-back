@@ -8,7 +8,6 @@ const egresadosController = require('../controllers/egresados_controller');
  */
 router.post('/', egresadosController.createEgresado);
 
-module.exports = router;
 /**
  * Ruta para obtener la información única de todos los egresados (solo del rol)
  */
@@ -33,5 +32,7 @@ router.get('/:id/info', egresadosController.getEgresadoRoleInfoById);
  * Ruta para obtener la información tanto del usuario como del rol de un egresado específico
  */
 router.get('/:id', egresadosController.getEgresadoWithUserInfoById);
+
+
 
 module.exports = router;

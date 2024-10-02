@@ -30,7 +30,6 @@ const egresadoSchema = Joi.object({
     }),
 });
 
-// Nuevo esquema de validación para el ID del egresado
 const idSchema = Joi.object({
   id: Joi.number()
     .integer()

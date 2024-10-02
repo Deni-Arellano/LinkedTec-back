@@ -1,4 +1,8 @@
 const Joi = require('joi');
+const CreateConflictError = require('../exceptions/CreateConflictError');
+const EmpleoExistsError = require('../exceptions/EmpleoExistsError');
+const EmpleoNotFoundError = require('../exceptions/EmpleoNotFoundError');
+const UpdateConflictError = require('../exceptions/UpdateConflictError');
 
 const empleoSchemaCrear = Joi.object({
   titulo: Joi.string().max(255).required().messages({
@@ -30,13 +34,40 @@ const empleoSchemaCrear = Joi.object({
   })
 });
 
-
 const validarEmpleo = (data) => {
   const { error } = empleoSchemaCrear.validate(data);
   return error;
 };
 
 
+const validarEmpleoExistente = (empleo) => {
+  if (empleo) {
+    throw new EmpleoExistsError('Ya existe un empleo con ese título y empresa.');
+  }
+};
+
+const validarEmpleoNoEncontrado = (empleo) => {
+  if (!empleo) {
+    throw new EmpleoNotFoundError('El empleo que buscas no se encuentra disponible.');
+  }
+};
+
+const validarUpdateConflict = (empleo) => {
+  if (!empleo) {
+    throw new UpdateConflictError('Hubo un error de actualización');
+  }
+};
+
+const validarCreateConflict = (empleo) => {
+  if (!empleo) {
+    throw new CreateConflictError('Hubo un error de creación');
+  }
+};
+
 module.exports = {
-  validarEmpleo
+  validarEmpleo,
+  validarEmpleoExistente,
+  validarEmpleoNoEncontrado,
+  validarUpdateConflict,
+  validarCreateConflict
 };
