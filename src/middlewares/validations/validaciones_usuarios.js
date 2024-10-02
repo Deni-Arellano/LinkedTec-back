@@ -111,12 +111,15 @@ const validarUsuarioExistente = async (id) => {
 
 //Buscar si el usuario ya esta en uso
 const validarUsuarioEnUso = async (id) => {
-    const results = await sequelize.query(`SELECT * FROM usuarios WHERE id = ?`, {
-      replacements: [id],
-      type: sequelize.QueryTypes.SELECT
-    });
+    const results = await Usuarios.findAll(
+        {
+            where: {
+            id: id
+            }
+        }
+    )
   
-    if (results.length > 0) {
+    if (results.length === 0) {
       throw new UserExistsError();
     }
 }
