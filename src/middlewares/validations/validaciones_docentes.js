@@ -1,8 +1,10 @@
 const Joi = require('joi');
+const sequelize = require('../../config/database');
+const Docente = require('../../models/docentes');
+const ValidationNumberEmpleoyeeError = require('../exceptions/ValidationNumberEmployeeError');
 
-// Definir el esquema de validación para Docentes
 const validarRegistroDocente = async (data) => {
-    const docenteSchema = Joi.object({
+    const validarRegistroDocente = Joi.object({
         numero_empleado: Joi.string().alphanum().max(10).required().messages({
             'string.empty': 'El número de empleado es obligatorio',
             'string.max': 'El número de empleado no puede tener más de 10 caracteres'
@@ -15,11 +17,21 @@ const validarRegistroDocente = async (data) => {
             'any.only': 'La academia debe ser uno de los valores permitidos: IE, ISC, II, IA, CP, IGE',
             'string.empty': 'La academia es obligatoria'
         }),
+        });
     
-    }
-    
-    );
-    return docenteSchema.validate(data);    
-};
+        return validarRegistroDocente.validate(data);
+    };
 
-module.exports = {validarRegistroDocente};
+const validarNumeroDocente = async (numero_empleado) => {
+    const docentes=await Docente.findAll({
+        where: {
+            numero_empleado: numero_empleado
+        }
+    });
+    if(docentes.length>0){
+        throw new ValidationNumberEmpleoyeeError();
+    }
+}
+
+
+module.exports = {validarRegistroDocente, validarNumeroDocente};
