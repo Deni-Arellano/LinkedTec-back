@@ -47,7 +47,6 @@ class FTPClient {
   async uploadFile(localPath, remotePath) {
     try {
       await this.client.uploadFrom(localPath, remotePath);
-      console.log('Archivo subido con éxito:', remotePath);
     } catch (error) {
       if (error.code === 550) {
         throw new FileUploadError('550 - Requested action not taken: El archivo no se puede subir. Archivo no encontrado o permiso denegado.');
@@ -65,7 +64,6 @@ class FTPClient {
   async downloadFile(remotePath, localPath) {
     try {
       await this.client.downloadTo(localPath, remotePath);
-      console.log('Archivo descargado con éxito:', remotePath);
     } catch (error) {
       if (error.code === 550) {
         throw new FileDownloadError('550 - Requested action not taken: El archivo no se puede descargar. Archivo no encontrado o permiso denegado.');
@@ -88,7 +86,6 @@ class FTPClient {
       if (file.length === 0) {
         throw new FileNotFoundError(`Archivo no encontrado en la ruta: ${remotePath}`);
       }
-      console.log('Archivo encontrado:', remotePath);
       return file;
     } catch (error) {
       if (error.code === 550) {
@@ -97,7 +94,7 @@ class FTPClient {
         throw new FileNotFoundError('451 - Requested action aborted: La búsqueda fue abortada debido a un error local.');
       } else {
         console.error('Error inesperado al buscar el archivo:', error.message);
-        throw new FileNotFoundError(`Error inesperado en la búsqueda de archivos: ${error.message}`);
+        throw new FileNotFoundError(`Error inesperado en la búsqueda de archivos : ${error.message}`);
       }
     }
   }
