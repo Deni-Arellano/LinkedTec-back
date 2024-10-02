@@ -30,9 +30,35 @@ const egresadoSchema = Joi.object({
     }),
 });
 
+// Nuevo esquema de validación para el ID del egresado
+const idSchema = Joi.object({
+  id: Joi.number()
+    .integer()
+    .positive()
+    .required()
+    .messages({
+      'number.base': 'El ID debe ser un número',
+      'number.integer': 'El ID debe ser un número entero',
+      'number.positive': 'El ID debe ser un número entero positivo',
+      'any.required': 'El ID es un campo requerido'
+    }),
+});
+
 const validateEgresado = (data) => {
   const { error } = egresadoSchema.validate(data);
   return error;
 };
 
-module.exports = { validateEgresado };
+const validateId = (id) => {
+  const { error } = idSchema.validate({ id });
+  return error;
+};
+
+const validarEgresadoExistente = async (id) => {
+  const { Egresado } = require('../../db/connection');
+  const egresado = await Egresado.findByPk(id);
+  if (!egresado) {
+    return 'Egresado no encontrado';
+  }
+};
+module.exports = { validateEgresado, validateId, validarEgresadoExistente };
