@@ -107,9 +107,12 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
     const { id_publicacion, id_comentario } = req.params; 
 
     try {
+        console.log('id_comnetarios', id_comentario);
+        console.log('id_publicacion', id_publicacion);
         // Validar la existencia del comentario y la publicación
         await validarComentarioExistente(id_comentario);
         await validarPublicacionExistente(id_publicacion);
+
 
         // Buscar el comentario en la base de datos con la publicación y comentario proporcionados
         const comentario = await Comentario.findOne({

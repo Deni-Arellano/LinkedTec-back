@@ -35,11 +35,17 @@ const validarComentario = (comentario) => {
 };
 
 const validarComentarioExistente = async (id_comentario) => {
-    const comentario = await sequelize.models.comentarios.findOne({ where: { id_comentario } }); 
-    if (!comentario) {
-        throw new CommentNotFoundError();
-    }
+  const comentario = await sequelize.query('SELECT * FROM comentarios WHERE id_comentario = :id', {
+      replacements: { id: id_comentario },
+      type: sequelize.QueryTypes.SELECT
+  });
+
+  // Comprobar si el comentario no fue encontrado
+  if (comentario.length === 0) {
+      throw new CommentNotFoundError(); // Lanzar error si no se encuentra el comentario
+  }
 };
+
 
 const validarComentarioExiste = async (id_comentario) => {
   const comentario = await sequelize.models.Comentario.findOne({ where: { id_comentario } });
