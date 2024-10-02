@@ -14,25 +14,25 @@ function generateUniqueFileName(originalName) {
 
 exports.uploadImage = async (file) => {
     try {
-        console.log('Procesando archivo en el servicio:', file);
         const uniqueFileName = generateUniqueFileName(file.originalname);
         const remotePath = `/imagenes/${uniqueFileName}`;
         
         await FTPClient.connect();
         await FTPClient.uploadFile(file.path, remotePath);
         
-        // Cambiamos esto para devolver la ruta relativa
         const relativeUrl = `/imagenes/${uniqueFileName}`;
         
         return {
             fileName: uniqueFileName,
             url: relativeUrl
         };
+
     } catch (error) {
-        console.error('Error en el servicio de subida de imagen:', error);
         throw error;
+
     } finally {
         await FTPClient.disconnect();
+
     }
 };
 
@@ -54,8 +54,8 @@ exports.downloadImage = async (fileName) => {
             file: fileBuffer
         };
     } catch (error) {
-        console.error('Error al descargar la imagen:', error);
         throw error;
+        
     } finally {
         await FTPClient.disconnect();
         if (tempFilePath) {

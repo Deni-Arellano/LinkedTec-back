@@ -42,7 +42,7 @@ router.get('/', obtenerTodasLasPublicaciones); // Maneja las solicitudes GET par
  * Se espera que el ID de la publicación se pase como un parámetro en la URL
  * y los datos completos de la publicación en el cuerpo de la solicitud.
  */
-router.put('/:id', actualizarPublicacionCompleta);
+router.put('/:id', actualizarPublicacionCompleta); //PENDIENTE DE IMPLEMENTAR
 
 /**
  * Ruta para actualizar parcialmente una publicación (PATCH).

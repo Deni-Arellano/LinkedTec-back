@@ -82,7 +82,7 @@ const validarRegistroUsuario =  async (data) => {
     }),
   });
 
-  return schema.validate(data, { abortEarly: false });
+  return schema.validate(data);
 
 };
 
@@ -128,7 +128,7 @@ const validarUsuarioEnUso = async (id) => {
 //Valida si hay usuarios existentes
 const validarUsuariosExistentes = async (usuarios) => {
 
-  if (usuarios.length === 0) {
+  if (usuarios.length === 0 || !usuarios) {
     throw new UserNotFoundError('No se encontraron usuarios.');
   }
 }

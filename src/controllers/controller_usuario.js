@@ -1,6 +1,6 @@
 const usuarioService = require('../services/services_usuarios');
 const { validarRegistroUsuario, validarUsuarioExistente, validarCorreoExistente, validarUsuariosExistentes } = require('../middlewares/validations/validaciones_usuarios');
-
+const {validarImagenExistente} = require('../middlewares/validations/validaciones_imagenes');
 
 
 /**
@@ -20,6 +20,7 @@ const crearUsuario = async (req, res) => {
 
 
     await validarCorreoExistente(correo);
+    await validarImagenExistente(imagen_usuario);
     
 
 
@@ -45,11 +46,15 @@ const crearUsuario = async (req, res) => {
 
     if (error.name === 'EmailExistsError') {
       return res.status(400).json({ error: error.message });
+
+    } else if (error.name === 'ImageNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    
+
+    } else{
+      res.status(500).json({ error: error.message});
+
     }
-
-
-
-    res.status(500).json({ error: error.message});
     
   }
 };

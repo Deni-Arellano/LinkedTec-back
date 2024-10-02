@@ -1,5 +1,8 @@
 const FTPClient = require('../../config/ftp');
 const FileNotFoundError = require('../exceptions/FileNotFoundError');
+const FileTooLargeError = require('../exceptions/FileTooLargeError');
+const FileExtensionError = require('../exceptions/FileExtensionError');
+
 
 const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se vuelva a subir otra imagen igual 
 
@@ -11,56 +14,46 @@ const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se
     }
 }
 
-const validarImagenExistente = async (nombreArchivo) => { // Comprobamos si la imagen que pasaron si existe
+const validarImagenExistente = async (nombreArchivo) => { 
 
     await FTPClient.connect(); 
     const path = `/imagenes/${nombreArchivo}`;
-    try {
-        await FTPClient.searchFile(path);
 
-    } catch (error) {
+    await FTPClient.searchFile(path);
 
-        if (error instanceof FileNotFoundError) {
-            throw new Error('El archivo no existe.');
-        }
+    await FTPClient.disconnect();
 
-        throw new Error('Error: ' + error.message);
-
-    } finally {
-        await FTPClient.disconnect();
-
-    }
-
-    return {value: null};
+    return { value: null };
 
 }
 
 
-const validarExtension = (nombreArchivo) => {
+const validarExtension = async (nombreArchivo) => {
 
     const extensionesPermitidas = ['jpg', 'jpeg', 'png'];
     const extension = nombreArchivo.split('.').pop();
 
     if (!extensionesPermitidas.includes(extension)) {
-        throw new Error('La extensión del archivo no es válida.');
+        throw new FileExtensionError('La extensión del archivo no es válida. Solo se permiten archivos .jpg, .jpeg y .png');
     }
-    return {value: null};
+
 }
 
-const validarPesoImagen = (nombreArchivo) => {
+const validarPesoImagen = async (nombreArchivo) => {
     const pesoMaximo = 5 * 1024 * 1024; // 10 MB en bytes
     const pesoArchivo = nombreArchivo.size;
 
     if (pesoArchivo > pesoMaximo) {
-        throw new Error('El tamaño del archivo excede el límite permitido.');
+        throw new FileTooLargeError('El tamaño del archivo excede el límite permitido. maximo 5MB');
     }
-
-    return {value: null};
 
 }
 
 module.exports = {
 
     validarImagenExistente,
-    validarExtension
+    validarExtension,
+    validarPesoImagen,
+    validarImagenYaUsada
+
 }
