@@ -14,24 +14,16 @@ const validarImagenYaUsada = async (nombreArchivo) => { //Por si ya existe no se
     }
 }
 
-const validarImagenExistente = async (nombreArchivo) => { // Comprobamos si la imagen que pasaron si existe
+const validarImagenExistente = async (nombreArchivo) => { 
 
     await FTPClient.connect(); 
     const path = `/imagenes/${nombreArchivo}`;
-    try {
-        await FTPClient.searchFile(path);
 
-    } catch (error) {
+    await FTPClient.searchFile(path);
 
-        throw error;
+    await FTPClient.disconnect();
 
-
-    } finally {
-        await FTPClient.disconnect();
-
-    }
-
-    return {value: null};
+    return { value: null };
 
 }
 

@@ -1,7 +1,7 @@
 const Joi = require('joi');
-const {validarUsuarioExistente} = require('./validaciones_usuarios');
 const {sequelize} = require('../../config/database');
 const PublicationNotFoundError = require('../exceptions/PublicationNotFoundError');
+const Publicacion = require('../../models/publicaciones');
 
 const validarPublicacion = async(data) => {
 
@@ -46,20 +46,58 @@ const validarPublicacion = async(data) => {
 
 }
 
+const validarPublicacionParcial = async(data) => {
+    const schema = Joi.object({
+        descripcion: Joi.string().min(2).max(255).required().messages({
+            'string.base': 'La descripcion debe ser una cadena de texto.',
+            'string.empty': 'La descripcion no puede estar vacía.',
+            'string.min': 'La descripcion debe tener al menos 2 caracteres.',
+            'string.max': 'La descripcion debe tener menos de 255 caracteres.',
+            'any.required': 'La descripcion es requerida.'
+        }),
+        imagen: Joi.string().min(2).max(255).optional().messages({
+            'string.base': 'La imagen debe ser una cadena de texto.',
+            'string.min': 'La imagen debe tener al menos 2 caracteres.',
+            'string.max': 'La imagen debe tener menos de 255 caracteres.',
+        })
+    });
+
+    return schema.validate(data);
+
+}
+
 const validarPublicacionExistente = async (id) => {
-    const publicacion = await sequelize.query('SELECT * FROM publicaciones WHERE id = :id',
+    const publicacion = await Publicacion.findByPk(id);
+
+    if (!publicacion || publicacion === null || publicacion === undefined) {
+        throw new PublicationNotFoundError("La publicación no existe. Verifique el id.");
+    }
+}
+
+const validarPublicacionPorUsuario = async (id_usuario) => {
+    const publicacion = await sequelize.query('SELECT * FROM publicaciones WHERE id_usuario = :id_usuario',
         {
-            replacements: { id: id },
+            replacements: { id_usuario: id_usuario },
             type: sequelize.QueryTypes.SELECT
         });
 
     if (publicacion.length === 0) {
-        throw new PublicationNotFoundError();
+        throw new PublicationNotFoundError("El usuario no tiene publicaciones.");
     }
 }
 
+const validarPublicacionesExistentes = async (publicaciones) => {
+
+    if (publicaciones.length === 0) {
+        throw new PublicationNotFoundError("No hay publicaciones en la base de datos.");
+    }
+
+}
 
 module.exports = {
     validarPublicacion,
-    validarPublicacionExistente
+    validarPublicacionExistente,
+    validarPublicacionPorUsuario,
+    validarPublicacionesExistentes,
+    validarPublicacionParcial
 };

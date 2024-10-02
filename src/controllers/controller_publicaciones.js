@@ -8,10 +8,9 @@ const {
   eliminarPublicacionService
 } = require('../services/services_publicaciones'); // Importa los servicios correspondientes
 
-const { validarPublicacion } = require('../middlewares/validations/validaciones_publicaciones');
+const { validarPublicacion,validarPublicacionPorUsuario, validarPublicacionesExistentes, validarPublicacionExistente, validarPublicacionParcial } = require('../middlewares/validations/validaciones_publicaciones');
 const { validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
 const {validarImagenExistente} = require('../middlewares/validations/validaciones_imagenes');
-
 
 /**
  * 
@@ -24,8 +23,10 @@ const crearPublicacion = async (req, res) => {
   try {
 
     const { error } = await validarPublicacion(req.body);
+
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
+
     }
 
     await validarUsuarioExistente(req.body.id_usuario);
@@ -43,9 +44,15 @@ const crearPublicacion = async (req, res) => {
     } else if (error.name === 'ImageNotFoundError') {
       return res.status(404).json({ error: error.message });
 
+    } else if (error.name === 'FileNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    } else {
+      console.error(error);
+      return res.status(500).json({ mensaje: 'Error al crear la publicación' }); 
+
     }
 
-    res.status(500).json({ mensaje: 'Error al crear la publicación' }); // Responde con un mensaje de error
   }
 };
 
@@ -58,11 +65,30 @@ const crearPublicacion = async (req, res) => {
 const obtenerPublicacionesPorUsuario = async (req, res) => {
   try {
     const { id_usuario } = req.params; // Extrae el ID del usuario de los parámetros
+
+    await validarUsuarioExistente(id_usuario);
+
+
     const publicaciones = await obtenerPublicacionesPorUsuarioService(id_usuario); // Llama al servicio para obtener las publicaciones
+    
+    await validarPublicacionesExistentes(publicaciones);
+    
     res.status(200).json(publicaciones); // Responde con las publicaciones
+
+
   } catch (error) {
-    console.error(error); // Registra el error en la consola
-    res.status(500).json({ mensaje: 'Error al obtener las publicaciones del usuario' }); // Responde con un mensaje de error
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    } else if (error.name === 'PublicationNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    }else {
+      return res.status(500).json({ mensaje: 'Error al obtener las publicaciones del usuario' }); 
+
+    }
+    
   }
 };
 
@@ -74,13 +100,26 @@ const obtenerPublicacionesPorUsuario = async (req, res) => {
  */
 const obtenerPublicacionPorId = async (req, res) => {
   try {
-    const { id_publicacion } = req.params; // Extrae el ID de la publicación de los parámetros
-    const publicacion = await obtenerPublicacionPorIdService(id_publicacion); // Llama al servicio para obtener la publicación
-    res.status(200).json(publicacion); // Responde con la publicación
+    const { id_publicacion } = req.params; 
+
+    await validarPublicacionExistente(id_publicacion);
+
+    const publicacion = await obtenerPublicacionPorIdService(id_publicacion);
+
+    res.status(200).json(publicacion); 
+
+
+    
   } catch (error) {
-    console.error(error); // Registra el error en la consola
-    res.status(500).json({ mensaje: 'Error al obtener la publicación' }); // Responde con un mensaje de error
+    if (error.name === 'PublicationNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    } else {
+      return res.status(500).json({ mensaje: 'Error al obtener la publicación' }); 
+
+    }
   }
+
 };
 
 /**
@@ -91,14 +130,28 @@ const obtenerPublicacionPorId = async (req, res) => {
  */
 const obtenerTodasLasPublicaciones = async (req, res) => {
   try {
-    const publicaciones = await obtenerTodasLasPublicacionesService(); // Llama al servicio para obtener todas las publicaciones
-    res.status(200).json(publicaciones); // Responde con las publicaciones
+
+    const publicaciones = await obtenerTodasLasPublicacionesService(); 
+
+    await validarPublicacionesExistentes(publicaciones);
+
+    res.status(200).json(publicaciones);
+
+
   } catch (error) {
-    console.error(error); // Registra el error en la consola
-    res.status(500).json({ mensaje: 'Error al obtener las publicaciones' }); // Responde con un mensaje de error
+    if (error.name === 'PublicationNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
+    } else {
+      res.status(500).json({ mensaje: 'Error al obtener las publicaciones' }); 
+
+    }
+
   }
 };
 
+
+//PENDIENTE DE REVISAR CON EL EQUIPO
 /**
  * Controlador para actualizar completamente una publicación (PUT).
  * @param {Object} req - Objeto de solicitud de Express.
@@ -125,6 +178,9 @@ const actualizarPublicacionCompleta = async (req, res) => {
   }
 };
 
+
+
+
 /**
  * Controlador para actualizar parcialmente una publicación (PATCH).
  * @param {Object} req - Objeto de solicitud de Express.
@@ -135,21 +191,49 @@ const actualizarPublicacionParcial = async (req, res) => {
     const { id } = req.params;
     const datosPublicacion = req.body;
 
-    const publicacionActualizada = await actualizarPublicacionParcialService(id, datosPublicacion);
+    await validarPublicacionExistente(id);
 
-    if (!publicacionActualizada) {
-      return res.status(404).json({ mensaje: 'Publicación no encontrada' });
+
+    const { error } = await validarPublicacionParcial(datosPublicacion);
+
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
+    await validarImagenExistente(datosPublicacion.imagen);
+
+
+    const publicacionActualizada = await actualizarPublicacionParcialService(id, datosPublicacion);
+
+
+
     res.json(publicacionActualizada);
+
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al actualizar la publicación', error: error.message });
+
+    if (error.name === 'PublicationNotFoundError') {
+      return res.status(404).json({ mensaje: error.message });
+
+    } else if (error.name === 'FileNotFoundError') {
+      return res.status(404).json({ mensaje: error.message });
+
+    } else {
+      console.log(error);
+      res.status(500).json({ mensaje: 'Error al actualizar la publicación', error: error.message });
+
+    }
+
+
+
+
   }
 };
 
 const eliminarPublicacion = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    await validarPublicacionExistente(id);
 
     const publicacionEliminada = await eliminarPublicacionService(id);
 
@@ -158,8 +242,15 @@ const eliminarPublicacion = async (req, res) => {
     }
 
     res.json({ mensaje: 'Publicación eliminada exitosamente' });
+
   } catch (error) {
+    if (error.name === 'PublicationNotFoundError') {
+      return res.status(404).json({ mensaje: error.message });
+
+    }
+    console.error(error);
     res.status(500).json({ mensaje: 'Error al eliminar la publicación', error: error.message });
+
   }
 };
 
