@@ -17,17 +17,20 @@ exports.crearEmpleo = async (datosEmpleo) => {
 
 /**
  * @async
- * Servicio para obtener todos los empleos.
+ * Servicio para obtener todos los empleos en orden descendente por fecha de creación.
  * @returns {Promise<Object>} Devuelve un objeto con los empleos o un error.
  */
 exports.obtenerTodosLosEmpleos = async () => {
   try {
-    const empleos = await Empleo.findAll();
+    const empleos = await Empleo.findAll({
+      order: [['fecha_creacion', 'DESC']]
+    });
     return { success: true, data: empleos };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
+
 
 /**
  * @async
