@@ -44,6 +44,11 @@ Empleo.init({
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  fecha_creacion: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'Empleo',
