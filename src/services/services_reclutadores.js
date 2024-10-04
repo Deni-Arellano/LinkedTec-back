@@ -31,7 +31,6 @@ const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
     const nuevoReclutador = await Reclutador.create({
       id: nuevoUsuario.id, 
       nombre_empresa: reclutadorData.nombre_empresa,
-      sector_comercial: reclutadorData.sector_comercial,
       sede: reclutadorData.sede,
       giro: reclutadorData.giro
     });
