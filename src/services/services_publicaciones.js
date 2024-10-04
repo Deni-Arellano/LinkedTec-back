@@ -54,8 +54,11 @@ const obtenerPublicacionPorIdService = async (id_publicacion) => {
  * @returns {Promise<Array>} Lista de todas las publicaciones.
  */
 const obtenerTodasLasPublicacionesService = async () => {
-  // Busca todas las publicaciones en la base de datos
-  const publicaciones = await Publicacion.findAll();
+  // Busca todas las publicaciones en la base de datos, ordenadas de más recientes a más antiguas
+  const publicaciones = await Publicacion.findAll({
+    order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
+  });
+
   return publicaciones; // Devuelve la lista de todas las publicaciones
 };
 
