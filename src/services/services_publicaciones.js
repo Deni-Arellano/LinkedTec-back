@@ -30,9 +30,10 @@ const crearPublicacionService = async (datosPublicacion) => {
  */
 const obtenerPublicacionesPorUsuarioService = async (id_usuario) => {
   
-  // Busca todas las publicaciones que pertenecen al usuario indicado
+  // Busca todas las publicaciones que pertenecen al usuario indicado, ordenadas de más recientes a más antiguas
   const publicaciones = await Publicacion.findAll({
-    where: { id_usuario }
+    where: { id_usuario },
+    order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
   });
   return publicaciones; // Devuelve la lista de publicaciones
 
