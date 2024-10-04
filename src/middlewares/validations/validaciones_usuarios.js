@@ -22,7 +22,7 @@ const validarRegistroUsuario =  async (data) => {
       'string.max': 'El apellido paterno debe tener menos de 255 caracteres.',
       'any.required': 'El apellido paterno es requerido.'
     }),
-    apellido_materno: Joi.string().min(2).max(255).required().messages({
+    apellido_materno: Joi.string().min(2).max(255).optional().messages({
       'string.base': 'El apellido materno debe ser una cadena de texto.',
       'string.empty': 'El apellido materno no puede estar vacío.',
       'string.min': 'El apellido materno debe tener al menos 2 caracteres.',

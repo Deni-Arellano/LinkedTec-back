@@ -7,7 +7,7 @@ const validarReclutador = (reclutador) => {
       'string.max': 'El nombre de la empresa no puede exceder los 255 caracteres',
       'any.required': 'El nombre de la empresa es obligatorio'
     }),
-    sector_comercial: Joi.string().max(255).required().messages({
+    sector_comercial: Joi.string().max(255).optional().messages({
       'string.empty': 'El sector comercial no puede estar vacío',
       'string.max': 'El sector comercial no puede exceder los 255 caracteres',
       'any.required': 'El sector comercial es obligatorio'
