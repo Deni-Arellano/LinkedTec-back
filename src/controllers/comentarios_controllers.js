@@ -24,6 +24,8 @@ const obtenerComentarios = async (req, res) => {
         const resultado = comentarios.map(comentario => ({
             imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null, // Alias 'usuario' correcto
             nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido', // Alias 'usuario' correcto
+            apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno: 'Descocncido', // Alias 'usuario' correcto
+            apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno: 'Descocncido', // Alias 'usuario' correcto
             texto: comentario.texto,
             fecha: comentario.fecha
         }));
@@ -123,7 +125,7 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
             include: [{
                 model: Usuario, // El modelo correcto
                 as: 'usuario',   // El alias correcto de la asociación
-                attributes: ['imagen_usuario', 'nombre'] // Los campos que quieres recuperar
+                attributes: ['imagen_usuario', 'nombre', 'apellido_paterno', 'apellido_materno'] // Los campos que quieres recuperar
             }]
         });
 
@@ -144,6 +146,8 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
         const resultado = {
             imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null,
             nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido',
+            apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno : 'Desconocido',
+            apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno : 'Desconocido',
             texto: comentario.texto,
             fecha: comentario.fecha
         };

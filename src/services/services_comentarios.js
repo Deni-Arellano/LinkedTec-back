@@ -36,7 +36,9 @@ const obtenerComentariosPorPublicacion = async (id_publicacion) => {
       return {
         texto: comentario.texto, // Asegúrate de que 'texto' es el nombre correcto de la columna
         fecha: comentario.fecha,
-        usuario: comentario.usuario // Esto incluirá la información del usuario
+        usuario: comentario.usuario, // Esto incluirá la información del usuario
+        apellido_paterno: comentario.usuario.apellido_paterno,
+        apellido_materno: comentario.usuario.apellido_materno
       };
     });
 
@@ -56,7 +58,7 @@ const obtenerComentarioPorPublicacionYComentario = async (id_publicacion, id_com
       include: [{
           model: Usuario, // Asegúrate de que este es el nombre correcto de tu modelo
           as: 'usuario', // Asegúrate de que el alias coincida con el definido en tu modelo
-          attributes: ['imagen_usuario', 'nombre']
+          attributes: ['imagen_usuario', 'nombre','apellido_paterno', 'apellido_materno']
       }]
   });
 };
