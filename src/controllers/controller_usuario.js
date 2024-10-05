@@ -20,7 +20,7 @@ const crearUsuario = async (req, res) => {
 
 
     await validarCorreoExistente(correo);
-    await validarImagenExistente(imagen_usuario);
+    //await validarImagenExistente(imagen_usuario);
     
 
 

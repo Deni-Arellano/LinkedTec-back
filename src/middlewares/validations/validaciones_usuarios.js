@@ -7,9 +7,7 @@ const Usuario = require('../../models/usuarios');
 
 const validarRegistroUsuario =  async (data) => {
 
-  if (data.apellido_materno === '') {
-    delete data.apellido_materno;
-  }
+
 
   const schema = Joi.object({
     nombre: Joi.string().min(2).max(255).required().messages({
@@ -26,7 +24,7 @@ const validarRegistroUsuario =  async (data) => {
       'string.max': 'El apellido paterno debe tener menos de 255 caracteres.',
       'any.required': 'El apellido paterno es requerido.'
     }),
-    apellido_materno: Joi.string().min(2).max(255).optional().messages({
+    apellido_materno: Joi.string().min(2).max(255).allow("").optional().messages({
       'string.base': 'El apellido materno debe ser una cadena de texto.',
       'string.empty': 'El apellido materno no puede estar vacío.',
       'string.min': 'El apellido materno debe tener al menos 2 caracteres.',
@@ -56,7 +54,7 @@ const validarRegistroUsuario =  async (data) => {
       'any.required': 'El rol es requerido.',
       'any.only': 'El rol debe ser uno de los siguientes: Estudiantes, Docentes, Reclutadores, Egresados.'
     }),
-    imagen_usuario: Joi.string().min(2).max(255).optional().messages({
+    imagen_usuario: Joi.string().min(2).max(255).allow("").optional().messages({
       'string.base': 'La imagen debe ser una cadena de texto.',
       'string.min': 'La imagen debe tener al menos 2 caracteres.',
       'string.max': 'La imagen debe tener menos de 255 caracteres.',
