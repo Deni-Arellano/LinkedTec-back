@@ -7,6 +7,10 @@ const Usuario = require('../../models/usuarios');
 
 const validarRegistroUsuario =  async (data) => {
 
+  if (data.apellido_materno === '') {
+    delete data.apellido_materno;
+  }
+
   const schema = Joi.object({
     nombre: Joi.string().min(2).max(255).required().messages({
       'string.base': 'El nombre debe ser una cadena de texto.',
