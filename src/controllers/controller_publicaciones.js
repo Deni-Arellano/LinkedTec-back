@@ -30,7 +30,7 @@ const crearPublicacion = async (req, res) => {
     }
 
     await validarUsuarioExistente(req.body.id_usuario);
-    await validarImagenExistente(req.body.imagen);
+    //await validarImagenExistente(req.body.imagen);
 
 
     const nuevaPublicacion = await crearPublicacionService(req.body); 
@@ -200,7 +200,7 @@ const actualizarPublicacionParcial = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    await validarImagenExistente(datosPublicacion.imagen);
+    //await validarImagenExistente(datosPublicacion.imagen);
 
 
     const publicacionActualizada = await actualizarPublicacionParcialService(id, datosPublicacion);

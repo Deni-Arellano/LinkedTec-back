@@ -18,7 +18,7 @@ exports.uploadImage = async (file) => {
         const remotePath = `/imagenes/${uniqueFileName}`;
         
         await FTPClient.connect();
-        await FTPClient.uploadFile(file.path, remotePath);
+        //await FTPClient.uploadFile(file.path, remotePath);
         
         const relativeUrl = `/imagenes/${uniqueFileName}`;
         

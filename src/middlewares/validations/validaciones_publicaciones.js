@@ -13,7 +13,7 @@ const validarPublicacion = async(data) => {
             'string.max': 'La descripcion debe tener menos de 255 caracteres.',
             'any.required': 'La descripcion es requerida.'
         }),
-        imagen: Joi.string().min(2).max(255).optional().messages({
+        imagen: Joi.string().min(2).max(255).optional().allow("").messages({
             'string.base': 'La imagen debe ser una cadena de texto.',
             'string.min': 'La imagen debe tener al menos 2 caracteres.',
             'string.max': 'La imagen debe tener menos de 255 caracteres.',
@@ -55,7 +55,7 @@ const validarPublicacionParcial = async(data) => {
             'string.max': 'La descripcion debe tener menos de 255 caracteres.',
             'any.required': 'La descripcion es requerida.'
         }),
-        imagen: Joi.string().min(2).max(255).optional().messages({
+        imagen: Joi.string().min(2).max(255).allow("").optional().messages({
             'string.base': 'La imagen debe ser una cadena de texto.',
             'string.min': 'La imagen debe tener al menos 2 caracteres.',
             'string.max': 'La imagen debe tener menos de 255 caracteres.',
