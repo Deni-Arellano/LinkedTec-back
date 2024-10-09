@@ -156,9 +156,28 @@ const obtenerReclutadorDetalladoPorIdServicio = async (id) => {
   }
 };
 
-module.exports = {
-  obtenerReclutadorDetalladoPorIdServicio,
+
+
+const actualizarReclutadorServicio = async (id, datosActualizados) => {
+  try {
+    const reclutador = await Reclutador.findOne({ where: { id } });
+    
+    if (!reclutador) {
+      throw new Error('Reclutador no encontrado');
+    }
+    await reclutador.update({
+      nombre_empresa: datosActualizados.nombre_empresa,
+      sede: datosActualizados.sede,
+      giro: datosActualizados.giro
+    });
+
+    return reclutador;
+  } catch (error) {
+    console.error('Error en actualizarReclutadorServicio:', error);
+    throw new Error('Error al actualizar reclutador');
+  }
 };
+
 
 module.exports = {
 
@@ -167,5 +186,7 @@ module.exports = {
   obtenerTodosReclutadoresServicio,
   obtenerTodosUsuariosYReclutadores,
   obtenerReclutadorPorIdServicio,
-  obtenerReclutadorDetalladoPorIdServicio
+  obtenerReclutadorDetalladoPorIdServicio,
+  actualizarReclutadorServicio,
+  obtenerReclutadorDetalladoPorIdServicio,
 };

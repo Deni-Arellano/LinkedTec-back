@@ -1,4 +1,4 @@
-const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio } = require('../services/services_reclutadores');
+const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio, actualizarReclutadorServicio } = require('../services/services_reclutadores');
 const { validarReclutador } = require('../middlewares/validations/validaciones_reclutadores');
 const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, validarUsuariosExistentes  } = require('../middlewares/validations/validaciones_usuarios');
 
@@ -238,6 +238,22 @@ const obtenerReclutadorDetalladoPorId = async (req, res) => {
   }
 };
 
+const actualizarReclutador = async (req, res) => {
+  const { id } = req.params;
+  const datosActualizados = req.body;
+
+  try {
+    const reclutadorActualizado = await actualizarReclutadorServicio(id, datosActualizados);
+    res.status(200).json({
+      message: 'Reclutador actualizado exitosamente',
+      reclutador: reclutadorActualizado
+    });
+  } catch (error) {
+    console.error('Error al actualizar reclutador:', error);
+    res.status(500).json({ message: 'Error al actualizar reclutador', error: error.message });
+  }
+};
+
 
 
 module.exports = {
@@ -246,5 +262,6 @@ module.exports = {
   obtenerTodosReclutadores,
   obtenerUsuariosYReclutadores,
   obtenerReclutadorPorId,
-  obtenerReclutadorDetalladoPorId
+  obtenerReclutadorDetalladoPorId,
+  actualizarReclutador
 };
