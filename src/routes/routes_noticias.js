@@ -10,8 +10,10 @@ const noticiasController = require('../controllers/noticias_controller.js');
 router.post('/', noticiasController.createNoticia);
 
 
+router.delete('/:id_noticia', noticiasController.eliminarNoticia);
 
 
+router.patch('/:id_noticia', noticiasController.actualizarNoticia);
 
 
 

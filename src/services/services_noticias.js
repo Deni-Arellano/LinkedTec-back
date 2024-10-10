@@ -1,4 +1,5 @@
 const Noticia= require('../models/noticias.js');
+const sequelize = require('../config/database.js');
 
 /**
  * @async
@@ -17,3 +18,39 @@ exports.crearNoticia = async (datosNoticia) => {
 
 
 
+/**
+ * 
+ * @param {number} id_noticia 
+ * @description Elimina una noticia en la base de datos utilizando el id de la noticia misma
+ * @returns true si la noticia fue eliminada correctamente, false si no se pudo eliminar
+ * 
+ */
+exports.eliminarNoticia = async (id_noticia) => {
+
+  const noticia = await Noticia.findByPk(id_noticia);
+  
+  if (!noticia) {
+    return false;
+  }
+
+  noticia.destroy();
+  return true;
+
+
+};
+
+
+exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
+
+  const noticia = await Noticia.findByPk(id_noticia);
+  console.log(noticia);
+  if (!noticia) {
+    return false;
+  }
+
+  noticia.update(datosNoticia);
+
+  return noticia;
+
+
+};

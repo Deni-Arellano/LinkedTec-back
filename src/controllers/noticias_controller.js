@@ -39,3 +39,47 @@ exports.createNoticia = async (req, res) => {
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
+
+
+
+exports.eliminarNoticia = async (req, res) => {
+
+    try {
+
+        const {id_noticia} = req.params;
+        
+        if (NoticiaService.eliminarNoticia(id_noticia)) {
+            return res.status(200).json({ message: "Noticia eliminada correctamente" });
+
+        } else {
+            return res.status(400).json({ message: "No se pudo eliminar la noticia" });
+        }
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error en el servidor", error: error.message });
+
+    }
+};
+
+
+exports.actualizarNoticia = async (req, res) => {
+
+    try {
+
+
+        const noticia = await NoticiaService.actualizarNoticia(req.params.id_noticia, req.body);
+
+        if (noticia) {
+            return res.status(200).json(noticia);
+        } else {
+            return res.status(400).json({ message: "No se pudo actualizar la noticia" });
+        }
+
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error en el servidor", error: error.message });
+
+    }
+
+
+};
