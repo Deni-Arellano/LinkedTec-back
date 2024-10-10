@@ -291,6 +291,53 @@ const getUsuariRolById = async (req, res) => {
 };
 
 
+const editDocente = async (req, res) => {
+    try {
+        const { usuario, docente } = req.body;
+
+        // Buscar el usuario existente
+        const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
+
+        if (usuarioExistente) {
+            // Actualizar datos del usuario
+            usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
+            usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
+            usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
+            usuarioExistente.correo = usuario.correo || usuarioExistente.correo;
+            usuarioExistente.telefono = usuario.telefono || usuarioExistente.telefono;
+            usuarioExistente.sexo = usuario.sexo || usuarioExistente.sexo;
+            usuarioExistente.biografia = usuario.biografia || usuarioExistente.biografia;
+            usuarioExistente.role = usuario.role || usuarioExistente.role;
+
+            await usuarioExistente.save();
+        }
+
+        // Buscar el docente existente
+        const docenteExistente = await Docente.findOne({ where: { id: req.params.id } });
+
+        if (docenteExistente) {
+            // Actualizar datos del docente
+            docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
+            docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
+            docenteExistente.academia = docente.academia || docenteExistente.academia;
+
+            await docenteExistente.save();
+        }
+
+        res.status(200).json({ message: 'Docente actualizado correctamente' });
+    } catch (error) {
+        // Capturar el error de validación con más detalles
+        if (error.errors && error.errors.length > 0) {
+            console.error("Errores de validación:", error.errors);
+            return res.status(400).json({ error: error.errors.map(e => e.message) });
+        }
+        console.error("Error capturado:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+
 
 module.exports = {
     createDocente,
@@ -299,5 +346,6 @@ module.exports = {
     getAllDocentesInfo, // Exportar la nueva función
     getDocentePerfilById,
     getinfoDocenteById,
-    getUsuariRolById
+    getUsuariRolById,
+    editDocente
 };
