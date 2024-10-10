@@ -240,17 +240,21 @@ const obtenerReclutadorDetalladoPorId = async (req, res) => {
 
 const actualizarReclutador = async (req, res) => {
   const { id } = req.params;
-  const datosActualizados = req.body;
+  const { usuario, reclutador } = req.body;
 
   try {
-    const reclutadorActualizado = await actualizarReclutadorServicio(id, datosActualizados);
+   
+    const resultado = await actualizarReclutadorServicio(id, usuario, reclutador);
+
+    // Responder con los datos actualizados
     res.status(200).json({
-      message: 'Reclutador actualizado exitosamente',
-      reclutador: reclutadorActualizado
+      message: 'Usuario y reclutador actualizados correctamente',
+      usuario: resultado.usuario,
+      reclutador: resultado.reclutador
     });
   } catch (error) {
-    console.error('Error al actualizar reclutador:', error);
-    res.status(500).json({ message: 'Error al actualizar reclutador', error: error.message });
+    console.error('Error al actualizar usuario y reclutador:', error);
+    res.status(500).json({ message: 'Error al actualizar usuario y reclutador', error: error.message });
   }
 };
 
