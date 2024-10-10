@@ -1,6 +1,7 @@
 const Estudiante = require('../models/estudiantes');
 const Usuario = require('../models/usuarios');
 const {validarRegistroEstudiante} = require('../middlewares/validations/validaciones_estudiantes');
+const {validarEdicionEstudiante} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarNumeroControl} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuarioEnUsoPlanB, validarUsuariosExistentes} = require('../middlewares/validations/validaciones_usuarios');
 
@@ -265,6 +266,11 @@ const editEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
 
+        const { error } = await validarEdicionEstudiante(estudiante);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
+
         // Buscar el usuario existente
         const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
 
@@ -287,7 +293,6 @@ const editEstudiante = async (req, res) => {
 
         if (estudianteExistente) {
             // Actualizar datos del estudiante
-            estudianteExistente.numero_control = estudiante.numero_control || estudianteExistente.numero_control;
             estudianteExistente.carrera = estudiante.carrera || estudianteExistente.carrera;
             estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; // Nuevo campo semestre
 
