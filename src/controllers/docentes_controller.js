@@ -1,6 +1,7 @@
 const Docente = require('../models/docentes');
 const Usuario = require('../models/usuarios');
 const {validarRegistroDocente} = require('../middlewares/validations/validaciones_docentes');
+const {validarEdicionDocente} = require('../middlewares/validations/validaciones_docentes');
 const {validarNumeroDocente} = require('../middlewares/validations/validaciones_docentes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuariosExistentes,validarUsuarioEnUsoPlanB} = require('../middlewares/validations/validaciones_usuarios');
 
@@ -294,6 +295,11 @@ const getUsuariRolById = async (req, res) => {
 const editDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
+
+        const { error } = await validarEdicionDocente(docente); // Aquí validas solo el docente
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
 
         // Buscar el usuario existente
         const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });

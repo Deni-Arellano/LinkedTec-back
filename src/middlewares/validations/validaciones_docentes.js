@@ -34,5 +34,24 @@ const validarNumeroDocente = async (numero_empleado) => {
     }
 }
 
+const validarEdicionDocente = async (data) => {
+    const schemaEdicion = Joi.object({
+        numero_empleado: Joi.string().alphanum().pattern(/^RH/).max(5).optional().messages({
+            'string.empty': 'El número de empleado no puede estar vacío',
+            'string.max': 'El número de empleado no puede tener más de 5 caracteres', // Corregido el mensaje a 5 caracteres
+            'string.pattern.base': 'El número de empleado debe comenzar con "RH"' // Mensaje para la nueva validación
+        }),
+        ultimo_nivel_estudios: Joi.string().valid('Licenciatura', 'Maestría', 'Doctorado').optional().messages({
+            'any.only': 'El último nivel de estudios debe ser Licenciatura, Maestría o Doctorado',
+            'string.empty': 'El último nivel de estudios no puede estar vacío'
+        }),
+        academia: Joi.string().valid('IE', 'ISC', 'II', 'IA', 'CP', 'IGE').optional().messages({
+            'any.only': 'La academia debe ser uno de los valores permitidos: IE, ISC, II, IA, CP, IGE',
+            'string.empty': 'La academia no puede estar vacía'
+        }),
+    });
 
-module.exports = {validarRegistroDocente, validarNumeroDocente};
+    return schemaEdicion.validate(data);
+};
+
+module.exports = {validarRegistroDocente, validarNumeroDocente, validarEdicionDocente};
