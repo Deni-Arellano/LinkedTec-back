@@ -87,20 +87,31 @@ exports.actualizarNoticia = async (req, res) => {
 
 
 
-/**
- * Controlador para obtener una noticia por su ID
- * @param {Object} req - El objeto de solicitud de Express.
- * @param {Object} res - El objeto de respuesta de Express.
- * @returns {Promise<void>} - Devuelve la noticia o un error.
- */
 exports.obtenerNoticiaPorId = async (req, res) => {
-    const { id } = req.params;
-  
     try {
-        console.log(id);
-      const noticia = await obtenerNoticiaPorIdServicio(id);
-      res.status(200).json(noticia);
+        const { id_noticia } = req.params;
+        const noticia = await NoticiaService.obtenerNoticiaPorId(id_noticia);
+
+        if (noticia) {
+            return res.status(200).json(noticia);
+        } else {
+            return res.status(404).json({ message: "Noticia no encontrada" });
+        }
     } catch (error) {
-      res.status(404).json({ message: error.message });
+        return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
-  };
+};
+
+exports.obtenerTodasLasNoticias = async (req, res) => {
+    try {
+        const { success, data, error } = await NoticiaService.obtenerTodasLasNoticias();
+
+        if (success) {
+            return res.status(200).json(data);
+        } else {
+            return res.status(404).json({ message: error });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
+};

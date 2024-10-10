@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const noticiasController = require('../controllers/noticias_controller.js');
+const noticiasController = require('../controllers/noticias_controller');
 
 
 
@@ -16,8 +16,7 @@ router.delete('/:id_noticia', noticiasController.eliminarNoticia);
 
 router.patch('/:id_noticia', noticiasController.actualizarNoticia);
 
-router.get('/:id', noticiasController.obtenerNoticiaPorId);
 
-
-
+router.get('/', noticiasController.obtenerTodasLasNoticias);
+router.get('/:id_noticia', noticiasController.obtenerNoticiaPorId);
 module.exports = router;
