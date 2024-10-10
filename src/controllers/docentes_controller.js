@@ -323,7 +323,6 @@ const editDocente = async (req, res) => {
 
         if (docenteExistente) {
             // Actualizar datos del docente
-            docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
             docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
             docenteExistente.academia = docente.academia || docenteExistente.academia;
 
