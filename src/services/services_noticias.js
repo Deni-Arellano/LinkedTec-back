@@ -54,3 +54,26 @@ exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
 
 
 };
+
+
+
+/**
+ * Función para obtener una noticia por su ID
+ * @param {number} id_noticia - ID de la noticia a buscar.
+ * @returns {Promise<Object>} - La noticia encontrada o un error si no se encuentra.
+ */
+exports.obtenerNoticiaPorIdServicio = async (id_noticia) => {
+  try {
+    console.log(id_noticia);
+    const noticia = await Noticia.findByPk(id_noticia);
+
+    if (!noticia) {
+      throw new Error('Noticia no encontrada');
+    }
+
+    return noticia;
+  } catch (error) {
+    console.error('Error al obtener noticia por ID:', error);
+    throw new Error('Error al obtener noticia');
+  }
+};

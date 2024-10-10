@@ -1,5 +1,6 @@
 const NoticiaService = require('../services/services_noticias.js');
 
+
 /**
  * @async
  * Crear una nueva noticia en la base de datos.
@@ -83,3 +84,23 @@ exports.actualizarNoticia = async (req, res) => {
 
 
 };
+
+
+
+/**
+ * Controlador para obtener una noticia por su ID
+ * @param {Object} req - El objeto de solicitud de Express.
+ * @param {Object} res - El objeto de respuesta de Express.
+ * @returns {Promise<void>} - Devuelve la noticia o un error.
+ */
+exports.obtenerNoticiaPorId = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+        console.log(id);
+      const noticia = await obtenerNoticiaPorIdServicio(id);
+      res.status(200).json(noticia);
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+    }
+  };
