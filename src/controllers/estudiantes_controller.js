@@ -260,6 +260,52 @@ const getEstudianteRolById = async (req, res) => {
         }else {res.status(500).json({ error: error.message });}
     }
 };
+
+const editEstudiante = async (req, res) => {
+    try {
+        const { usuario, estudiante } = req.body;
+
+        // Buscar el usuario existente
+        const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
+
+        if (usuarioExistente) {
+            // Actualizar datos del usuario
+            usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
+            usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
+            usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
+            usuarioExistente.correo = usuario.correo || usuarioExistente.correo;
+            usuarioExistente.telefono = usuario.telefono || usuarioExistente.telefono;
+            usuarioExistente.sexo = usuario.sexo || usuarioExistente.sexo;
+            usuarioExistente.biografia = usuario.biografia || usuarioExistente.biografia;
+            usuarioExistente.role = usuario.role || usuarioExistente.role;
+
+            await usuarioExistente.save();
+        }
+
+        // Buscar el estudiante existente
+        const estudianteExistente = await Estudiante.findOne({ where: { id: req.params.id } });
+
+        if (estudianteExistente) {
+            // Actualizar datos del estudiante
+            estudianteExistente.numero_control = estudiante.numero_control || estudianteExistente.numero_control;
+            estudianteExistente.carrera = estudiante.carrera || estudianteExistente.carrera;
+            estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; // Nuevo campo semestre
+
+            await estudianteExistente.save();
+        }
+
+        res.status(200).json({ message: 'Estudiante actualizado correctamente' });
+    } catch (error) {
+        // Capturar el error de validación con más detalles
+        if (error.errors && error.errors.length > 0) {
+            console.error("Errores de validación:", error.errors);
+            return res.status(400).json({ error: error.errors.map(e => e.message) });
+        }
+        console.error("Error capturado:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Exportar funciones
 module.exports = {
     createEstudiante,
@@ -268,5 +314,6 @@ module.exports = {
     getAllEstudiantesInfo, // Exportar la nueva función
     getEstudiantePerfilById,
     getEstudianteInfoById,
-    getEstudianteRolById
+    getEstudianteRolById,
+    editEstudiante
 };

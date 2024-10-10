@@ -21,4 +21,6 @@ router.get('/:id/info', EstudianteController.getEstudianteInfoById);
 
 router.get('/:id/', EstudianteController.getEstudianteRolById); //
 
+router.patch('/:id', EstudianteController.editEstudiante);
+
 module.exports = router;
