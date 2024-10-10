@@ -27,3 +27,4 @@ CREATE TABLE confirmacion_asistencia (
     PRIMARY KEY (id_usuario, id_evento),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id), 
     FOREIGN KEY (id_evento) REFERENCES evento(id_evento) 
+);

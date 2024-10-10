@@ -1,6 +1,5 @@
 // src/controllers/egresados_controller.js
-const egresadosService = require('../services/services_egresados');
-const usuarioService = require('../services/services_usuarios');
+const { actualizarEgresadoYUsuario } = require('../services/services_egresados');
 const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
@@ -237,5 +236,34 @@ exports.getEgresadoProfileById = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
     return res.status(500).json({ message: 'Error al obtener el perfil del egresado', error: error.message });
+  }
+};
+
+
+
+
+/**
+ * @async
+ * Controlador para actualizar la información de un egresado y su usuario.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con el resultado de la operación o un error.
+ */
+exports.updateEgresado = async (req, res) => {
+  const { id } = req.params;
+  const { usuario, egresado } = req.body;
+
+  try {
+    const resultado = await actualizarEgresadoYUsuario(id, usuario, egresado);
+    if (!resultado.success) {
+      return res.status(404).json({ message: resultado.error });
+    }
+
+    return res.status(200).json({
+      message: 'Egresado y usuario actualizados exitosamente',
+      data: resultado.data
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al actualizar el egresado y usuario', error: error.message });
   }
 };

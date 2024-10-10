@@ -34,5 +34,14 @@ router.get('/:id/info', egresadosController.getEgresadoRoleInfoById);
 router.get('/:id', egresadosController.getEgresadoWithUserInfoById);
 
 
+/**
+ * Ruta para actualizar la información de un egresado
+ */
+router.patch('/:id', egresadosController.updateEgresado);
+
+
+
+
+
 
 module.exports = router;
