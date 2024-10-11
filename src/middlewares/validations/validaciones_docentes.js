@@ -2,6 +2,7 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 const Docente = require('../../models/docentes');
 const ValidationNumberEmpleoyeeError = require('../exceptions/ValidationNumberEmployeeError');
+const DocenteNotFoundError = require('../exceptions/DocenteNotFoundError');
 
 const validarRegistroDocente = async (data) => {
     const validarRegistroDocente = Joi.object({
@@ -34,6 +35,17 @@ const validarNumeroDocente = async (numero_empleado) => {
     }
 }
 
+const validarDocenteExistente = async (id) => {
+    const docente = await Docente.findOne({
+        where: { id }
+    });
+    if (!docente) {
+        throw new DocenteNotFoundError();
+    }
+}
+
+
+
 const validarEdicionDocente = async (data) => {
     const schemaEdicion = Joi.object({
         ultimo_nivel_estudios: Joi.string().valid('Licenciatura', 'Maestría', 'Doctorado').optional().messages({
@@ -49,4 +61,4 @@ const validarEdicionDocente = async (data) => {
     return schemaEdicion.validate(data);
 };
 
-module.exports = {validarRegistroDocente, validarNumeroDocente, validarEdicionDocente};
+module.exports = {validarRegistroDocente, validarNumeroDocente, validarEdicionDocente, validarDocenteExistente};

@@ -3,7 +3,10 @@ const Usuario = require('../models/usuarios');
 const {validarRegistroDocente} = require('../middlewares/validations/validaciones_docentes');
 const {validarEdicionDocente} = require('../middlewares/validations/validaciones_docentes');
 const {validarNumeroDocente} = require('../middlewares/validations/validaciones_docentes');
+const {validarDocenteExistente} = require('../middlewares/validations/validaciones_docentes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuariosExistentes,validarUsuarioEnUsoPlanB} = require('../middlewares/validations/validaciones_usuarios');
+
+
 
 const createDocente = async (req, res) => {
     try {
@@ -295,14 +298,19 @@ const getUsuariRolById = async (req, res) => {
 const editDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
+        const docenteId = req.params.id; // Tomamos el ID de la URL
 
-        const { error } = await validarEdicionDocente(docente); // Aquí validas solo el docente
+        // Validar si el docente existe por ID (tomado de los parámetros de la URL)
+        await validarDocenteExistente(docenteId);
+
+
+        const { error } = await validarEdicionDocente(docente); // Validar los datos del docente
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
 
         // Buscar el usuario existente
-        const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
+        const usuarioExistente = await Usuario.findOne({ where: { id: docenteId } });
 
         if (usuarioExistente) {
             // Actualizar datos del usuario
@@ -318,29 +326,27 @@ const editDocente = async (req, res) => {
             await usuarioExistente.save();
         }
 
-        // Buscar el docente existente
-        const docenteExistente = await Docente.findOne({ where: { id: req.params.id } });
+        // Buscar el docente existente por ID
+        const docenteExistente = await Docente.findOne({ where: { id: docenteId } });
 
         if (docenteExistente) {
             // Actualizar datos del docente
             docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
+            docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
             docenteExistente.academia = docente.academia || docenteExistente.academia;
 
             await docenteExistente.save();
+        } else {
+            return res.status(404).json({ error: "Docente no encontrado" });
         }
 
         res.status(200).json({ message: 'Docente actualizado correctamente' });
     } catch (error) {
-        // Capturar el error de validación con más detalles
-        if (error.errors && error.errors.length > 0) {
-            console.error("Errores de validación:", error.errors);
-            return res.status(400).json({ error: error.errors.map(e => e.message) });
-        }
-        console.error("Error capturado:", error);
-        res.status(500).json({ error: error.message });
+        if (error.name === 'DocenteNotFoundError') {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        }else {res.status(500).json({ error: error.message });}      // Capturar el error de validación con más detall
     }
 };
-
 
 
 

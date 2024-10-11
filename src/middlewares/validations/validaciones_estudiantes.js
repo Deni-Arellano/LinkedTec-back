@@ -2,6 +2,7 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 const Estudiante = require('../../models/estudiantes');
 const ValidationNumberStudentError = require('../exceptions/ValidationNumberStudentError');
+const EstudianteNotFoundError = require('../exceptions/EstudianteNotFoundError');
 
 const validarRegistroEstudiante = async (data) => {
     const validarRegistroEstudiante = Joi.object({
@@ -30,6 +31,15 @@ const validarNumeroControl = async (no_control) => {
     }
 }
 
+const validarEstudianteExistente = async (id) => {
+    const estudiante = await Estudiante.findOne({
+        where: { id }
+    });
+    if (!estudiante) {
+        throw new EstudianteNotFoundError();
+    }
+}
+
 const validarEdicionEstudiante = async (data) => {
     const schemaEdicion = Joi.object({
         carrera: Joi.string().valid('IE', 'ISC', 'II', 'IA', 'CP', 'IGE').required().messages({
@@ -43,4 +53,4 @@ const validarEdicionEstudiante = async (data) => {
     return schemaEdicion.validate(data);
 };
 
-module.exports = {validarRegistroEstudiante, validarNumeroControl, validarEdicionEstudiante};
+module.exports = {validarRegistroEstudiante, validarNumeroControl, validarEdicionEstudiante, validarEstudianteExistente};

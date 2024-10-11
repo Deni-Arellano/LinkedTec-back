@@ -3,6 +3,7 @@ const Usuario = require('../models/usuarios');
 const {validarRegistroEstudiante} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarEdicionEstudiante} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarNumeroControl} = require('../middlewares/validations/validaciones_estudiantes');
+const {validarEstudianteExistente} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuarioEnUsoPlanB, validarUsuariosExistentes} = require('../middlewares/validations/validaciones_usuarios');
 
 // Función para crear un nuevo estudiante
@@ -266,10 +267,14 @@ const editEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
 
+        // Validar la edición del estudiante
         const { error } = await validarEdicionEstudiante(estudiante);
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
+
+        // Verificar si el estudiante existe
+        await validarEstudianteExistente(req.params.id);
 
         // Buscar el usuario existente
         const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
@@ -294,20 +299,18 @@ const editEstudiante = async (req, res) => {
         if (estudianteExistente) {
             // Actualizar datos del estudiante
             estudianteExistente.carrera = estudiante.carrera || estudianteExistente.carrera;
-            estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; // Nuevo campo semestre
+            estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; // Campo semestre
 
             await estudianteExistente.save();
         }
 
         res.status(200).json({ message: 'Estudiante actualizado correctamente' });
     } catch (error) {
-        // Capturar el error de validación con más detalles
-        if (error.errors && error.errors.length > 0) {
-            console.error("Errores de validación:", error.errors);
-            return res.status(400).json({ error: error.errors.map(e => e.message) });
-        }
-        console.error("Error capturado:", error);
-        res.status(500).json({ error: error.message });
+        if (error.name === 'EstudianteNotFoundError') {
+            return res.status(404).json({ error: 'Estudiante no encontrado.' });
+        }else {res.status(500).json({ error: error.message
+        });}
+
     }
 };
 
