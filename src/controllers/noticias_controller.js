@@ -1,4 +1,5 @@
 const NoticiaService = require('../services/services_noticias.js');
+const validarNoticia = require('../middlewares/validations/validaciones_noticias.js');
 
 /**
  * @async
@@ -9,19 +10,15 @@ const NoticiaService = require('../services/services_noticias.js');
  */
 exports.createNoticia = async (req, res) => {
     try {
-        const { titulo, descripcion, imagen_noticia, enlace_noticia, fecha_noticia, categoria_noticia, id_usuario } = req.body;
+        const { titulo_noticia, descripcion, imagen_noticia, enlace_noticia, fecha_noticia, categoria_noticia, id_usuario } = req.body;
 
-        if (!titulo || !descripcion || !categoria_noticia || !id_usuario) {
-            return res.status(400).json({ message: "Los campos obligatorios no pueden estar vacíos" });
-        }
-
-        const categoriasPermitidas = ['IE', 'ISC', 'II', 'IA', 'CP', 'IGE'];
-        if (!categoriasPermitidas.includes(categoria_noticia)) {
-            return res.status(400).json({ message: "Categoría no válida" });
+        const error = validarNoticia(req.body); 
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         const resultado = await NoticiaService.crearNoticia({
-            titulo_noticia: titulo,
+            titulo_noticia,
             descripcion,
             imagen_noticia,
             enlace_noticia,
@@ -39,6 +36,8 @@ exports.createNoticia = async (req, res) => {
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
+
+
 
 
 
