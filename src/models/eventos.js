@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Usuario = require('./Usuario'); // Asegúrate de tener el modelo de Usuario importado
+const Usuario = require('./usuarios'); // Asegúrate de tener el modelo de Usuario importado
 
 class Evento extends Model {}
 

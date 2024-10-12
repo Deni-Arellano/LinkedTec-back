@@ -9,13 +9,16 @@ exports.crearEvento = async (data) => {
 
 
         const nuevoEvento = await evento.create({
-            nombre: data.nombre,
-            descripcion: data.descripcion,
+
+            titulo: data.titulo,
             fecha: data.fecha,
-            hora: data.hora,
             lugar: data.lugar,
+            descripcion: data.descripcion,
+            enlace: data.enlace,
             imagen: data.imagen,
+            tipo_evento: data.tipo_evento,
             id_usuario: data.id_usuario
+            
         });
 
         return nuevoEvento;
@@ -24,5 +27,74 @@ exports.crearEvento = async (data) => {
     } catch (error) {
         console.error('Error en la función crearEvento:', error.message);
     }
+
+};
+
+
+exports.obtenerEventos = async () => {
+
+    try {
+
+        const eventos = await evento.findAll();
+
+        return eventos;
+
+    } catch (error) {
+        console.error('Error en la función obtenerEventos:', error.message);
+    }
+
+
+};
+
+exports.obtenerEventoById = async (id) => {
+    
+    try {
+    
+        const eventoById = await evento.findByPk(id);
+    
+        return eventoById;
+    
+    } catch (error) {
+        console.error('Error en la función obtenerEventoById:', error.message);
+    }
+    
+};
+
+
+exports.eliminarEvento = async (id) => {
+        
+        try {
+        
+
+            const eventoById = await evento.findByPk(id);
+        
+            await eventoById.destroy();
+        
+            return eventoById;
+
+        
+        } catch (error) {
+            console.error('Error en la función eliminarEvento:', error.message);
+        }
+        
+};
+
+exports.actualizarEvento = async (id, data) => {
+        
+        try {
+        
+            const evento = await evento.findByPk(id);
+        
+            if (!evento) {
+                return false;
+            }
+
+            evento.update(data);
+        
+            return evento;
+        
+        } catch (error) {
+            console.error('Error en la función actualizarEvento:', error.message);
+        }
 
 };
