@@ -40,7 +40,7 @@ Reporte.init({
     }
 }, {
     sequelize,
-    modelName: 'reporte',
+    modelName: 'Reporte',
     tableName: 'reportes',
     timestamps: false,
 });

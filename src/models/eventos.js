@@ -39,7 +39,7 @@ Evento.init({
     }
 }, {
     sequelize,
-    modelName: 'evento',
+    modelName: 'Evento',
     tableName: 'evento',
     timestamps: false,
 });
