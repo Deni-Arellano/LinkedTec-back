@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const Usuario = require('./Usuario'); // Asegúrate de tener el modelo de Usuario importado
 
 class Evento extends Model {}
 
@@ -36,6 +37,15 @@ Evento.init({
     tipo_evento: {
         type: DataTypes.ENUM('taller', 'seminario', 'evento general'),
         allowNull: false,
+    },
+    id_usuario: { // Nueva columna para la relación
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Usuario, // Hace referencia al modelo Usuario
+            key: 'id', // Llave primaria de la tabla usuario
+        },
+        onDelete: 'CASCADE', // Establece la relación con ON DELETE CASCADE
     }
 }, {
     sequelize,
@@ -43,5 +53,8 @@ Evento.init({
     tableName: 'evento',
     timestamps: false,
 });
+
+// Definición de la relación
+Evento.belongsTo(Usuario, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 
 module.exports = Evento;
