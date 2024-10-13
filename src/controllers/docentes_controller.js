@@ -97,7 +97,7 @@ const getAllDocentes = async (req, res) => {
     try {
         // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
         const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
 
         // Calcular el desplazamiento (offset) y el límite
         const offset = (pagina - 1) * limite;
@@ -204,7 +204,7 @@ const getAllDocentesInfo = async (req, res) => {
     try {
         // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
         const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
 
         // Calcular el desplazamiento (offset) y el límite
         const offset = (pagina - 1) * limite;
