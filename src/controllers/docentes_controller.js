@@ -95,12 +95,25 @@ const createDocente = async (req, res) => {
 // Función para obtener todos los docentes
 const getAllDocentes = async (req, res) => {
     try {
-        const docentes = await Docente.findAll({
-            include: [Usuario] // Incluye los datos del usuario asociado
+        // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
+        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
+        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+
+        // Calcular el desplazamiento (offset) y el límite
+        const offset = (pagina - 1) * limite;
+        const limit = limite;
+
+        // Obtener docentes con paginación
+        const { rows: docentes, count } = await Docente.findAndCountAll({
+            include: [Usuario], // Incluye los datos del usuario asociado
+            offset, // Desplazamiento calculado
+            limit // Límite de resultados por página
         });
 
+        // Validar si hay docentes disponibles
         await validarUsuariosExistentes(docentes);
 
+        // Mapear los resultados a la estructura que necesitas
         const docentesCompletos = docentes.map(docente => ({
             id: docente.id,
             nombre: docente.Usuario.nombre,
@@ -117,13 +130,36 @@ const getAllDocentes = async (req, res) => {
             academia: docente.academia
         }));
 
-        res.status(200).json(docentesCompletos);
+        // Calcular el total de páginas
+        const totalPaginas = Math.ceil(count / limite);
+
+        // Preparar la respuesta con los datos de paginación y docentes
+        const response = {
+            total: count, // Número total de docentes
+            pagina: pagina, // Página actual
+            limite: limite, // Límite de resultados por página
+            total_paginas: totalPaginas, // Total de páginas
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina + 1}&limite=${limite}` : null,
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina - 1}&limite=${limite}` : null,
+            exists_pagina_siguiente: pagina < totalPaginas,
+            exists_pagina_anterior: pagina > 1,
+            docentes: docentesCompletos // Lista de docentes en esta página
+        };
+
+        // Enviar la respuesta
+        res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: "Usuario no encontrado." });
-        }else{res.status(500).json({ error: error.message });}  
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
 };
+
+
 
 // Función para obtener un docente por ID
 const getDocenteById = async (req, res) => {
@@ -166,12 +202,24 @@ const getDocenteById = async (req, res) => {
 
 const getAllDocentesInfo = async (req, res) => {
     try {
-        const docentes = await Docente.findAll({
-            include: [Usuario] // Incluye los datos del usuario asociado
+        // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
+        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
+        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+
+        // Calcular el desplazamiento (offset) y el límite
+        const offset = (pagina - 1) * limite;
+
+        // Obtener docentes con paginación
+        const { rows: docentes, count } = await Docente.findAndCountAll({
+            include: [Usuario], // Incluye los datos del usuario asociado
+            offset, // Desplazamiento calculado
+            limit: limite // Límite de resultados por página
         });
 
+        // Validar si hay docentes disponibles
         await validarUsuariosExistentes(docentes);
 
+        // Mapear los resultados a la estructura que necesitas
         const docentesConInfoUnica = docentes.map(docente => ({
             id: docente.id, // ID del docente
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
@@ -179,13 +227,35 @@ const getAllDocentesInfo = async (req, res) => {
             academia: docente.academia
         }));
 
-        res.status(200).json(docentesConInfoUnica);
+        // Calcular el total de páginas
+        const totalPaginas = Math.ceil(count / limite);
+
+        // Preparar la respuesta con los datos de paginación y docentes
+        const response = {
+            total: count, // Número total de docentes
+            pagina: pagina, // Página actual
+            limite: limite, // Límite de resultados por página
+            total_paginas: totalPaginas, // Total de páginas
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina + 1}&limite=${limite}` : null,
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina - 1}&limite=${limite}` : null,
+            exists_pagina_siguiente: pagina < totalPaginas,
+            exists_pagina_anterior: pagina > 1,
+            docentes: docentesConInfoUnica // Lista de docentes en esta página
+        };
+
+        // Enviar la respuesta
+        res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: "Usuarios no encontrados." });
-        }else{res.status(500).json({ error: error.message });}
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
 };
+
 // Función para obtener el perfil del docente usando el ID del cuerpo de la solicitud
 // Función para obtener el perfil del docente
 // Función para obtener el perfil del docente

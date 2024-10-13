@@ -74,12 +74,24 @@ const createEstudiante = async (req, res) => {
 // Función para obtener todos los estudiantes
 const getAllEstudiantes = async (req, res) => {
     try {
-        const estudiantes = await Estudiante.findAll({
-            include: [Usuario] // Incluye los datos del usuario asociado
+        // Obtener los parámetros de paginación de la solicitud
+        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
+        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+
+        // Calcular el desplazamiento (offset)
+        const offset = (pagina - 1) * limite;
+
+        // Obtener estudiantes con paginación
+        const { rows: estudiantes, count } = await Estudiante.findAndCountAll({
+            include: [Usuario], // Incluye los datos del usuario asociado
+            offset, // Desplazamiento calculado
+            limit: limite // Límite de resultados por página
         });
 
+        // Validar si hay usuarios existentes
         await validarUsuariosExistentes(estudiantes);
 
+        // Mapear los resultados a la estructura que necesitas
         const estudiantesCompletos = estudiantes.map(estudiante => ({
             id: estudiante.id, // ID del estudiante
             no_control: estudiante.no_control, // No de control del estudiante
@@ -96,7 +108,26 @@ const getAllEstudiantes = async (req, res) => {
             sexo: estudiante.Usuario.sexo
         }));
 
-        res.status(200).json(estudiantesCompletos);
+        // Calcular el total de páginas
+        const totalPaginas = Math.ceil(count / limite);
+
+        // Preparar la respuesta con los datos de paginación y estudiantes
+        const response = {
+            total: count, // Número total de estudiantes
+            pagina: pagina, // Página actual
+            limite: limite, // Límite de resultados por página
+            total_paginas: totalPaginas, // Total de páginas
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes?pagina=${pagina + 1}&limite=${limite}` : null,
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes?pagina=${pagina - 1}&limite=${limite}` : null,
+            exists_pagina_siguiente: pagina < totalPaginas,
+            exists_pagina_anterior: pagina > 1,
+            estudiantes: estudiantesCompletos // Lista de estudiantes en esta página
+        };
+
+        // Enviar la respuesta
+        res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: 'Usuario no encontrado.' });
@@ -104,6 +135,7 @@ const getAllEstudiantes = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // Función para obtener un estudiante por ID
 const getEstudianteById = async (req, res) => {
@@ -146,12 +178,24 @@ const getEstudianteById = async (req, res) => {
 // Función para obtener información específica de los estudiantes
 const getAllEstudiantesInfo = async (req, res) => {
     try {
-        const estudiantes = await Estudiante.findAll({
-            include: [Usuario] // Incluye los datos del usuario asociado
+        // Obtener los parámetros de paginación de la solicitud
+        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
+        const limite = parseInt(req.query.limite) || 5; // Tamaño de página (por defecto 5)
+
+        // Calcular el desplazamiento (offset)
+        const offset = (pagina - 1) * limite;
+
+        // Obtener estudiantes con paginación
+        const { rows: estudiantes, count } = await Estudiante.findAndCountAll({
+            include: [Usuario], // Incluye los datos del usuario asociado
+            offset, // Desplazamiento calculado
+            limit: limite // Límite de resultados por página
         });
 
+        // Validar si hay usuarios existentes
         await validarUsuariosExistentes(estudiantes);
 
+        // Mapear los resultados a la estructura que necesitas
         const estudiantesConInfoUnica = estudiantes.map(estudiante => ({
             id: estudiante.id,               // ID del estudiante
             no_control: estudiante.no_control, // NO_CONTROL del estudiante
@@ -159,13 +203,34 @@ const getAllEstudiantesInfo = async (req, res) => {
             semestre: estudiante.semestre       // SEMESTRE del estudiante
         }));
 
-        res.status(200).json(estudiantesConInfoUnica);
+        // Calcular el total de páginas
+        const totalPaginas = Math.ceil(count / limite);
+
+        // Preparar la respuesta con los datos de paginación y estudiantes
+        const response = {
+            total: count, // Número total de estudiantes
+            pagina: pagina, // Página actual
+            limite: limite, // Límite de resultados por página
+            total_paginas: totalPaginas, // Total de páginas
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes/info?pagina=${pagina + 1}&limite=${limite}` : null,
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes/info?pagina=${pagina - 1}&limite=${limite}` : null,
+            exists_pagina_siguiente: pagina < totalPaginas,
+            exists_pagina_anterior: pagina > 1,
+            estudiantes: estudiantesConInfoUnica // Lista de estudiantes en esta página
+        };
+
+        // Enviar la respuesta
+        res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: 'Usuario no encontrado.' });
-        }else {res.status(500).json({ error: error.message });}
+        }
+        res.status(500).json({ error: error.message });
     }
 };
+
 
 const getEstudiantePerfilById = async (req, res) => {
     try {
