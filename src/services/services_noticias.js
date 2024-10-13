@@ -1,4 +1,5 @@
 const Noticia= require('../models/noticias.js');
+const db = require('../config/database');
 const sequelize = require('../config/database.js');
 
 /**
@@ -53,4 +54,39 @@ exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
   return noticia;
 
 
+};
+
+
+
+
+/**
+ * @async
+ * Servicio para obtener una noticia por su ID.
+ * @param {number} id_noticia - El ID de la noticia.
+ * @returns {Promise<Object>} Devuelve la noticia encontrada o un error.
+ */
+exports.obtenerNoticiaPorId = async (id_noticia) => {
+  try {
+    const noticia = await Noticia.findByPk(id_noticia);
+    if (!noticia) {
+      return { success: false, error: 'Noticia no encontrada' };
+    }
+    return { success: true, data: noticia };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+exports.obtenerTodasLasNoticias = async () => {
+  try {
+      const noticias = await Noticia.findAll();
+
+      if (noticias.length === 0) {
+          return { success: false, message: "No se encontraron noticias" };
+      }
+
+      return { success: true, data: noticias };
+  } catch (error) {
+      return { success: false, error: error.message };
+  }
 };

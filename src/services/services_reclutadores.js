@@ -158,23 +158,48 @@ const obtenerReclutadorDetalladoPorIdServicio = async (id) => {
 
 
 
-const actualizarReclutadorServicio = async (id, datosActualizados) => {
+const actualizarReclutadorServicio = async (id, datosUsuarioActualizados, datosReclutadorActualizados) => {
   try {
+    // Buscar el usuario por ID
+    const usuario = await Usuario.findOne({ where: { id } });
+    if (!usuario) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    // Actualizar los datos del usuario
+    await usuario.update({
+      nombre: datosUsuarioActualizados.nombre,
+      apellido_paterno: datosUsuarioActualizados.apellido_paterno,
+      apellido_materno: datosUsuarioActualizados.apellido_materno,
+      correo: datosUsuarioActualizados.correo,
+      telefono: datosUsuarioActualizados.telefono,
+      sexo: datosUsuarioActualizados.sexo,
+      biografia: datosUsuarioActualizados.biografia,
+      fecha_nacimiento: datosUsuarioActualizados.fecha_nacimiento,
+      imagen_usuario: datosUsuarioActualizados.imagen_usuario
+    });
+
+    // Buscar el reclutador por ID
     const reclutador = await Reclutador.findOne({ where: { id } });
-    
     if (!reclutador) {
       throw new Error('Reclutador no encontrado');
     }
+
+    // Actualizar los datos del reclutador
     await reclutador.update({
-      nombre_empresa: datosActualizados.nombre_empresa,
-      sede: datosActualizados.sede,
-      giro: datosActualizados.giro
+      nombre_empresa: datosReclutadorActualizados.nombre_empresa,
+      sede: datosReclutadorActualizados.sede,
+      giro: datosReclutadorActualizados.giro
     });
 
-    return reclutador;
+    return {
+      usuario,
+      reclutador
+    };
+
   } catch (error) {
-    console.error('Error en actualizarReclutadorServicio:', error);
-    throw new Error('Error al actualizar reclutador');
+    console.error('Error al actualizar usuario y reclutador:', error);
+    throw new Error('Error al actualizar usuario y reclutador');
   }
 };
 
