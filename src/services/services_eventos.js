@@ -81,20 +81,16 @@ exports.eliminarEvento = async (id) => {
 
 exports.actualizarEvento = async (id, data) => {
         
-        try {
-        
-            const evento = await evento.findByPk(id);
-        
-            if (!evento) {
-                return false;
-            }
 
-            evento.update(data);
         
-            return evento;
+    const eventoEncontrado = await evento.findByPk(id);
         
-        } catch (error) {
-            console.error('Error en la función actualizarEvento:', error.message);
-        }
+    if (!eventoEncontrado) {
+        return false;
+    }
+
+    eventoEncontrado.update(data);
+        
+    return eventoEncontrado;
 
 };

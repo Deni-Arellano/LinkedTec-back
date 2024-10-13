@@ -77,17 +77,15 @@ exports.eliminarEvento = async(req, res) => {
 };
 
 exports.actualizarEvento = async(req, res) => {
-    
-        try {
-            const id = req.params.id;
-            const data = req.body;
-            const eventoActualizado = await servicesEvento.actualizarEvento(id, data);
-    
-            res.status(200).json(eventoActualizado);
-    
-        } catch (error) {
-            console.error('Error en la función actualizarEvento:', error.message);
-            res.status(500).json({error: error.message});
+
+
+        const evento = await servicesEvento.actualizarEvento(req.params.id, req.body);
+
+        if (evento) {
+            res.status(200).json(evento);
+
+        } else {
+            res.status(400).json({ message: "No se pudo actualizar el evento" });
         }
     
     };
