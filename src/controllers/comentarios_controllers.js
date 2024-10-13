@@ -4,57 +4,59 @@ const Usuario = require('../models/usuarios');
 const { obtenerComentariosPorPublicacion: obtenerComentariosPorPublicacionServicio } = require('../services/services_comentarios');
 const { validarComentario, validarComentarioExiste, validarComentarioExistente, validarDescarga, validarimagen } = require('../middlewares/validations/validaciones_comentarios');
 const {validarPublicacionExistente} = require('../middlewares/validations/validaciones_comentarios');
-// Función para obtener todos los comentarios de una publicación
+const CommentNotFoundError = require('../middlewares/exceptions/CommentNotFoundError');
+
 const obtenerComentarios = async (req, res) => {
     const { id } = req.params; // ID de la publicación
-
+  
     try {
-        // Validar si la publicación existe
-        await validarPublicacionExistente(id);
-
-        // Obtener los comentarios de la publicación usando el servicio
-        const comentarios = await obtenerComentariosPorPublicacionServicio(id);
-
-        // Verificar si se encontraron comentarios
-        if (!comentarios || comentarios.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron comentarios para esta publicación' });
-        }
-
-        // Mapear los comentarios para formatear la respuesta
-        const resultado = comentarios.map(comentario => ({
-            imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null, // Alias 'usuario' correcto
-            nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido', // Alias 'usuario' correcto
-            apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno: 'Descocncido', // Alias 'usuario' correcto
-            apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno: 'Descocncido', // Alias 'usuario' correcto
-            texto: comentario.texto,
-            fecha: comentario.fecha
-        }));
-
-        // Enviar la respuesta con los comentarios
-        res.json(resultado);
-
+      // Validar si la publicación existe
+      await validarPublicacionExistente(id);
+  
+      // Obtener los comentarios de la publicación usando el servicio
+      const comentarios = await  obtenerComentariosPorPublicacionServicio(id);
+  
+      // Mapear los comentarios para formatear la respuesta
+      const resultado = comentarios.map(comentario => ({
+        imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null,
+        nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido',
+        apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno : 'Desconocido',
+        apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno : 'Desconocido',
+        texto: comentario.texto,
+        fecha: comentario.fecha
+      }));
+  
+      // Enviar la respuesta con los comentarios
+      return res.json(resultado);
+  
     } catch (error) {
-        // Manejar errores específicos
-        if (error.name === 'FileDownloadError') {
-            return res.status(500).json({ message: 'Error al obtener la imagen' });
-        }
-        if (error.name === 'FileNotFoundError') {
-            return res.status(404).json({ message: 'Imagen no encontrada' });
-        }
-        if (error.name === 'PublicationNotFoundError') {
-            return res.status(404).json({ message: 'Publicación no encontrada' });
-        }
-
-        // Error general
-        console.error('Error al obtener comentarios:', error);
-        res.status(500).json({ message: 'Error al obtener comentarios', error: error.message });
+      console.error('Error al obtener comentarios:', error);
+  
+      // Capturar y manejar el error lanzado por el servicio
+      if (error.name === 'CommentNotFoundError') {
+        return res.status(404).json({ message: 'No se encuentran comentarios en la publicación' });
+      }
+  
+      // Manejar otros posibles errores
+      if (error.name === 'FileDownloadError') {
+        return res.status(500).json({ message: 'Error al obtener la imagen' });
+      }
+      if (error.name === 'FileNotFoundError') {
+        return res.status(404).json({ message: 'Imagen no encontrada' });
+      }
+      if (error.name === 'PublicationNotFoundError') {
+        return res.status(404).json({ message: 'Publicación no encontrada' });
+      }
+  
+  
+      res.status(500).json({ message: 'Error al obtener comentario', error: error.message });
     }
-};
-
+  };
+  
 
 const crearComentario = async (req, res) => {
     const { texto, id_usuario, fecha } = req.body; // Extraer todos los campos del cuerpo
-    const id_publicacion = req.params.id; // ID de la publicación
+    const id_publicacion = req.params.id; 
 
     
     const { error } = validarComentario({ texto, id_usuario, fecha, id_publicacion });
@@ -82,7 +84,7 @@ const crearComentario = async (req, res) => {
 
 // Función para eliminar un comentario
 const eliminarComentario = async (req, res) => {
-    const { id } = req.params; // ID del comentario a eliminar
+    const { id } = req.params; 
 
     try {
         
@@ -123,9 +125,9 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
                 id_comentario: id_comentario
             },
             include: [{
-                model: Usuario, // El modelo correcto
-                as: 'usuario',   // El alias correcto de la asociación
-                attributes: ['imagen_usuario', 'nombre', 'apellido_paterno', 'apellido_materno'] // Los campos que quieres recuperar
+                model: Usuario,
+                as: 'usuario',   
+                attributes: ['imagen_usuario', 'nombre', 'apellido_paterno', 'apellido_materno'] 
             }]
         });
 
@@ -152,11 +154,11 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
             fecha: comentario.fecha
         };
 
-        // Enviar la respuesta
+       
         res.json(resultado);
 
     } catch (error) {
-        // Manejo de errores específicos
+ 
       
         if (error.name === 'FileNotFoundError') {
             return res.status(404).json({ message: 'Imagen no encontrada' });
@@ -170,7 +172,7 @@ const obtenerComentarioPorPublicacionYComentario = async (req, res) => {
         if (error.name === 'FileDownloadError') {
             return res.status(500).json({ message: 'Error al obtener la imagen' });
         }
-        // Error general
+
         console.error('Error al obtener comentario:', error);
         res.status(500).json({ message: 'Error al obtener comentario', error: error.message });
     }
