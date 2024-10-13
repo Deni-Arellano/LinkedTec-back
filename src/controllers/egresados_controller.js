@@ -11,48 +11,138 @@ const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes,
 
 /**
  * @async
- * Controlador para obtener todos los egresados.
+ * Controlador para obtener todos los egresados con paginación.
  * @param {Object} req - El objeto de solicitud (request) de Express.
  * @param {Object} res - El objeto de respuesta (response) de Express.
- * @returns {Promise<void>} Devuelve una respuesta JSON con los egresados o un error.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con los egresados paginados o un error.
  */
 exports.getAllEgresadosWithUserInfo = async (req, res) => {
   try {
-    const [egresados] = await db.query(`
-      SELECT u.id, u.nombre, u.apellido_paterno, u.apellido_materno, u.correo, u.contraseña, u.fecha_nacimiento, u.telefono, u.sexo, u.biografia, u.role, u.imagen_usuario, eg.carrera, eg.año_graduacion, eg.puesto 
+    const pagina = parseInt(req.query.pagina) || 1;
+    const limite = parseInt(req.query.limite) || 10;
+    const offset = (pagina - 1) * limite;
+
+    const [[{ total }]] = await db.query(`
+      SELECT COUNT(*) AS total 
       FROM usuarios u
       JOIN egresados eg ON u.id = eg.id
     `);
 
+    const [egresados] = await db.query(`
+      SELECT u.id, u.nombre, u.apellido_paterno, u.apellido_materno, u.correo, u.contraseña, 
+             u.fecha_nacimiento, u.telefono, u.sexo, u.biografia, u.role, u.imagen_usuario, 
+             eg.carrera, eg.año_graduacion, eg.puesto 
+      FROM usuarios u
+      JOIN egresados eg ON u.id = eg.id
+      LIMIT ${limite} OFFSET ${offset}
+    `);
+
     await validarUsuariosExistentes(egresados);
 
-    return res.json(egresados);
+    const totalPaginas = Math.ceil(total / limite);
+
+    return res.json({
+      total,
+      pagina: pagina,
+      limite: limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: {
+        url: pagina < totalPaginas ? `/egresados?pagina=${pagina + 1}&limite=${limite}` : null,
+        exists: pagina < totalPaginas
+      },
+      pagina_anterior: {
+        url: pagina > 1 ? `/egresados?pagina=${pagina - 1}&limite=${limite}` : null,
+        exists: pagina > 1
+      },
+      egresados
+    });
+
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener los egresados', error: error.message });
   }
 };
 
 
+
+
+
 /**
  * @async
- * Controlador para obtener la información del rol de todos los egresados.
+ * Controlador para obtener la información del rol de todos los egresados con paginación.
  * @param {Object} req - El objeto de solicitud (request) de Express.
  * @param {Object} res - El objeto de respuesta (response) de Express.
  * @returns {Promise<void>} Devuelve una respuesta JSON con la información del rol de los egresados o un error.
  */
 exports.getEgresadosInfo = async (req, res) => {
   try {
+    const pagina = parseInt(req.query.pagina) || 1;
+    const limite = parseInt(req.query.limite) || 10;
+    const offset = (pagina - 1) * limite;
+
+    const [[{ total }]] = await db.query(`
+      SELECT COUNT(*) AS total 
+      FROM egresados
+    `);
+
     const [egresados] = await db.query(`
       SELECT id, carrera, año_graduacion, puesto 
       FROM egresados
+      LIMIT ${limite} OFFSET ${offset}
     `);
-    
+
     await validarUsuariosExistentes(egresados);
-    return res.json(egresados);
-  }catch (error) {
+
+    const totalPaginas = Math.ceil(total / limite);
+
+    return res.json({
+      total,
+      pagina: pagina,
+      limite: limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: {
+        url: pagina < totalPaginas ? `/egresados/info?pagina=${pagina + 1}&limite=${limite}` : null,
+        exists: pagina < totalPaginas
+      },
+      pagina_anterior: {
+        url: pagina > 1 ? `/egresados/info?pagina=${pagina - 1}&limite=${limite}` : null,
+        exists: pagina > 1
+      },
+      egresados
+    });
+    
+  } catch (error) {
     return res.status(500).json({ message: 'Error al obtener la información de los egresados', error: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**

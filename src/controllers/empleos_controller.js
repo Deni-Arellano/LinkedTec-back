@@ -1,28 +1,52 @@
 const EmpleoService = require('../services/services_empleos.js');
 const UsuarioService = require('../services/services_usuarios.js'); 
-const { validarEmpleo,validarEmpleoExistente,UpdateConflictError,validarEmpleoNoEncontrado } = require('../middlewares/validations/validaciones_empleos');
+const { validarEmpleo,validarEmpleoNoEncontrado } = require('../middlewares/validations/validaciones_empleos');
 
 /**
  * @async
- * Obtiene todos los empleos de la base de datos.
+ * Obtiene todos los empleos de la base de datos con paginación.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @returns {Promise<void>} Responde con todos los empleos o un error.
  */
 exports.getAllEmpleos = async (req, res) => {
   try {
-    const resultado = await EmpleoService.obtenerTodosLosEmpleos();
+    const pagina = parseInt(req.query.pagina) || 1;
+    const limite = parseInt(req.query.limite) || 10;
+    const offset = (pagina - 1) * limite;
 
-    validarEmpleoNoEncontrado(resultado.data);
+    const resultado = await EmpleoService.obtenerTodosLosEmpleos(limite, offset);
 
-    return res.json(resultado.data);
-  } catch (error) {
-    if (error instanceof EmpleoNotFoundError) {
-      return res.status(404).json({ message: error.message });
+    if (!resultado.data.length) {
+      return res.status(404).json({ message: 'No se encontraron empleos.' });
     }
+
+    const totalEmpleos = resultado.total;
+    const totalPaginas = Math.ceil(totalEmpleos / limite);
+
+    return res.json({
+      total: totalEmpleos,
+      pagina: pagina,
+      limite: limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: {
+        url: pagina < totalPaginas ? `/empleos?pagina=${pagina + 1}&limite=${limite}` : null,
+        exists: pagina < totalPaginas
+      },
+      pagina_anterior: {
+        url: pagina > 1 ? `/empleos?pagina=${pagina - 1}&limite=${limite}` : null,
+        exists: pagina > 1
+      },
+      empleos: resultado.data
+    });
+    
+  } catch (error) {
     return res.status(500).json({ message: 'Error al obtener empleos', error: error.message });
   }
 };
+
+
+
 
 
 
