@@ -1,5 +1,6 @@
 const Comentario = require('../models/comentarios');
-const Usuario = require('../models/usuarios'); // Asegúrate de tener el modelo de usuario
+const Usuario = require('../models/usuarios'); 
+const {validarComentarioExistente} = require('../middlewares/validations/validaciones_comentarios');
 
 // Crear un comentario
 const crearComentario = async (data) => {
@@ -13,7 +14,7 @@ const eliminarComentario = async (id) => {
     });
 };
 
-const sequelize = require('../config/database'); // Asegúrate de importar correctamente tu instancia de sequelize
+const sequelize = require('../config/database'); 
 const obtenerComentariosPorPublicacion = async (id_publicacion) => {
   try {
     const comentarios = await Comentario.findAll({
@@ -21,33 +22,33 @@ const obtenerComentariosPorPublicacion = async (id_publicacion) => {
       include: [
         {
           model: Usuario,
-          as: 'usuario', // Debe coincidir con la asociación
+          as: 'usuario',
           attributes: ['imagen_usuario', 'nombre', 'apellido_paterno', 'apellido_materno']
         }
       ]
     });
 
+    // Verificar si no se encontraron comentarios
     if (comentarios.length === 0) {
-      throw new Error('No se encontraron comentarios para esta publicación');
+      throw { name: 'CommentNotFoundError', message: 'No se encontraron comentarios para esta publicación' };
     }
 
     // Transformar los comentarios para incluir la información del usuario
-    const comentariosConUsuario = comentarios.map(comentario => {
-      return {
-        texto: comentario.texto, // Asegúrate de que 'texto' es el nombre correcto de la columna
-        fecha: comentario.fecha,
-        usuario: comentario.usuario, // Esto incluirá la información del usuario
-        apellido_paterno: comentario.usuario.apellido_paterno,
-        apellido_materno: comentario.usuario.apellido_materno
-      };
-    });
+    const comentariosConUsuario = comentarios.map(comentario => ({
+      texto: comentario.texto, 
+      fecha: comentario.fecha,
+      usuario: comentario.usuario, 
+      apellido_paterno: comentario.usuario.apellido_paterno,
+      apellido_materno: comentario.usuario.apellido_materno
+    }));
 
     return comentariosConUsuario;
+
   } catch (error) {
-    console.error('Error en obtenerComentariosPorPublicacion:', error);
-    throw new Error('Error al obtener comentarios');
+    throw error;
   }
 };
+
 
 const obtenerComentarioPorPublicacionYComentario = async (id_publicacion, id_comentario) => {
   return await Comentario.findOne({
@@ -56,8 +57,8 @@ const obtenerComentarioPorPublicacionYComentario = async (id_publicacion, id_com
           id_comentario: id_comentario
       },
       include: [{
-          model: Usuario, // Asegúrate de que este es el nombre correcto de tu modelo
-          as: 'usuario', // Asegúrate de que el alias coincida con el definido en tu modelo
+          model: Usuario, 
+          as: 'usuario', 
           attributes: ['imagen_usuario', 'nombre','apellido_paterno', 'apellido_materno']
       }]
   });

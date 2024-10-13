@@ -36,14 +36,15 @@ const validarComentario = (comentario) => {
 
 const validarComentarioExistente = async (id_comentario) => {
   const comentario = await sequelize.query('SELECT * FROM comentarios WHERE id_comentario = :id', {
-      replacements: { id: id_comentario },
+      replacements: { id: id_comentario }, // Asegúrate de que aquí estés pasando 'id_comentario'
       type: sequelize.QueryTypes.SELECT
   });
 
-  // Comprobar si el comentario no fue encontrado
-  if (comentario.length === 0) {
-      throw new CommentNotFoundError(); // Lanzar error si no se encuentra el comentario
+  if (!comentario || comentario.length === 0) {
+      throw new CommentNotFoundError();
   }
+
+  return comentario; // Devuelve el comentario si existe
 };
 
 
