@@ -1,4 +1,8 @@
 const Joi = require('joi');
+const NewsExistsError = require('../exceptions/NewsExistsError');
+const NewsNotFoundError = require('../exceptions/NewsNotFoundError');
+const NewsUpdateError = require('../exceptions/NewsUpdateError');
+const sequelize = require('../../config/database');
 
 const noticiaSchemaCrear = Joi.object({
   titulo_noticia: Joi.string().max(255).required().messages({
@@ -38,4 +42,52 @@ const validarNoticia = (data) => {
   return error;
 };
 
-module.exports = validarNoticia;
+// Función para validar si los datos de la noticia cumplen con el esquema.
+// Si no cumplen, lanza un error indicando que la noticia ya existe.
+const validarNoticiaExistente = (data) => {
+  const { error } = noticiaSchemaCrear.validate(data);
+  if (error) {
+    throw new NewsExistsError(error.details[0].message);
+  }
+};
+
+// Función para validar si los datos de la noticia no existen o son inválidos.
+// Si hay un error en la validación, lanza un error indicando que no se encontró la noticia.
+const validarNoticiaInexistente = (data) => {
+  const { error } = noticiaSchemaCrear.validate(data);
+  if (error) {
+    throw new NewsNotFoundError(error.details[0].message);
+  }
+};
+
+// Función para validar si un usuario tiene noticias asociadas en la base de datos.
+// Si no hay noticias asociadas al usuario, lanza un error de "Noticia no encontrada".
+const validarNoticiaPorUsuario = async (data) => {
+  const noticia = await sequelize.query(
+    'SELECT * FROM noticias WHERE id_usuario = :id_usuario', 
+  {
+    replacements: { id_usuario: data.id_usuario },
+    type: sequelize.QueryTypes.SELECT
+  });
+  
+  // Si no se encuentran noticias para el usuario, se lanza el error.
+  if (noticia.length === 0) {
+    throw new NewsNotFoundError('No existe ninguna noticia asociada a este usuario.');
+  }
+};
+
+// Función para validar si los datos de la noticia son válidos antes de una actualización.
+// Si los datos son inválidos, lanza un error indicando que hubo un problema al actualizar la noticia.
+const actualizarNoticiaError = (data) => {
+  const { error } = noticiaSchemaCrear.validate(data);
+  if (error) {
+    throw new NewsUpdateError(error.details[0].message);
+  }
+};
+
+
+module.exports = validarNoticia,
+  validarNoticiaExistente,
+  validarNoticiaInexistente,
+  validarNoticiaPorUsuario,
+  actualizarNoticiaError;
