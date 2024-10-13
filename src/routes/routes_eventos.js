@@ -4,17 +4,15 @@ const EventoController = require('../controllers/eventos_controller');
 
 
 //metodos GET
-
-router.get('/', EventoController.obtenerEventos);
-router.get('/:id', EventoController.obtenerEventoById);
-router.get('/categoria/:categoria',EventoController.obtenerEventosByCategoria);
-router.get('/fecha',EventoController.obtenerEventosByFecha);
-router.get('/usuario/:id_usuario', EventoController.obtenerEventosByUsuario);  
+router.get('/', EventoController.obtenerEventos);//
+router.get('/:id', EventoController.obtenerEventoById);//
+router.get('/categoria/:categoria',EventoController.obtenerEventosByCategoria);//
+//router.get('/fecha',EventoController.obtenerEventosByFecha);
+router.get('/usuario/:id_usuario', EventoController.obtenerEventosByUsuario);  //
 router.get('/:evento_id/asistencia', EventoController.obtenerUsuariosAsistentes);
 router.get('/:evento_id/asistencia/:usuario_id', EventoController.obtenerEventosUsuarioAsistira);
 router.get('/buscar' , EventoController.buscarEventoPorTitulo);
 router.get('buscar/populares',EventoController.obtenerEventosPopulares);
-
 
 
 

@@ -1,11 +1,16 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Usuario = require('./usuarios');  // Ajusta la ruta si es necesario
-const Evento = require('./evento');    // Ajusta la ruta si es necesario
+const Usuario = require('./usuarios');  
+const Evento = require('./eventos');    
 
 class ConfirmacionAsistencia extends Model {}
 
 ConfirmacionAsistencia.init({
+    id: { // Añadir el campo id
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -27,7 +32,6 @@ ConfirmacionAsistencia.init({
     modelName: 'confirmacion_asistencia',
     tableName: 'confirmacion_asistencia',
     timestamps: false,
-    primaryKey: false,
 });
 
 ConfirmacionAsistencia.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });

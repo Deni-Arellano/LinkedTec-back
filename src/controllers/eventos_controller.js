@@ -3,6 +3,8 @@ const servicesEvento = require("../services/services_eventos");
 
 const validarEvento = require("../middlewares/validations/validaciones_eventos");
 
+
+//metodos para crear
 exports.crearEvento = async (req, res) => {
   try {
     const {
@@ -41,6 +43,26 @@ exports.crearEvento = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.registrarAsistenciaEvento = async (req, res) => {
+   
+        const idEvento = req.params.evento_id;
+        const idUsuario = req.params.usuario_id;
+    
+        const asistencia = await servicesEvento.registrarAsistenciaEvento(
+        idEvento,
+        idUsuario
+        );
+    
+        res.status(200).json(asistencia);
+
+};
+
+
+
+
+
+//metodos para obtener
 
 exports.obtenerEventos = async (req, res) => {
   try {
@@ -111,9 +133,44 @@ exports.obtenerEventosByCategoria = async (req, res) => {
   }
 };
 
-exports.obtenerEventosByFecha = async (req, res) => {};
-exports.obtenerEventosByUsuario = async (req, res) => {};
-exports.registrarAsistenciaEvento = async (req, res) => {};
+exports.obtenerEventosByFecha = async (req, res) => {
+
+    const pagina = parseInt(req.query.pagina, 10) || 1;
+    const limite = parseInt(req.query.limite, 10) || 10;
+    const fechaInicio = req.query.fechaInicio;
+    const fechaFin = req.query.fechaFin;
+
+    const eventosPorFecha = await servicesEvento.obtenerEventosPorFecha(
+      fechaInicio,
+      fechaFin,
+      pagina,
+      limite
+    );
+
+};
+
+exports.obtenerEventosByUsuario = async (req, res) => {
+
+    try {
+        const id_usuario = req.params.id_usuario;
+        const pagina = parseInt(req.query.pagina, 10) || 1;
+        const limite = parseInt(req.query.limite, 10) || 10;
+        const eventosPorUsuario = await servicesEvento.obtenerEventosPorUsuario(id_usuario, pagina, limite);
+
+        res.status(200).json(eventosPorUsuario);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+
+};
+
+
+
+
+
+
+
+
 exports.cancelarAsistenciaEvento = async (req, res) => {};
 exports.obtenerUsuariosAsistentes = async (req, res) => {};
 exports.obtenerEventosUsuarioAsistira = async (req, res) => {};

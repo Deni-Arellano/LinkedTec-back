@@ -1,6 +1,9 @@
 const sequelize = require("../config/database");
 const Evento = require("../models/eventos");
+const Usuario = require("../models/usuarios");
+const Asistencia = require("../models/asistencias");
 
+//funciones de creacion de eventos
 exports.crearEvento = async (data) => {
   try {
     const nuevoEvento = await Evento.create({
@@ -20,13 +23,40 @@ exports.crearEvento = async (data) => {
   }
 };
 
+//funciones de asistencia a eventos
+exports.registrarAsistenciaEvento = async (idEvento, idUsuario) => {
+  try {
+    const asistencia = await Asistencia.create({
+      id_usuario: idUsuario,
+      id_evento: idEvento,
+    });
+
+    return asistencia;
+    
+  } catch (error) {
+    console.error('Error al registrar asistencia a evento:', error);
+    throw new Error('Error al registrar asistencia a evento: ' + error.message);
+  }
+};
+
+
+
+
+
+
+
+//funciones de obtenion de eventos
+
 exports.obtenerEventos = async (pagina = 1, limite = 10) => {
   try {
     const offset = (pagina - 1) * limite;
 
     const eventos = await Evento.findAndCountAll({
       limit: limite,
-      offset: offset
+      offset: offset,
+      order: [
+        ['fecha', 'DESC'] 
+      ]
     });
 
     return {
@@ -48,14 +78,13 @@ exports.obtenerEventos = async (pagina = 1, limite = 10) => {
         "url": null,
         "exists": false
       },
-      "eventos": eventos.rows,
+      "eventos": eventos.rows, // Aquí vendrán los eventos más recientes primero
     };
   } catch (error) {
     console.error("Error en la función obtenerEventos:", error.message);
     throw new Error('Error al obtener eventos: ' + error.message);
   }
 };
-
 
 exports.obtenerEventoById = async (id) => {
   try {
@@ -67,38 +96,13 @@ exports.obtenerEventoById = async (id) => {
   }
 };
 
-exports.eliminarEvento = async (id) => {
-  try {
-    const eventoById = await Evento.findByPk(id);
-
-    await eventoById.destroy();
-
-    return eventoById;
-  } catch (error) {
-    console.error("Error en la función eliminarEvento:", error.message);
-  }
-};
-
-exports.actualizarEvento = async (id, data) => {
-  const eventoEncontrado = await Evento.findByPk(id);
-
-  if (!eventoEncontrado) {
-    return false;
-  }
-
-  eventoEncontrado.update(data);
-
-  return eventoEncontrado;
-};
-
-//Metodos especificos para eventos
 
 exports.obtenerEventosPorTipo = async (tipo) => {
   try {
     const eventosPorTipo = await Evento.findAll({
       where: {
         tipo_evento: tipo,
-      },
+      }, order: ['fecha', 'DESC']
     });
 
     return eventosPorTipo;
@@ -112,7 +116,9 @@ exports.obtenerEventosPorUsuario = async (id) => {
     const eventosPorUsuario = await Evento.findAll({
       where: {
         id_usuario: id,
-      },
+      }, order: [
+        ['fecha', 'DESC']
+      ]
     });
 
     return eventosPorUsuario;
@@ -135,7 +141,10 @@ exports.obtenerEventosPorCategoria = async (categoria, page = 1, limit = 10) => 
               tipo_evento: categoria
           },
           limit,
-          offset
+          offset,
+          order: [
+              ['fecha', 'DESC']
+          ]
       });
 
       const totalPaginas = Math.ceil(eventosPorCategoria.count / limit);
@@ -168,3 +177,138 @@ exports.obtenerEventosPorCategoria = async (categoria, page = 1, limit = 10) => 
 
   }
 };
+
+
+exports.obtenerEventosPorFecha = async (fechaInicio, fechaFin, page = 1, limit = 10) => {
+
+  try {
+      const offset = (page - 1) * limit;
+
+      const eventosPorFecha = await Evento.findAndCountAll({
+          where: {
+              fecha: {
+                  [sequelize.Op.between]: [fechaInicio, fechaFin]
+              }
+          },
+          limit,
+          offset,
+          order: [
+              ['fecha', 'DESC']
+          ]
+      });
+
+      const totalPaginas = Math.ceil(eventosPorFecha.count / limit);
+      
+      return {
+          "total": eventosPorFecha.count,
+          "pagina": page,
+          "limite": limit,
+          "total_paginas": totalPaginas,
+          "pagina_siguiente": page < totalPaginas ? {
+              "url": `/eventos/fecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&pagina=${page + 1}&limite=${limit}`,
+              "exists": true
+          } : {
+              "url": null,
+              "exists": false
+          },
+          "pagina_anterior": page > 1 ? {
+              "url": `/eventos/fecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&pagina=${page - 1}&limite=${limit}`,
+              "exists": true
+          } : {
+              "url": null,
+              "exists": false
+          },
+          "eventos": eventosPorFecha.rows,
+      };
+  } catch (error) {
+    new Error('Error al obtener eventos por fecha' + error.message);
+  }
+
+};
+
+
+exports.obtenerEventosPorUsuario = async (id, page = 1, limit = 10) => {
+
+  try {
+
+      const offset = (page - 1) * limit;
+
+      const eventosPorUsuario = await Evento.findAndCountAll({
+          where: {
+              id_usuario: id
+          },
+          limit,
+          offset,
+          order: [
+              ['fecha', 'DESC']
+          ]
+      });
+
+      const totalPaginas = Math.ceil(eventosPorUsuario.count / limit);
+      
+      return {
+          "total": eventosPorUsuario.count,
+          "pagina": page,
+          "limite": limit,
+          "total_paginas": totalPaginas,
+          "pagina_siguiente": page < totalPaginas ? {
+              "url": `/eventos/usuario/${id}?pagina=${page + 1}&limite=${limit}`,
+              "exists": true
+          } : {
+              "url": null,
+              "exists": false
+          },
+          "pagina_anterior": page > 1 ? {
+              "url": `/eventos/usuario/${id}?pagina=${page - 1}&limite=${limit}`,
+              "exists": true
+          } : {
+              "url": null,
+              "exists": false
+          },
+          "eventos": eventosPorUsuario.rows,
+      };
+
+
+  } catch (error) {
+    new Error('Error al obtener eventos por usuario' + error.message);
+  }
+
+
+};
+
+
+
+
+
+
+
+//metodos de eliminacion
+
+exports.eliminarEvento = async (id) => {
+  try {
+    const eventoById = await Evento.findByPk(id);
+
+    await eventoById.destroy();
+
+    return eventoById;
+  } catch (error) {
+    console.error("Error en la función eliminarEvento:", error.message);
+  }
+};
+
+
+//metodos de actualizacion
+exports.actualizarEvento = async (id, data) => {
+  const eventoEncontrado = await Evento.findByPk(id);
+
+  if (!eventoEncontrado) {
+    return false;
+  }
+
+  eventoEncontrado.update(data);
+
+  return eventoEncontrado;
+};
+
+//Metodos especificos para eventos
+
