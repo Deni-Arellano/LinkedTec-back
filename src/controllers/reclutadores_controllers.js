@@ -95,15 +95,47 @@ const obtenerReclutador = async (req, res) => {
  * @param {Object} res - El objeto de respuesta (response) de Express.
  * @returns {Promise<void>} Devuelve una respuesta JSON con la lista de reclutadores o un error.
  */
+
+
 const obtenerTodosReclutadores = async (req, res) => {
   try {
+    // Obtener parámetros de paginación de la solicitud
+    const pagina = parseInt(req.query.pagina) || 1; // Página actual, por defecto 1
+    const limite = parseInt(req.query.limite) || 10; // Limite de elementos por página, por defecto 10
+    const offset = (pagina - 1) * limite; // Calcular el offset
+
+    // Obtener todos los reclutadores
     const reclutadores = await obtenerTodosReclutadoresServicio(); // Asegúrate de que esta función devuelva un arreglo
 
     // Validamos que los reclutadores existan
     await validarUsuariosExistentes(reclutadores);
 
+    // Calcular el total de reclutadores y las páginas
+    const total = reclutadores.length; // Total de reclutadores
+    const totalPaginas = Math.ceil(total / limite); // Total de páginas
+
+    // Obtener solo los reclutadores de la página actual
+    const reclutadoresPagina = reclutadores.slice(offset, offset + limite);
+
+    // Crear respuesta con la estructura deseada
+    const response = {
+      total,
+      pagina,
+      limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: {
+        url: pagina < totalPaginas ? `http://localhost:3000/usuarios/reclutadores/info?pagina=${pagina + 1}&limite=${limite}` : null,
+        exists: pagina < totalPaginas
+      },
+      pagina_anterior: {
+        url: pagina > 1 ? `http://localhost:3000/usuarios/reclutadores/info?pagina=${pagina - 1}&limite=${limite}` : null,
+        exists: pagina > 1
+      },
+      reclutadores: reclutadoresPagina
+    };
+
     // Respuesta exitosa con los reclutadores obtenidos
-    res.status(200).json(reclutadores);
+    res.status(200).json(response);
   } catch (error) {
     if (error.name === 'UserNotFoundError') {
       return res.status(404).json({ message: 'Reclutadores no encontrados' });
@@ -114,35 +146,62 @@ const obtenerTodosReclutadores = async (req, res) => {
   }
 };
 
-
 const obtenerUsuariosYReclutadores = async (req, res) => {
   try {
+    // Obtener parámetros de paginación de la solicitud
+    const pagina = parseInt(req.query.pagina) || 1; // Usar 'pagina' de la URL
+    const limite = parseInt(req.query.limite) || 10; // Usar 'limite' de la URL
+    const offset = (pagina - 1) * limite; // Calcular el offset
+
+    // Obtener todos los reclutadores
     const reclutadores = await obtenerTodosUsuariosYReclutadores();
     console.log('Reclutadores obtenidos:', reclutadores);
 
     await validarUsuariosExistentes(reclutadores);
 
-    const response = reclutadores.map(reclutador => {
-      const usuario = reclutador.Usuario || {};
-      
-      return {
-        id: usuario.id || null,
-        nombre: usuario.nombre || '',
-        apellido_paterno: usuario.apellido_paterno || '',
-        apellido_materno: usuario.apellido_materno || '',
-        correo: usuario.correo || '',
-        contraseña: usuario.contraseña || '',
-        fecha_nacimiento: usuario.fecha_nacimiento || null,
-        telefono: usuario.telefono || '',
-        sexo: usuario.sexo || '',
-        biografia: usuario.biografia || '',
-        role: usuario.role || '',
-        imagen_usuario: usuario.imagen_usuario || '',
-        nombre_empresa: reclutador.nombre_empresa || '',
-        sede: reclutador.sede || '',
-        giro: reclutador.giro || ''
-      };
-    });
+    // Calcular el total de reclutadores
+    const total = reclutadores.length; // Total de reclutadores
+    const totalPaginas = Math.ceil(total / limite); // Total de páginas
+
+    // Obtener solo los reclutadores de la página actual
+    const reclutadoresPagina = reclutadores.slice(offset, offset + limite);
+
+    // Crear respuesta
+    const response = {
+      total,
+      pagina,
+      limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: {
+        url: pagina < totalPaginas ? `http://localhost:3000/usuarios/reclutadores?pagina=${pagina + 1}&limite=${limite}` : null,
+        exists: pagina < totalPaginas
+      },
+      pagina_anterior: {
+        url: pagina > 1 ? `http://localhost:3000/usuarios/reclutadores?pagina=${pagina - 1}&limite=${limite}` : null,
+        exists: pagina > 1
+      },
+      reclutadores: reclutadoresPagina.map(reclutador => {
+        const usuario = reclutador.Usuario || {};
+        
+        return {
+          id: usuario.id || null,
+          nombre: usuario.nombre || '',
+          apellido_paterno: usuario.apellido_paterno || '',
+          apellido_materno: usuario.apellido_materno || '',
+          correo: usuario.correo || '',
+          contraseña: usuario.contraseña || '',
+          fecha_nacimiento: usuario.fecha_nacimiento || null,
+          telefono: usuario.telefono || '',
+          sexo: usuario.sexo || '',
+          biografia: usuario.biografia || '',
+          role: usuario.role || '',
+          imagen_usuario: usuario.imagen_usuario || '',
+          nombre_empresa: reclutador.nombre_empresa || '',
+          sede: reclutador.sede || '',
+          giro: reclutador.giro || ''
+        };
+      })
+    };
 
     res.status(200).json(response);
   } catch (error) {
@@ -154,6 +213,8 @@ const obtenerUsuariosYReclutadores = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener usuarios y reclutadores', error: error.message, stack: error.stack });
   }
 };
+
+
 
 //insomnia Obtener rol epecifico
 const obtenerReclutadorPorId = async (req, res) => {
