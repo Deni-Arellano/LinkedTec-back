@@ -6,7 +6,7 @@ const Evento = require('./eventos');
 class ConfirmacionAsistencia extends Model {}
 
 ConfirmacionAsistencia.init({
-    id: { // Añadir el campo id
+    id: { 
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,

@@ -164,6 +164,78 @@ exports.obtenerEventosByUsuario = async (req, res) => {
 
 };
 
+exports.obtenerUsuariosAsistentes = async (req, res) => {
+
+    try {
+
+        const id_evento = req.params.id_evento;
+        const pagina = parseInt(req.query.pagina, 10) || 1;
+        const limite = parseInt(req.query.limite, 10) || 10;
+
+        const asistentes = await servicesEvento.obtenerUsuariosAsistentes(id_evento, pagina, limite);
+        
+        res.status(200).json(asistentes);
+
+
+    } catch (error) {
+
+        res.status(500).json({ error: error.message });
+    }
+
+};
+
+exports.obtenerEventosUsuarioAsistira = async (req, res) => {
+
+    try {
+        const id_evento = req.params.id_evento;
+        const usuario_id = req.params.usuario_id;
+
+        const asistira = await servicesEvento.obtenerEventosUsuarioAsistira(id_evento, usuario_id);
+
+        res.status(200).json(asistira);
+
+    } catch (error) {
+
+        res.status(500).json({ error: error.message });
+    }
+
+};
+
+exports.obtenerEventosPopulares = async (req, res) => {
+
+    try {
+
+        const pagina = parseInt(req.query.pagina, 10) || 1;
+        const limite = parseInt(req.query.limite, 10) || 10;
+
+        const eventosPopulares = await servicesEvento.obtenerEventosPopulares(pagina, limite);
+
+        res.status(200).json(eventosPopulares);
+
+    } catch (error) {
+
+        res.status(500).json({ error: error.message });
+    }
+
+};
+
+exports.obtenerEventosPorTitulo = async (req, res) => {
+
+    try {
+        const titulo = req.params.titulo;
+        const pagina = parseInt(req.query.pagina, 10) || 1;
+        const limite = parseInt(req.query.limite, 10) || 10;
+
+        const eventosPorTitulo = await servicesEvento.obtenerEventosPorTitulo(titulo, pagina, limite);
+
+        res.status(200).json(eventosPorTitulo);
+
+    } catch (error) {
+
+        res.status(500).json({ error: error.message });
+    }
+
+};
 
 
 
@@ -171,8 +243,28 @@ exports.obtenerEventosByUsuario = async (req, res) => {
 
 
 
-exports.cancelarAsistenciaEvento = async (req, res) => {};
-exports.obtenerUsuariosAsistentes = async (req, res) => {};
-exports.obtenerEventosUsuarioAsistira = async (req, res) => {};
+
+
+exports.cancelarAsistenciaEvento = async (req, res) => {
+
+    try {
+        const id_evento = req.params.id_evento;
+        const id_usuario = req.params.id_usuario;
+        
+
+        const cancelarAsistencia = await servicesEvento.cancelarAsistenciaEvento(id_evento, id_usuario);
+
+        res.status(200).json(cancelarAsistencia);
+
+    } catch (error) {
+
+        res.status(500).json({ error: error.message });
+    }
+
+};
+
+
+
+
 exports.buscarEventoPorTitulo = async (req, res) => {};
 exports.obtenerEventosPopulares = async (req, res) => {};
