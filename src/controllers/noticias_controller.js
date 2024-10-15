@@ -1,6 +1,6 @@
 const NoticiaService = require('../services/services_noticias.js');
 
-const { validarNoticia, validarNoticiaExistente } = require('../middlewares/validations/validaciones_noticias.js');
+const { validarNoticia, validarNoticiaExistente, validarNoticiaInexistente } = require('../middlewares/validations/validaciones_noticias.js');
 const NewsExistsError = require('../middlewares/exceptions/NewsExistsError.js');
 
 
