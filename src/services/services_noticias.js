@@ -43,7 +43,6 @@ exports.eliminarNoticia = async (id_noticia) => {
 exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
 
   const noticia = await Noticia.findByPk(id_noticia);
-  console.log(noticia);
   if (!noticia) {
     return false;
   }

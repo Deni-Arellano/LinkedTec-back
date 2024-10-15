@@ -2,6 +2,7 @@ const Joi = require('joi');
 const sequelize = require('../../config/database');
 const Docente = require('../../models/docentes');
 const ValidationNumberEmpleoyeeError = require('../exceptions/ValidationNumberEmployeeError');
+const DocenteNotFoundError = require('../exceptions/DocenteNotFoundError');
 
 const validarRegistroDocente = async (data) => {
     const validarRegistroDocente = Joi.object({
@@ -34,5 +35,30 @@ const validarNumeroDocente = async (numero_empleado) => {
     }
 }
 
+const validarDocenteExistente = async (id) => {
+    const docente = await Docente.findOne({
+        where: { id }
+    });
+    if (!docente) {
+        throw new DocenteNotFoundError();
+    }
+}
 
-module.exports = {validarRegistroDocente, validarNumeroDocente};
+
+
+const validarEdicionDocente = async (data) => {
+    const schemaEdicion = Joi.object({
+        ultimo_nivel_estudios: Joi.string().valid('Licenciatura', 'Maestría', 'Doctorado').optional().messages({
+            'any.only': 'El último nivel de estudios debe ser Licenciatura, Maestría o Doctorado',
+            'string.empty': 'El último nivel de estudios no puede estar vacío'
+        }),
+        academia: Joi.string().valid('IE', 'ISC', 'II', 'IA', 'CP', 'IGE').optional().messages({
+            'any.only': 'La academia debe ser uno de los valores permitidos: IE, ISC, II, IA, CP, IGE',
+            'string.empty': 'La academia no puede estar vacía'
+        }),
+    });
+
+    return schemaEdicion.validate(data);
+};
+
+module.exports = {validarRegistroDocente, validarNumeroDocente, validarEdicionDocente, validarDocenteExistente};
