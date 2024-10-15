@@ -19,7 +19,7 @@ router.get('/buscar/:titulo' , EventoController.buscarEventoPorTitulo);
 
 //metodos POST
 router.post('/', EventoController.crearEvento);
-router.post('/:id_evento/asistencia/:usuario_id', EventoController.registrarAsistenciaEvento);
+router.post('/:id_evento/asistencia/:id_usuario', EventoController.registrarAsistenciaEvento);
 
 
 
