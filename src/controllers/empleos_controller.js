@@ -48,8 +48,6 @@ exports.getAllEmpleos = async (req, res) => {
 
 
 
-
-
 /**
  * @async
  * Crea un nuevo empleo en la base de datos.
