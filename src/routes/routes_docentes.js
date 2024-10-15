@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DocenteController = require('../controllers/docentes_controller');
 
+
 // Ruta para crear un nuevo docente
 router.post('/', DocenteController.createDocente);
 
@@ -21,5 +22,8 @@ router.get('/perfil/:id', DocenteController.getDocentePerfilById);
 router.get('/:id/info', DocenteController.getinfoDocenteById); // Nueva ruta para obtener el rol
 
 router.get('/:id/', DocenteController.getUsuariRolById); // Nueva ruta
+
+router.patch('/:id', DocenteController.editDocente);
+
 
 module.exports = router;

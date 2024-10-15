@@ -27,7 +27,7 @@ Estudiante.init({
 }, {
     sequelize,
     modelName: 'Estudiante',
-    tableName: 'estudiantes',
+    tableName: 'Estudiantes',
     timestamps: false
 });
 

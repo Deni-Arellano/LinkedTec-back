@@ -44,10 +44,16 @@ const validarNoticia = (data) => {
 
 // Función para validar si los datos de la noticia cumplen con el esquema.
 // Si no cumplen, lanza un error indicando que la noticia ya existe.
-const validarNoticiaExistente = (data) => {
-  const { error } = noticiaSchemaCrear.validate(data);
-  if (error) {
-    throw new NewsExistsError(error.details[0].message);
+const validarNoticiaExistente = async (data) => {
+  const noticia = await sequelize.query(
+    'SELECT * FROM noticias WHERE titulo_noticia = :titulo OR enlace_noticia = :enlace',
+    {
+      replacements: { titulo: data.titulo_noticia, enlace: data.enlace_noticia },
+      type: sequelize.QueryTypes.SELECT,
+    }
+  );
+  if (noticia.length > 0) {
+    throw new NewsExistsError();
   }
 };
 
@@ -86,8 +92,8 @@ const actualizarNoticiaError = (data) => {
 };
 
 
-module.exports = validarNoticia,
+module.exports = {validarNoticia,
   validarNoticiaExistente,
   validarNoticiaInexistente,
   validarNoticiaPorUsuario,
-  actualizarNoticiaError;
+  actualizarNoticiaError};

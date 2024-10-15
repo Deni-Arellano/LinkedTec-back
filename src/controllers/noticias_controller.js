@@ -1,5 +1,6 @@
 const NoticiaService = require('../services/services_noticias.js');
-const validarNoticia = require('../middlewares/validations/validaciones_noticias.js');
+const { validarNoticia, validarNoticiaExistente } = require('../middlewares/validations/validaciones_noticias.js');
+const NewsExistsError = require('../middlewares/exceptions/NewsExistsError.js');
 
 /**
  * @async
@@ -11,6 +12,8 @@ const validarNoticia = require('../middlewares/validations/validaciones_noticias
 exports.createNoticia = async (req, res) => {
     try {
         const { titulo_noticia, descripcion, imagen_noticia, enlace_noticia, fecha_noticia, categoria_noticia, id_usuario } = req.body;
+
+        await validarNoticiaExistente(req.body);
 
         const error = validarNoticia(req.body); 
         if (error) {
@@ -33,9 +36,14 @@ exports.createNoticia = async (req, res) => {
             return res.status(400).json({ message: resultado.error });
         }
     } catch (error) {
-        return res.status(500).json({ message: "Error en el servidor", error: error.message });
+        if (error instanceof NewsExistsError) {
+            return res.status(409).json({ message: error.message });
+        }
+
+        return res.status(500).json({ message: "Error en el servidor, por favor intenta más tarde." });
     }
 };
+
 
 
 
