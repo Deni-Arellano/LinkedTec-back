@@ -72,9 +72,7 @@ exports.createEmpleo = async (req, res) => {
   }
   const empleosUsuario = await EmpleoService.obtenerTodosLosEmpleos();
   const empleosDelUsuario = empleosUsuario.data.filter(empleo => empleo.id_usuario === id_usuario);
-  if (empleosDelUsuario.length >= 5) {
-    return res.status(400).json({ message: 'No puedes tener más de 5 empleos activos.' });
-  }
+
   const empleoExistente = empleosDelUsuario.find(e => e.titulo === titulo && e.empresa === empresa);
   if (empleoExistente) {
     return res.status(409).json({ message: 'Ya existe un empleo con ese título y empresa.' });
