@@ -1,5 +1,6 @@
 const NoticiaService = require('../services/services_noticias.js');
-const validarNoticia = require('../middlewares/validations/validaciones_noticias.js');
+const {validarNoticia} = require('../middlewares/validations/validaciones_noticias.js');
+const {  validarNoticiaExistente, validarNoticiaInexistente, validarNoticiaPorUsuario, actualizarNoticiaError } = require('../middlewares/validations/validaciones_noticias.js');
 
 
 /**
@@ -85,18 +86,26 @@ exports.actualizarNoticia = async (req, res) => {
 };
 
 
-
 exports.obtenerNoticiaPorId = async (req, res) => {
     try {
         const { id_noticia } = req.params;
+
+        console.log("id noticia",id_noticia);
+        await validarNoticiaInexistente({id_noticia}); // Esto debería lanzar un error si no existe
+
+        // Obtener la noticia
         const noticia = await NoticiaService.obtenerNoticiaPorId(id_noticia);
 
-        if (noticia) {
-            return res.status(200).json(noticia);
+        if (noticia.success) {
+            return res.status(200).json(noticia.data);
         } else {
-            return res.status(404).json({ message: "Noticia no encontrada" });
+            return res.status(404).json({ message: noticia.error });
         }
     } catch (error) {
+        console.error('Error al obtener noticia:', error);
+        if (error.name === 'NewsNotFoundError') {
+            return res.status(404).json({ message: "Noticia no encontrada" });
+        }
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
@@ -111,36 +120,38 @@ exports.obtenerTodasLasNoticias = async (req, res) => {
         // Obtener todas las noticias desde el servicio
         const { success, data, error } = await NoticiaService.obtenerTodasLasNoticias();
 
-        if (success) {
-            // Calcular el total de noticias y las páginas
-            const total = data.length; // Total de noticias
-            const totalPaginas = Math.ceil(total / limite); // Total de páginas
-
-            // Obtener solo las noticias de la página actual
-            const noticiasPagina = data.slice(offset, offset + limite);
-
-            // Crear respuesta con paginación
-            const response = {
-                total,
-                pagina,
-                limite,
-                total_paginas: totalPaginas,
-                pagina_siguiente: {
-                    url: pagina < totalPaginas ? `http://localhost:3000/noticias?pagina=${pagina + 1}&limite=${limite}` : null,
-                    exists: pagina < totalPaginas
-                },
-                pagina_anterior: {
-                    url: pagina > 1 ? `http://localhost:3000/noticias?pagina=${pagina - 1}&limite=${limite}` : null,
-                    exists: pagina > 1
-                },
-                noticias: noticiasPagina // Enviamos solo las noticias de la página actual
-            };
-
-            return res.status(200).json(response);
-        } else {
-            return res.status(404).json({ message: error });
+        // Revisar si se encontraron noticias
+        if (!success || data.length === 0) {
+            return res.status(404).json({ message: "No se encontraron noticias." });
         }
+
+        // Calcular el total de noticias y las páginas
+        const total = data.length; // Total de noticias
+        const totalPaginas = Math.ceil(total / limite); // Total de páginas
+
+        // Obtener solo las noticias de la página actual
+        const noticiasPagina = data.slice(offset, offset + limite);
+
+        // Crear respuesta con paginación
+        const response = {
+            total,
+            pagina,
+            limite,
+            total_paginas: totalPaginas,
+            pagina_siguiente: {
+                url: pagina < totalPaginas ? `http://localhost:3000/noticias?pagina=${pagina + 1}&limite=${limite}` : null,
+                exists: pagina < totalPaginas
+            },
+            pagina_anterior: {
+                url: pagina > 1 ? `http://localhost:3000/noticias?pagina=${pagina - 1}&limite=${limite}` : null,
+                exists: pagina > 1
+            },
+            noticias: noticiasPagina // Enviamos solo las noticias de la página actual
+        };
+
+        return res.status(200).json(response);
     } catch (error) {
+        // Manejo de errores
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };

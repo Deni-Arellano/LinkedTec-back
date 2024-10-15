@@ -19,12 +19,15 @@ const obtenerComentarios = async (req, res) => {
         // Obtener los comentarios de la publicación usando el servicio
         const comentarios = await obtenerComentariosPorPublicacionServicio(id);
 
+        // Ordenar los comentarios por fecha (más recientes primero)
+        const comentariosOrdenados = comentarios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
         // Total de comentarios
-        const total = comentarios.length;
+        const total = comentariosOrdenados.length;
         const totalPaginas = Math.ceil(total / limite);
 
         // Obtener los comentarios de la página actual usando offset
-        const comentariosPagina = comentarios.slice(offset, offset + limite);
+        const comentariosPagina = comentariosOrdenados.slice(offset, offset + limite);
 
         // Mapear los comentarios para formatear la respuesta
         const resultado = comentariosPagina.map(comentario => ({
@@ -80,12 +83,13 @@ const obtenerComentarios = async (req, res) => {
 };
 
 
+
 const crearComentario = async (req, res) => {
-    const { texto, id_usuario, fecha } = req.body; // Extraer todos los campos del cuerpo
+    const { texto, id_usuario} = req.body; // Extraer todos los campos del cuerpo
     const id_publicacion = req.params.id; 
 
     
-    const { error } = validarComentario({ texto, id_usuario, fecha, id_publicacion });
+    const { error } = validarComentario({ texto, id_usuario, id_publicacion });
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
@@ -98,7 +102,7 @@ const crearComentario = async (req, res) => {
         }
 
         // Crear el nuevo comentario
-        const nuevoComentario = await Comentario.create({ texto, id_usuario, fecha, id_publicacion });
+        const nuevoComentario = await Comentario.create({ texto, id_usuario, id_publicacion });
         res.status(201).json(nuevoComentario);
     } catch (error) {
 

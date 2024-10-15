@@ -67,15 +67,17 @@ exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
  */
 exports.obtenerNoticiaPorId = async (id_noticia) => {
   try {
-    const noticia = await Noticia.findByPk(id_noticia);
+    const noticia = await Noticia.findByPk(parseInt(id_noticia, 10));
     if (!noticia) {
       return { success: false, error: 'Noticia no encontrada' };
     }
     return { success: true, data: noticia };
   } catch (error) {
+    console.error('Error en obtenerNoticiaPorId:', error); // Log para depuración
     return { success: false, error: error.message };
   }
 };
+
 
 exports.obtenerTodasLasNoticias = async () => {
   try {
