@@ -25,10 +25,7 @@ const validarComentario = (comentario) => {
         'number.integer': 'El ID de publicación debe ser un número entero.',
         'any.required': 'El campo id_publicacion es obligatorio.',
       }),
-    fecha: Joi.date().required().messages({
-        'date.base': 'La fecha debe ser una fecha válida.',
-        'any.required': 'La fecha es obligatoria.',
-      }),
+
   });
 
   return schema.validate(comentario);
