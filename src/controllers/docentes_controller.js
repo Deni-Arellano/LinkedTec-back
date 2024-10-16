@@ -185,6 +185,7 @@ const getDocenteById = async (req, res) => {
             biografia: docente.Usuario.biografia,
             telefono: docente.Usuario.telefono,
             correo: docente.Usuario.correo,
+            contraseña: docente.Usuario.contraseña,
             fecha_nacimiento: docente.Usuario.fecha_nacimiento,
             sexo: docente.Usuario.sexo,
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
