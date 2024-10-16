@@ -156,6 +156,8 @@ const getEstudianteById = async (req, res) => {
         const estudianteCompleto = {
             id: estudiante.id, // ID del estudiante
             nombre: estudiante.Usuario.nombre,
+            no_control: estudiante.no_control,
+            semestre: estudiante.semestre,
             apellido_paterno: estudiante.Usuario.apellido_paterno,
             apellido_materno: estudiante.Usuario.apellido_materno,
             semestre: estudiante.semestre,
