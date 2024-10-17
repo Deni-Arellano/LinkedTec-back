@@ -14,6 +14,7 @@ const empleoSchemaCrear = Joi.object({
     'string.max': 'El nombre de la empresa no puede ser tan largo, intenta con menos de 255 caracteres.'
   }),
   salario: Joi.number().min(0).required().messages({
+    'number.base': 'El salario debe ser un número. No se permiten letras ni caracteres especiales.',
     'number.min': 'El salario no puede ser negativo. ¡Revisa ese dato!',
     'any.required': 'Por favor, indícanos el salario ofrecido para este empleo.'
   }),
@@ -48,7 +49,7 @@ const validarEmpleoExistente = (empleo) => {
 
 const validarEmpleoNoEncontrado = (empleo) => {
   if (!empleo) {
-    throw new EmpleoNotFoundError('El empleo que buscas no se encuentra disponible.');
+    throw new EmpleoNotFoundError('Empleo no encontrado.');
   }
 };
 

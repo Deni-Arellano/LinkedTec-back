@@ -163,7 +163,7 @@ exports.getEgresadoRoleInfoById = async (req, res) => {
   try {
     const egresado = await Egresado.findByPk(id);
     if (!egresado) {
-      return res.status(404).json({ message: 'Egresado no encontrado' });
+      return res.status(404).json({ message: 'Egresado no encontrado.' });
     }
 
     return res.json({
