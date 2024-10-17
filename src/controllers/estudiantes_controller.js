@@ -352,6 +352,7 @@ const editEstudiante = async (req, res) => {
             usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
             usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
             usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
+            usuarioExistente.fecha_nacimiento = usuario.fecha_nacimiento || usuarioExistente.fecha_nacimiento;
             usuarioExistente.correo = usuario.correo || usuarioExistente.correo;
             usuarioExistente.contraseña = usuario.contraseña || usuarioExistente.contraseña;
             usuarioExistente.telefono = usuario.telefono || usuarioExistente.telefono;
