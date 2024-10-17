@@ -26,7 +26,7 @@ Docente.init({
 }, {
     sequelize,
     modelName: 'Docente',
-    tableName: 'Docentes', // Para asegurarnos de que esté usando el nombre correcto de la tabla
+    tableName: 'docentes', // Para asegurarnos de que esté usando el nombre correcto de la tabla
     timestamps: false // Desactiva las marcas de tiempo
 });
 

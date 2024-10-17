@@ -68,13 +68,6 @@ exports.createEmpleo = async (req, res) => {
   if (!usuario || usuario.role !== 'Reclutadores') {
     return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden crear empleos' });
   }
-  const empleosUsuario = await EmpleoService.obtenerTodosLosEmpleos();
-  const empleosDelUsuario = empleosUsuario.data.filter(empleo => empleo.id_usuario === id_usuario);
-
-  const empleoExistente = empleosDelUsuario.find(e => e.titulo === titulo && e.empresa === empresa);
-  if (empleoExistente) {
-    return res.status(409).json({ message: 'Ya existe un empleo con ese título y empresa.' });
-  }
 
   const resultado = await EmpleoService.crearEmpleo({
     id_usuario,

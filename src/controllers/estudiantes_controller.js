@@ -165,6 +165,7 @@ const getEstudianteById = async (req, res) => {
             biografia: estudiante.Usuario.biografia,
             telefono: estudiante.Usuario.telefono,
             correo: estudiante.Usuario.correo,
+            contraseña: estudiante.Usuario.contraseña,
             fecha_nacimiento: estudiante.Usuario.fecha_nacimiento,
             sexo: estudiante.Usuario.sexo
         };
@@ -352,6 +353,7 @@ const editEstudiante = async (req, res) => {
             usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
             usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
             usuarioExistente.correo = usuario.correo || usuarioExistente.correo;
+            usuarioExistente.contraseña = usuario.contraseña || usuarioExistente.contraseña;
             usuarioExistente.telefono = usuario.telefono || usuarioExistente.telefono;
             usuarioExistente.sexo = usuario.sexo || usuarioExistente.sexo;
             usuarioExistente.biografia = usuario.biografia || usuarioExistente.biografia;
