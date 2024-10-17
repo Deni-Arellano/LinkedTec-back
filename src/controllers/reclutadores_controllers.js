@@ -1,6 +1,6 @@
 const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio, actualizarReclutadorServicio } = require('../services/services_reclutadores');
 const { validarReclutador } = require('../middlewares/validations/validaciones_reclutadores');
-const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, validarUsuariosExistentes  } = require('../middlewares/validations/validaciones_usuarios');
+const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, validarUsuariosExistentes,   } = require('../middlewares/validations/validaciones_usuarios');
 
 /**
  * Controlador para crear un reclutador.
@@ -304,7 +304,8 @@ const actualizarReclutador = async (req, res) => {
   const { usuario, reclutador } = req.body;
 
   try {
-   
+    await validarUsuarioExistente(id);
+    await validarCorreoExistente(usuario.correo);
     const resultado = await actualizarReclutadorServicio(id, usuario, reclutador);
 
     // Responder con los datos actualizados
@@ -314,6 +315,13 @@ const actualizarReclutador = async (req, res) => {
       reclutador: resultado.reclutador
     });
   } catch (error) {
+    if (error.name === 'EmailExistsError') {
+      return res.status(409).json({ message: 'El correo ya está en uso' });
+    }
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
     console.error('Error al actualizar usuario y reclutador:', error);
     res.status(500).json({ message: 'Error al actualizar usuario y reclutador', error: error.message });
   }
