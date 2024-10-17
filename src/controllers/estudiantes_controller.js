@@ -160,6 +160,8 @@ const getEstudianteById = async (req, res) => {
             semestre: estudiante.semestre,
             apellido_paterno: estudiante.Usuario.apellido_paterno,
             apellido_materno: estudiante.Usuario.apellido_materno,
+            semestre: estudiante.semestre,
+            no_control: estudiante.no_control,
             rol: estudiante.Usuario.role,
             carrera: estudiante.carrera,
             biografia: estudiante.Usuario.biografia,
