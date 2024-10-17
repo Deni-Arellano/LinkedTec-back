@@ -11,7 +11,7 @@ CREATE USER 'Egresado'@'localhost' IDENTIFIED BY '1234';
 
 
 --creacion de roles 
-CREATE ROLE 'EstudianteRol';
+CREATE ROLE 'EstudianteRoll';
 CREATE ROLE 'DocenteRol';
 CREATE ROLE 'ReclutadoresRol';
 create role 'EgresadosRol';
