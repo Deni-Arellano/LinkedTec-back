@@ -26,6 +26,8 @@ exports.crearEvento = async (data) => {
 //funciones de asistencia a eventos
 exports.registrarAsistenciaEvento = async (idEvento, idUsuario) => {
   try {
+
+      
     const asistencia = await Asistencia.create({
       id_usuario: idUsuario,
       id_evento: idEvento,
@@ -442,6 +444,8 @@ exports.eliminarEvento = async (id) => {
 
 exports.cancelarAsistenciaEvento = async (idEvento, idUsuario) => {
   try {
+    console.log('idEvento:', idEvento);
+    console.log('idUsuario:', idUsuario);
     const asistencia = await Asistencia.findOne({
       where: {
         id_evento: idEvento,

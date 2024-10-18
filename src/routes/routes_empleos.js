@@ -20,7 +20,7 @@ router.get('/:id_empleo', empleosController.getEmpleoPorId);
 /**
  * Ruta para editar un empleo
  */
-router.put('/:id_empleo', empleosController.updateEmpleo);
+router.patch('/:id_empleo', empleosController.updateEmpleo);
 
 /**
  * Ruta para eliminar un empleo

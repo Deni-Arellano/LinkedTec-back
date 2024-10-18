@@ -8,58 +8,88 @@ const CommentNotFoundError = require('../middlewares/exceptions/CommentNotFoundE
 
 const obtenerComentarios = async (req, res) => {
     const { id } = req.params; // ID de la publicación
-  
+    const pagina = parseInt(req.query.pagina) || 1; // Página actual, por defecto 1
+    const limite = parseInt(req.query.limite) || 10; // Límite de elementos por página, por defecto 10
+    const offset = (pagina - 1) * limite; // Cálculo del offset
+
     try {
-      // Validar si la publicación existe
-      await validarPublicacionExistente(id);
-  
-      // Obtener los comentarios de la publicación usando el servicio
-      const comentarios = await  obtenerComentariosPorPublicacionServicio(id);
-  
-      // Mapear los comentarios para formatear la respuesta
-      const resultado = comentarios.map(comentario => ({
-        imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null,
-        nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido',
-        apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno : 'Desconocido',
-        apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno : 'Desconocido',
-        texto: comentario.texto,
-        fecha: comentario.fecha
-      }));
-  
-      // Enviar la respuesta con los comentarios
-      return res.json(resultado);
-  
+        // Validar si la publicación existe
+        await validarPublicacionExistente(id);
+
+        // Obtener los comentarios de la publicación usando el servicio
+        const comentarios = await obtenerComentariosPorPublicacionServicio(id);
+
+        // Ordenar los comentarios por fecha (más recientes primero)
+        const comentariosOrdenados = comentarios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        // Total de comentarios
+        const total = comentariosOrdenados.length;
+        const totalPaginas = Math.ceil(total / limite);
+
+        // Obtener los comentarios de la página actual usando offset
+        const comentariosPagina = comentariosOrdenados.slice(offset, offset + limite);
+
+        // Mapear los comentarios para formatear la respuesta
+        const resultado = comentariosPagina.map(comentario => ({
+            imagen: comentario.usuario ? comentario.usuario.imagen_usuario : null,
+            nombre: comentario.usuario ? comentario.usuario.nombre : 'Desconocido',
+            apellido_paterno: comentario.usuario ? comentario.usuario.apellido_paterno : 'Desconocido',
+            apellido_materno: comentario.usuario ? comentario.usuario.apellido_materno : 'Desconocido',
+            texto: comentario.texto,
+            fecha: comentario.fecha
+        }));
+
+        // Crear respuesta de paginación
+        const response = {
+            total,
+            pagina,
+            limite,
+            total_paginas: totalPaginas,
+            pagina_siguiente: {
+                url: pagina < totalPaginas ? `http://localhost:3000/publicaciones/comentarios/${id}?pagina=${pagina + 1}&limite=${limite}` : null,
+                exists: pagina < totalPaginas
+            },
+            pagina_anterior: {
+                url: pagina > 1 ? `http://localhost:3000/publicaciones/comentarios/${id}?pagina=${pagina - 1}&limite=${limite}` : null,
+                exists: pagina > 1
+            },
+            comentarios: resultado
+        };
+
+        // Enviar la respuesta con los comentarios y la paginación
+        return res.status(200).json(response);
+
     } catch (error) {
-      console.error('Error al obtener comentarios:', error);
-  
-      // Capturar y manejar el error lanzado por el servicio
-      if (error.name === 'CommentNotFoundError') {
-        return res.status(404).json({ message: 'No se encuentran comentarios en la publicación' });
-      }
-  
-      // Manejar otros posibles errores
-      if (error.name === 'FileDownloadError') {
-        return res.status(500).json({ message: 'Error al obtener la imagen' });
-      }
-      if (error.name === 'FileNotFoundError') {
-        return res.status(404).json({ message: 'Imagen no encontrada' });
-      }
-      if (error.name === 'PublicationNotFoundError') {
-        return res.status(404).json({ message: 'Publicación no encontrada' });
-      }
-  
-  
-      res.status(500).json({ message: 'Error al obtener comentario', error: error.message });
+        console.error('Error al obtener comentarios:', error);
+
+        // Capturar y manejar el error lanzado por el servicio
+        if (error.name === 'CommentNotFoundError') {
+            return res.status(404).json({ message: 'No se encuentran comentarios en la publicación' });
+        }
+
+        // Manejar otros posibles errores
+        if (error.name === 'FileDownloadError') {
+            return res.status(500).json({ message: 'Error al obtener la imagen' });
+        }
+        if (error.name === 'FileNotFoundError') {
+            return res.status(404).json({ message: 'Imagen no encontrada' });
+        }
+        if (error.name === 'PublicationNotFoundError') {
+            return res.status(404).json({ message: 'Publicación no encontrada' });
+        }
+
+        res.status(500).json({ message: 'Error al obtener comentario', error: error.message });
     }
-  };
-  
+};
+
+
 
 const crearComentario = async (req, res) => {
-    const { texto, id_usuario, fecha } = req.body; // Extraer todos los campos del cuerpo
+    const { texto, id_usuario} = req.body; // Extraer todos los campos del cuerpo
     const id_publicacion = req.params.id; 
 
     
-    const { error } = validarComentario({ texto, id_usuario, fecha, id_publicacion });
+    const { error } = validarComentario({ texto, id_usuario, id_publicacion });
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
@@ -72,7 +102,7 @@ const crearComentario = async (req, res) => {
         }
 
         // Crear el nuevo comentario
-        const nuevoComentario = await Comentario.create({ texto, id_usuario, fecha, id_publicacion });
+        const nuevoComentario = await Comentario.create({ texto, id_usuario, id_publicacion });
         res.status(201).json(nuevoComentario);
     } catch (error) {
 

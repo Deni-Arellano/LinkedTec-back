@@ -46,8 +46,8 @@ exports.crearEvento = async (req, res) => {
 
 exports.registrarAsistenciaEvento = async (req, res) => {
    
-        const idEvento = req.params.evento_id;
-        const idUsuario = req.params.usuario_id;
+        const idEvento = req.params.id_evento;
+        const idUsuario = req.params.id_usuario;
     
         const asistencia = await servicesEvento.registrarAsistenciaEvento(
         idEvento,

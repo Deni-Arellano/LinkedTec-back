@@ -1,0 +1,97 @@
+const Reporte = require('../models/reportes'); 
+const Usuario = require('../models/usuarios');
+const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
+
+const createReporte = async (req, res) => {
+    try {
+        // Validar el cuerpo de la solicitud con Joi
+        const { error } = await validarRegistroReportes(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
+
+        const { id_usuario, tipo_reporte, categoria_reporte, descripcion, id_elemento_reportado, titulo_reporte } = req.body;
+
+        // Verificar si el ID de usuario es válido
+        if (!id_usuario) {
+            return res.status(400).json({ error: 'El ID del usuario es requerido.' });
+        }
+
+        // Verificar si el usuario existe
+        const usuario = await Usuario.findByPk(id_usuario);
+        if (!usuario) {
+            return res.status(404).json({ error: 'El usuario no existe.' });
+        }
+
+        // Crear el nuevo reporte
+        const nuevoReporte = await Reporte.create({
+            id_usuario,
+            tipo_reporte,
+            categoria_reporte,
+            descripcion,
+            id_elemento_reportado,
+            titulo_reporte
+        });
+
+        res.status(201).json(nuevoReporte);
+    } catch (error) {
+        console.error('Error al crear el reporte:', error);
+        res.status(500).json({ error: 'Error al crear el reporte: ' + error.message });
+    }
+};
+
+
+
+
+/**
+ * @async
+ * Servicio para obtener todos los reportes.
+ * @returns {Promise<Array>} Devuelve un array con los reportes.
+ */
+
+const getReportes = async (req, res) => {
+    try {
+        const reportes = await Reporte.findAll();
+        res.json(reportes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
+    }
+};
+
+
+
+
+
+/**
+ * @async
+ * Servicio para obtener un reporte por ID.
+ * @param {number} id - El ID del reporte.
+ * @returns {Promise<Object>} Devuelve el reporte o un error.
+ */
+
+const getReporteById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reporte = await Reporte.findByPk(id);
+        if (!reporte) {
+            return res.status(404).json({ error: 'Reporte no encontrado.' });
+        }
+        res.json(reporte);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener el reporte: ' + error.message });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+module.exports = { createReporte, getReportes, getReporteById };

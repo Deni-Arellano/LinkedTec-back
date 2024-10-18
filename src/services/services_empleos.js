@@ -17,19 +17,26 @@ exports.crearEmpleo = async (datosEmpleo) => {
 
 /**
  * @async
- * Servicio para obtener todos los empleos en orden descendente por fecha de creación.
- * @returns {Promise<Object>} Devuelve un objeto con los empleos o un error.
+ * Servicio para obtener todos los empleos con paginación, ordenados por fecha de creación en orden descendente.
+ * @param {number} limite - La cantidad de empleos que se van a devolver.
+ * @param {number} offset - El desplazamiento (cuántos empleos saltar).
+ * @returns {Promise<Object>} Devuelve un objeto con los empleos y el total de empleos.
  */
-exports.obtenerTodosLosEmpleos = async () => {
+exports.obtenerTodosLosEmpleos = async (limite, offset) => {
   try {
-    const empleos = await Empleo.findAll({
-      order: [['fecha_creacion', 'DESC']]
+    // Obtenemos los empleos con paginación
+    const { rows: empleos, count: total } = await Empleo.findAndCountAll({
+      order: [['fecha_creacion', 'DESC']],
+      limit: limite,
+      offset: offset
     });
-    return { success: true, data: empleos };
+
+    return { success: true, data: empleos, total: total };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
+
 
 
 /**

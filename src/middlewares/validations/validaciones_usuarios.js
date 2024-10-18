@@ -78,11 +78,11 @@ const validarRegistroUsuario =  async (data) => {
       'any.required': 'El sexo es requerido.',
       'any.only': 'El sexo debe ser uno de los siguientes: Masculino, Femenino, Otro.'
     }),
-    biografia: Joi.string().min(2).max(255).optional().messages({
+    biografia: Joi.string().max(255).allow('').optional().messages({
       'string.base': 'La biografia debe ser una cadena de texto.',
-      'string.min': 'La biografia debe tener al menos 2 caracteres.',
       'string.max': 'La biografia debe tener menos de 255 caracteres.',
     }),
+    
   });
 
   return schema.validate(data);

@@ -6,7 +6,8 @@ const {
   obtenerTodosReclutadores,
   obtenerUsuariosYReclutadores,
   obtenerReclutadorPorId,
-  obtenerReclutadorDetalladoPorId
+  obtenerReclutadorDetalladoPorId,
+  actualizarReclutador
 } = require('../controllers/reclutadores_controllers');
 
 /**
@@ -48,3 +49,6 @@ router.get('/:id/info', obtenerReclutadorPorId);
 
 router.get('/:id/', obtenerReclutadorDetalladoPorId);
 module.exports = router;
+
+
+router.patch('/:id', actualizarReclutador);
