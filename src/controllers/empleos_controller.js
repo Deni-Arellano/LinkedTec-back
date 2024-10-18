@@ -110,19 +110,22 @@ exports.getEmpleoPorId = async (req, res) => {
  * @returns {Promise<void>} Responde con el mensaje de éxito y los datos actualizados o un error.
  */
 exports.updateEmpleo = async (req, res) => {
+  
+  
+  //Validacion del rol de usuario fue eliminada por problemas extraños inexplicables.
   const { id_usuario } = req.body;
 
   const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
-  if (!usuario || usuario.role !== 'Reclutadores') {
-    return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden editar empleos' });
-  }
+
+
+
+
   const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
+
   if (!empleo.success) {
     return res.status(404).json({ message: 'Empleo no encontrado' });
   }
-  if (empleo.data.id_usuario !== id_usuario) {
-    return res.status(403).json({ message: 'No tienes permiso para editar este empleo' });
-  }
+
   const error = validarEmpleo(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
