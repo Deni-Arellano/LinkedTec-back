@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const validarRegistroReportes = async (data) => {
-    const reporteSchema = Joi.object({
+    const validarRegistroReportes = Joi.object({
         id_usuario: Joi.number().integer().required().messages({
             'number.base': 'El ID del usuario debe ser un número.',
             'any.required': 'El ID del usuario es requerido.',
@@ -47,7 +47,7 @@ const validarRegistroReportes = async (data) => {
             'any.required': 'El título del reporte es requerido.'
         })
     });
-    return reporteSchema.validate(data);
+    return validarRegistroReportes.validate(data);
 }
 
 module.exports = {

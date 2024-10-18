@@ -1,11 +1,11 @@
-const Reporte = require('../models/reportes'); // Asegúrate de que esta ruta sea correcta
+const Reporte = require('../models/reportes'); 
 const Usuario = require('../models/usuarios');
 const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
 
 const createReporte = async (req, res) => {
     try {
         // Validar el cuerpo de la solicitud con Joi
-        const { error } = validarRegistroReportes(req.body);
+        const { error } = await validarRegistroReportes(req.body);
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
@@ -23,7 +23,7 @@ const createReporte = async (req, res) => {
             return res.status(404).json({ error: 'El usuario no existe.' });
         }
 
-        // Crea el nuevo reporte
+        // Crear el nuevo reporte
         const nuevoReporte = await Reporte.create({
             id_usuario,
             tipo_reporte,
