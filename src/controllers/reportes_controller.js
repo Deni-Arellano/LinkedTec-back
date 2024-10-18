@@ -45,19 +45,51 @@ const createReporte = async (req, res) => {
 
 /**
  * @async
- * Servicio para obtener todos los reportes.
- * @returns {Promise<Array>} Devuelve un array con los reportes.
+ * Servicio para obtener todos los reportes con paginación.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con los reportes paginados o un error.
  */
-
 const getReportes = async (req, res) => {
     try {
-        const reportes = await Reporte.findAll();
-        res.json(reportes);
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = parseInt(req.query.limite) || 10;
+        const offset = (pagina - 1) * limite;
+
+        const resultado = await Reporte.findAndCountAll({
+            limit: limite,
+            offset: offset
+        });
+
+        if (!resultado.rows.length) {
+            return res.status(404).json({ message: 'No se encontraron reportes.' });
+        }
+
+        const totalReportes = resultado.count;
+        const totalPaginas = Math.ceil(totalReportes / limite);
+
+        return res.json({
+            total: totalReportes,
+            pagina: pagina,
+            limite: limite,
+            total_paginas: totalPaginas,
+            pagina_siguiente: {
+                url: pagina < totalPaginas ? `/reportes?pagina=${pagina + 1}&limite=${limite}` : null,
+                exists: pagina < totalPaginas
+            },
+            pagina_anterior: {
+                url: pagina > 1 ? `/reportes?pagina=${pagina - 1}&limite=${limite}` : null,
+                exists: pagina > 1
+            },
+            reportes: resultado.rows
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
+        return res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
     }
 };
+
 
 
 
