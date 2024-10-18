@@ -40,4 +40,58 @@ const createReporte = async (req, res) => {
     }
 };
 
-module.exports = { createReporte };
+
+
+
+/**
+ * @async
+ * Servicio para obtener todos los reportes.
+ * @returns {Promise<Array>} Devuelve un array con los reportes.
+ */
+
+const getReportes = async (req, res) => {
+    try {
+        const reportes = await Reporte.findAll();
+        res.json(reportes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
+    }
+};
+
+
+
+
+
+/**
+ * @async
+ * Servicio para obtener un reporte por ID.
+ * @param {number} id - El ID del reporte.
+ * @returns {Promise<Object>} Devuelve el reporte o un error.
+ */
+
+const getReporteById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reporte = await Reporte.findByPk(id);
+        if (!reporte) {
+            return res.status(404).json({ error: 'Reporte no encontrado.' });
+        }
+        res.json(reporte);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener el reporte: ' + error.message });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+module.exports = { createReporte, getReportes, getReporteById };
