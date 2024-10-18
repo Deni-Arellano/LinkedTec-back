@@ -50,7 +50,11 @@ exports.createNoticia = async (req, res) => {
 
 
 
-
+/**
+ * 
+ * @param {id} req Id de la noticia a eliminar 
+ * @returns Retorna un mensaje de confirmación o un mensaje de error
+ */
 exports.eliminarNoticia = async (req, res) => {
 
     try {
