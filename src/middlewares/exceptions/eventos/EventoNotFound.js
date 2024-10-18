@@ -6,4 +6,6 @@ class EventoNotFound extends Error {
     }
 }
 
+
+
 module.exports = EventoNotFound;
