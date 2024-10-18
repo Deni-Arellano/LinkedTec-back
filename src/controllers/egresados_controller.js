@@ -47,11 +47,11 @@ exports.getAllEgresadosWithUserInfo = async (req, res) => {
       limite: limite,
       total_paginas: totalPaginas,
       pagina_siguiente: {
-        url: pagina < totalPaginas ? `/egresados?pagina=${pagina + 1}&limite=${limite}` : null,
+        url: pagina < totalPaginas ? `http://localhost:3000/egresados?pagina=${pagina + 1}&limite=${limite}` : null,
         exists: pagina < totalPaginas
       },
       pagina_anterior: {
-        url: pagina > 1 ? `/egresados?pagina=${pagina - 1}&limite=${limite}` : null,
+        url: pagina > 1 ? `http://localhost:3000/egresados?pagina=${pagina - 1}&limite=${limite}` : null,
         exists: pagina > 1
       },
       egresados
@@ -100,11 +100,11 @@ exports.getEgresadosInfo = async (req, res) => {
       limite: limite,
       total_paginas: totalPaginas,
       pagina_siguiente: {
-        url: pagina < totalPaginas ? `/egresados/info?pagina=${pagina + 1}&limite=${limite}` : null,
+        url: pagina < totalPaginas ? `http://localhost:3000/egresados/info?pagina=${pagina + 1}&limite=${limite}` : null,
         exists: pagina < totalPaginas
       },
       pagina_anterior: {
-        url: pagina > 1 ? `/egresados/info?pagina=${pagina - 1}&limite=${limite}` : null,
+        url: pagina > 1 ? `http://localhost:3000/egresados/info?pagina=${pagina - 1}&limite=${limite}` : null,
         exists: pagina > 1
       },
       egresados

@@ -74,11 +74,11 @@ const getReportes = async (req, res) => {
             limite: limite,
             total_paginas: totalPaginas,
             pagina_siguiente: {
-                url: pagina < totalPaginas ? `/reportes?pagina=${pagina + 1}&limite=${limite}` : null,
+                url: pagina < totalPaginas ? `http://localhost:3000/reportes?pagina=${pagina + 1}&limite=${limite}` : null,
                 exists: pagina < totalPaginas
             },
             pagina_anterior: {
-                url: pagina > 1 ? `/reportes?pagina=${pagina - 1}&limite=${limite}` : null,
+                url: pagina > 1 ? `http://localhost:3000/reportes?pagina=${pagina - 1}&limite=${limite}` : null,
                 exists: pagina > 1
             },
             reportes: resultado.rows
