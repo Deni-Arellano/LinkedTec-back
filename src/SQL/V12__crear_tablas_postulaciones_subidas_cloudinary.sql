@@ -2,8 +2,8 @@ CREATE TABLE postulacion (
     id_postulacion INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
     id_empleo INT NOT NULL,
-    descripcion_personal VARCHAR(500) NULL, 
-    cv VARCHAR(255) NULL,
+    descripcion_personal VARCHAR(500), 
+    cv VARCHAR(255) ,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
     FOREIGN KEY (id_empleo) REFERENCES evento(id_evento)
 );
