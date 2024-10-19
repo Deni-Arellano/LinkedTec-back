@@ -305,7 +305,7 @@ const actualizarReclutador = async (req, res) => {
 
   try {
     await validarUsuarioExistente(id);
-    await validarCorreoExistente(usuario.correo);
+    
     const resultado = await actualizarReclutadorServicio(id, usuario, reclutador);
 
     // Responder con los datos actualizados
@@ -315,9 +315,7 @@ const actualizarReclutador = async (req, res) => {
       reclutador: resultado.reclutador
     });
   } catch (error) {
-    if (error.name === 'EmailExistsError') {
-      return res.status(409).json({ message: 'El correo ya está en uso' });
-    }
+
 
     if (error.name === 'UserNotFoundError') {
       return res.status(404).json({ message: 'Usuario no encontrado' });
