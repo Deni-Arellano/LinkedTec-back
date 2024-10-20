@@ -1,6 +1,95 @@
 const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
+const { validarUsuariosExistentes } = require('../middlewares/validations/validaciones_usuarios');
+
+
+
+/**
+ * @async
+ * Servicio para obtener todos los egresados con información de usuario asociada y paginación.
+ * @param {number} pagina - Número de página.
+ * @param {number} limite - Cantidad de registros por página.
+ * @returns {Object} Un objeto con el total de registros, la lista de egresados, y datos de paginación.
+ */
+exports.obtenerEgresadosPaginados = async (pagina = 1, limite = 10) => {
+  try {
+    const offset = (pagina - 1) * limite;
+
+    const [[{ total }]] = await db.query(`
+      SELECT COUNT(*) AS total 
+      FROM usuarios u
+      JOIN egresados eg ON u.id = eg.id
+    `);
+
+    const [egresados] = await db.query(`
+      SELECT u.id, u.nombre, u.apellido_paterno, u.apellido_materno, u.correo, u.contraseña, 
+             u.fecha_nacimiento, u.telefono, u.sexo, u.biografia, u.role, u.imagen_usuario, 
+             eg.carrera, eg.año_graduacion, eg.puesto 
+      FROM usuarios u
+      JOIN egresados eg ON u.id = eg.id
+      LIMIT ${limite} OFFSET ${offset}
+    `);
+
+    await validarUsuariosExistentes(egresados);
+
+    const totalPaginas = Math.ceil(total / limite);
+
+    return {
+      total,
+      pagina,
+      limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null,
+      pagina_anterior: pagina > 1 ? pagina - 1 : null,
+      egresados
+    };
+  } catch (error) {
+    throw new Error('Error al obtener los egresados: ' + error.message);
+  }
+};
+
+
+/**
+ * @async
+ * Servicio para obtener la información del rol de todos los egresados con paginación.
+ * @param {number} pagina - Número de página.
+ * @param {number} limite - Cantidad de registros por página.
+ * @returns {Object} Un objeto con el total de registros, la lista de egresados, y datos de paginación.
+ */
+exports.obtenerInfoEgresadosPaginados = async (pagina = 1, limite = 10) => {
+  try {
+    const offset = (pagina - 1) * limite;
+
+    const [[{ total }]] = await db.query(`
+      SELECT COUNT(*) AS total 
+      FROM egresados
+    `);
+
+    const [egresados] = await db.query(`
+      SELECT id, carrera, año_graduacion, puesto 
+      FROM egresados
+      LIMIT ${limite} OFFSET ${offset}
+    `);
+
+    await validarUsuariosExistentes(egresados);
+
+    const totalPaginas = Math.ceil(total / limite);
+
+    return {
+      total,
+      pagina,
+      limite,
+      total_paginas: totalPaginas,
+      pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null,
+      pagina_anterior: pagina > 1 ? pagina - 1 : null,
+      egresados
+    };
+  } catch (error) {
+    throw new Error('Error al obtener la información de los egresados: ' + error.message);
+  }
+};
+
 
 /**
  * @async
