@@ -41,8 +41,6 @@ const createReporte = async (req, res) => {
 };
 
 
-
-
 /**
  * @async
  * Servicio para obtener todos los reportes con paginación.
@@ -91,10 +89,6 @@ const getReportes = async (req, res) => {
 };
 
 
-
-
-
-
 /**
  * @async
  * Servicio para obtener un reporte por ID.
@@ -115,14 +109,6 @@ const getReporteById = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el reporte: ' + error.message });
     }
 };
-
-
-
-
-
-
-
-
 
 
 

@@ -180,11 +180,6 @@ exports.crearEgresado = async (usuarioData, egresadoData) => {
 
 
 
-
-
-
-
-
 /**
  * @async
  * Servicio para actualizar la información de un egresado y su usuario.

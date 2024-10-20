@@ -38,9 +38,6 @@ exports.getAllEgresadosWithUserInfo = async (req, res) => {
 };
 
 
-
-
-
 /**
  * @async
  * Controlador para obtener la información del rol de todos los egresados con paginación.
@@ -69,9 +66,6 @@ exports.getEgresadosInfo = async (req, res) => {
     return res.status(500).json({ message: 'Error al obtener la información de los egresados', error: error.message });
   }
 };
-
-
-
 
 
 
@@ -258,8 +252,6 @@ exports.getEgresadoProfileById = async (req, res) => {
     return res.status(500).json({ message: 'Error al obtener el perfil del egresado', error: error.message });
   }
 };
-
-
 
 
 /**
