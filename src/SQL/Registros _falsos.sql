@@ -100,7 +100,10 @@ INSERT INTO postulacion (id_postulacion, id_usuario, id_empleo, descripcion_pers
 (2, 7, 2, 'Tengo experiencia en automatización de procesos industriales y busco contribuir en su equipo', 2, 1),
 (3, 13, 3, 'Busco aplicar mis conocimientos financieros en su empresa', 3, 1),
 (4, 16, 1, 'Estoy interesada en el puesto de Desarrollador Full Stack ya que me apasiona la tecnología', 4, 2),
-(5, 21, 4, 'Tengo experiencia en operaciones de planta y puedo aportar mejoras significativas', 5, 3);
+(5, 21, 4, 'Tengo experiencia en operaciones de planta y puedo aportar mejoras significativas', 5, 3),
+(6, 5, 2, 'Estoy interesado en el puesto de Desarrollador Backend, tengo experiencia con Node.js.', 1, 1),
+(7, 5, 3, 'Me apasiona el diseño de interfaces y la experiencia del usuario, espero contribuir como Diseñador UI/UX.', 1, 1),
+(8, 5, 4, 'Tengo experiencia en gestión de proyectos y busco ser parte de su equipo como Project Manager.', 1, 1);
 
 
 INSERT INTO subidas_cloudinary (id, id_recurso, id_publico, formato, tipo_recurso, fecha_creacion, url_segura, carpeta, nombre_original, tipo_subida) VALUES
@@ -109,3 +112,15 @@ INSERT INTO subidas_cloudinary (id, id_recurso, id_publico, formato, tipo_recurs
 (3, 'recurso3', 'publico3', 'jpg', 'imagen', NOW(), 'http://example.com/image2.jpg', 'carpeta1', 'imagen2.jpg', 'imagen'),
 (4, 'recurso4', 'publico4', 'pdf', 'archivo', NOW(), 'http://example.com/file2.pdf', 'carpeta2', 'archivo2.pdf', 'archivo'),
 (5, 'recurso5', 'publico5', 'jpg', 'imagen', NOW(), 'http://example.com/image3.jpg', 'carpeta1', 'imagen3.jpg', 'imagen');
+
+INSERT INTO noticias (titulo_noticia, descripcion, imagen_noticia, enlace_noticia, categoria_noticia, id_usuario) VALUES
+('Nuevas oportunidades laborales en tecnología', 'Se han abierto nuevas vacantes en diversas empresas del sector tecnológico. Revisa los detalles aquí.', 'oportunidades.jpg', 'www.noticias.com/oportunidades', 'ISC', 6),
+('Impacto de la inteligencia artificial en la educación', 'Un análisis sobre cómo la IA está transformando el proceso educativo.', 'ia_educacion.jpg', 'www.noticias.com/ia-educacion', 'II', 9),
+('Consejos para mejorar tu CV', 'Sigue estos consejos para hacer que tu currículum destaque entre los demás.', 'cv_consejos.jpg', 'www.noticias.com/consejos-cv', 'CP', 5),
+('Avances en la biotecnología', 'Últimas innovaciones en el campo de la biotecnología y su aplicación en la industria.', 'biotecnologia.jpg', 'www.noticias.com/biotecnologia', 'IGE', 12),
+('Tendencias en desarrollo de software', 'Conoce las tendencias que marcarán el futuro del desarrollo de software.', 'tendencias_software.jpg', 'www.noticias.com/tendencias-software', 'ISC', 11),
+('Éxito del taller de programación', 'El taller de programación celebrado la semana pasada fue un gran éxito, con más de 100 participantes.', 'taller_programacion.jpg', 'www.noticias.com/taller-exito', 'IE', 4),
+('Nueva normativa para egresados', 'Se ha implementado una nueva normativa que afecta a los egresados de todas las carreras.', 'normativa_egresados.jpg', 'www.noticias.com/normativa', 'IGE', 2),
+('Seminario sobre emprendimiento', 'Invitación al seminario sobre emprendimiento y desarrollo de startups.', 'emprendimiento.jpg', 'www.noticias.com/seminario-emprendimiento', 'IA', 1),
+('Red de apoyo para estudiantes', 'Lanzamiento de una red de apoyo para estudiantes universitarios.', 'red_apoyo.jpg', 'www.noticias.com/red-apoyo', 'ISC', 3),
+('Los mejores libros para estudiar programación', 'Una lista de los mejores libros recomendados para estudiantes de programación.', 'libros_programacion.jpg', 'www.noticias.com/libros', 'II', 7);
