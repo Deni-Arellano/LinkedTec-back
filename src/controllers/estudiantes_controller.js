@@ -6,7 +6,18 @@ const {validarNumeroControl} = require('../middlewares/validations/validaciones_
 const {validarEstudianteExistente} = require('../middlewares/validations/validaciones_estudiantes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuarioEnUsoPlanB, validarUsuariosExistentes} = require('../middlewares/validations/validaciones_usuarios');
 
-// Función para crear un nuevo estudiante
+
+/**
+ * @function createEstudiante
+ * @description Crea un nuevo estudiante y su usuario asociado en la base de datos.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.body - El cuerpo de la solicitud que contiene la información del usuario y del estudiante.
+ * @param {Object} req.body.usuario - Los datos del usuario a registrar.
+ * @param {Object} req.body.estudiante - Los datos del estudiante a registrar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve el objeto del estudiante completo si la creación se realiza correctamente o un error si hay problemas durante la creación.
+ */
+
 const createEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
@@ -25,25 +36,19 @@ const createEstudiante = async (req, res) => {
 
         await validarNumeroControl(estudiante.no_control);
 
-
-        
-
-        // Crear el nuevo usuario
         const nuevoUsuario = await Usuario.create(usuario);
 
         await validarUsuarioEnUsoPlanB(nuevoUsuario.id);
 
-        // Crear el nuevo estudiante usando el id del nuevo usuario
         const nuevoEstudiante = await Estudiante.create({
             no_control: estudiante.no_control,
             carrera: estudiante.carrera,
             semestre: estudiante.semestre,
-            id: nuevoUsuario.id // Asociar el id del usuario creado
+            id: nuevoUsuario.id 
         });
 
-        // Retornar todos los datos, incluyendo el ID del estudiante
         const estudianteCompleto = {
-            id: nuevoEstudiante.id, // ID del estudiante
+            id: nuevoEstudiante.id, 
             nombre: nuevoUsuario.nombre,
             apellido_paterno: nuevoUsuario.apellido_paterno,
             apellido_materno: nuevoUsuario.apellido_materno,
@@ -70,37 +75,43 @@ const createEstudiante = async (req, res) => {
     }
 };
 
-// Función para obtener todos los estudiantes
-// Función para obtener todos los estudiantes
+
+/**
+ * @function getAllEstudiantes
+ * @description Obtiene una lista paginada de todos los estudiantes y sus datos de usuario asociados.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.query - Los parámetros de consulta de la solicitud.
+ * @param {number} [req.query.pagina=1] - El número de página a obtener (por defecto es 1).
+ * @param {number} [req.query.limite=10] - El número de estudiantes por página (por defecto es 10).
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un objeto que contiene la lista de estudiantes, información de paginación y el conteo total de estudiantes.
+ */
+
 const getAllEstudiantes = async (req, res) => {
     try {
-        // Obtener los parámetros de paginación de la solicitud
-        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
+       
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
 
-        // Calcular el desplazamiento (offset)
         const offset = (pagina - 1) * limite;
 
-        // Obtener estudiantes con paginación
         const { rows: estudiantes, count } = await Estudiante.findAndCountAll({
-            include: [Usuario], // Incluye los datos del usuario asociado
-            offset, // Desplazamiento calculado
-            limit: limite // Límite de resultados por página
+            include: [Usuario], 
+            offset, 
+            limit: limite
         });
 
-        // Validar si hay usuarios existentes
         await validarUsuariosExistentes(estudiantes);
 
-        // Mapear los resultados a la estructura que necesitas
         const estudiantesCompletos = estudiantes.map(estudiante => ({
-            id: estudiante.id, // ID del estudiante
-            no_control: estudiante.no_control, // No de control del estudiante
+            id: estudiante.id, 
+            no_control: estudiante.no_control, 
             nombre: estudiante.Usuario.nombre,
             apellido_paterno: estudiante.Usuario.apellido_paterno,
             apellido_materno: estudiante.Usuario.apellido_materno,
             rol: estudiante.Usuario.role,
-            carrera: estudiante.carrera, // Carrera del estudiante
-            semestre: estudiante.semestre, // Semestre del estudiante
+            carrera: estudiante.carrera, 
+            semestre: estudiante.semestre, 
             biografia: estudiante.Usuario.biografia,
             telefono: estudiante.Usuario.telefono,
             correo: estudiante.Usuario.correo,
@@ -108,25 +119,22 @@ const getAllEstudiantes = async (req, res) => {
             sexo: estudiante.Usuario.sexo
         }));
 
-        // Calcular el total de páginas
         const totalPaginas = Math.ceil(count / limite);
 
-        // Preparar la respuesta con los datos de paginación y estudiantes
         const response = {
-            total: count, // Número total de estudiantes
-            pagina: pagina, // Página actual
-            limite: limite, // Límite de resultados por página
-            total_paginas: totalPaginas, // Total de páginas
-            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            total: count, 
+            pagina: pagina, 
+            limite: limite, 
+            total_paginas: totalPaginas,
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, 
             url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes?pagina=${pagina + 1}&limite=${limite}` : null,
-            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            pagina_anterior: pagina > 1 ? pagina - 1 : null,
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            estudiantes: estudiantesCompletos // Lista de estudiantes en esta página
+            estudiantes: estudiantesCompletos 
         };
 
-        // Enviar la respuesta
         res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
@@ -137,15 +145,23 @@ const getAllEstudiantes = async (req, res) => {
 };
 
 
-// Función para obtener un estudiante por ID
+/**
+ * @function getEstudianteById
+ * @description Obtiene los detalles de un estudiante específico por su ID, incluyendo la información de usuario asociada.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {string} req.params.id - El ID del estudiante que se va a buscar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un objeto que contiene los detalles del estudiante y su información de usuario.
+ */
+
 const getEstudianteById = async (req, res) => {
     try {
         const id = req.params.id;
         const estudiante = await Estudiante.findOne({
-            where: { id: id }, // Usar el ID del estudiante
-            include: [Usuario] // Incluye los datos del usuario asociado
+            where: { id: id }, 
+            include: [Usuario] 
         });
-
 
         if (!estudiante) {
             return res.status(404).json({ error: "Estudiante no encontrado." });
@@ -154,7 +170,7 @@ const getEstudianteById = async (req, res) => {
         await validarUsuarioExistente(estudiante.id);
 
         const estudianteCompleto = {
-            id: estudiante.id, // ID del estudiante
+            id: estudiante.id, 
             nombre: estudiante.Usuario.nombre,
             no_control: estudiante.no_control,
             semestre: estudiante.semestre,
@@ -180,53 +196,54 @@ const getEstudianteById = async (req, res) => {
     }
 };
 
-// Función para obtener información específica de los estudiantes
+/**
+ * @function getAllEstudiantesInfo
+ * @description Obtiene una lista paginada de estudiantes con información única (número de control, carrera y semestre) y datos de usuario asociados.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.query - Los parámetros de consulta de la solicitud.
+ * @param {number} req.query.pagina - El número de la página a recuperar (por defecto es 1).
+ * @param {number} req.query.limite - El número máximo de estudiantes por página (por defecto es 10).
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un objeto que contiene información paginada de los estudiantes y sus datos únicos.
+ */
+
 const getAllEstudiantesInfo = async (req, res) => {
     try {
-        // Obtener los parámetros de paginación de la solicitud
-        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
-
-        // Calcular el desplazamiento (offset)
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
         const offset = (pagina - 1) * limite;
 
-        // Obtener estudiantes con paginación
         const { rows: estudiantes, count } = await Estudiante.findAndCountAll({
-            include: [Usuario], // Incluye los datos del usuario asociado
-            offset, // Desplazamiento calculado
-            limit: limite // Límite de resultados por página
+            include: [Usuario], 
+            offset, 
+            limit: limite 
         });
 
-        // Validar si hay usuarios existentes
         await validarUsuariosExistentes(estudiantes);
 
-        // Mapear los resultados a la estructura que necesitas
         const estudiantesConInfoUnica = estudiantes.map(estudiante => ({
-            id: estudiante.id,               // ID del estudiante
-            no_control: estudiante.no_control, // NO_CONTROL del estudiante
-            carrera: estudiante.carrera,       // CARRERA del estudiante
-            semestre: estudiante.semestre       // SEMESTRE del estudiante
+            id: estudiante.id,               
+            no_control: estudiante.no_control, 
+            carrera: estudiante.carrera,       
+            semestre: estudiante.semestre       
         }));
 
-        // Calcular el total de páginas
         const totalPaginas = Math.ceil(count / limite);
 
-        // Preparar la respuesta con los datos de paginación y estudiantes
         const response = {
-            total: count, // Número total de estudiantes
-            pagina: pagina, // Página actual
-            limite: limite, // Límite de resultados por página
-            total_paginas: totalPaginas, // Total de páginas
-            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            total: count, 
+            pagina: pagina, 
+            limite: limite, 
+            total_paginas: totalPaginas, 
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, 
             url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes/info?pagina=${pagina + 1}&limite=${limite}` : null,
-            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, 
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/estudiantes/info?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            estudiantes: estudiantesConInfoUnica // Lista de estudiantes en esta página
+            estudiantes: estudiantesConInfoUnica 
         };
 
-        // Enviar la respuesta
         res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
@@ -236,13 +253,22 @@ const getAllEstudiantesInfo = async (req, res) => {
     }
 };
 
+/**
+ * @function getEstudiantePerfilById
+ * @description Obtiene el perfil de un estudiante específico mediante su ID. Incluye información del usuario asociado al estudiante.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la URL.
+ * @param {string} req.params.id - El ID del estudiante a recuperar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve el perfil del estudiante si se encuentra; de lo contrario, devuelve un error.
+ */
 
 const getEstudiantePerfilById = async (req, res) => {
     try {
         const id = req.params.id;
         const estudiante = await Estudiante.findOne({
             where: { id: id },
-            include: [Usuario] // Incluye los datos del usuario asociado
+            include: [Usuario] 
         });
 
         if (!estudiante) {
@@ -251,7 +277,6 @@ const getEstudiantePerfilById = async (req, res) => {
 
         await validarUsuarioExistente(estudiante.id);
 
-        // Perfil del estudiante
         const perfilEstudiante = {
             nombre: estudiante.Usuario.nombre,
             apellido_paterno: estudiante.Usuario.apellido_paterno,
@@ -272,13 +297,23 @@ const getEstudiantePerfilById = async (req, res) => {
     }
 };
 
-// Función para obtener información específica del estudiante por ID
+/**
+ * @function getEstudianteInfoById
+ * @description Obtiene la información básica de un estudiante específico mediante su ID. 
+ * Incluye solo el número de control, carrera y semestre.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la URL.
+ * @param {string} req.params.id - El ID del estudiante a recuperar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve la información básica del estudiante si se encuentra; de lo contrario, devuelve un error.
+ */
+
 const getEstudianteInfoById = async (req, res) => {
     try {
         const id = req.params.id;
         const estudiante = await Estudiante.findOne({
             where: { id: id },
-            attributes: ['id', 'no_control', 'carrera', 'semestre'] // Solo los atributos necesarios
+            attributes: ['id', 'no_control', 'carrera', 'semestre'] 
         });
 
         await validarUsuarioExistente(estudiante.id);
@@ -295,12 +330,23 @@ const getEstudianteInfoById = async (req, res) => {
     }
 };
 
+
+/**
+ * @function getEstudianteRolById
+ * @description Obtiene la información completa de un estudiante específico mediante su ID, incluyendo su rol y datos personales.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la URL.
+ * @param {string} req.params.id - El ID del estudiante a recuperar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve la información completa del estudiante si se encuentra; de lo contrario, devuelve un error.
+ */
+
 const getEstudianteRolById = async (req, res) => {
     try {
         const id = req.params.id;
         const estudiante = await Estudiante.findOne({
             where: { id: id },
-            include: [Usuario] // Incluye los datos del usuario asociado
+            include: [Usuario] 
         });
 
         if (!estudiante) {
@@ -333,24 +379,34 @@ const getEstudianteRolById = async (req, res) => {
     }
 };
 
+
+/**
+ * @function editEstudiante
+ * @description Edita la información de un estudiante específico, incluyendo su usuario asociado.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.body - El cuerpo de la solicitud que contiene los datos a editar.
+ * @param {Object} req.body.usuario - Información del usuario asociada al estudiante.
+ * @param {Object} req.body.estudiante - Información del estudiante a editar.
+ * @param {Object} req.params - Los parámetros de la URL.
+ * @param {string} req.params.id - El ID del estudiante a editar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un mensaje de éxito si la edición se realiza correctamente; de lo contrario, devuelve un error.
+ */
+
 const editEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
 
-        // Validar la edición del estudiante
         const { error } = await validarEdicionEstudiante(estudiante);
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        // Verificar si el estudiante existe
         await validarEstudianteExistente(req.params.id);
 
-        // Buscar el usuario existente
         const usuarioExistente = await Usuario.findOne({ where: { id: req.params.id } });
 
         if (usuarioExistente) {
-            // Actualizar datos del usuario
             usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
             usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
             usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
@@ -365,13 +421,11 @@ const editEstudiante = async (req, res) => {
             await usuarioExistente.save();
         }
 
-        // Buscar el estudiante existente
         const estudianteExistente = await Estudiante.findOne({ where: { id: req.params.id } });
 
         if (estudianteExistente) {
-            // Actualizar datos del estudiante
             estudianteExistente.carrera = estudiante.carrera || estudianteExistente.carrera;
-            estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; // Campo semestre
+            estudianteExistente.semestre = estudiante.semestre || estudianteExistente.semestre; 
 
             await estudianteExistente.save();
         }
@@ -386,12 +440,12 @@ const editEstudiante = async (req, res) => {
     }
 };
 
-// Exportar funciones
+
 module.exports = {
     createEstudiante,
     getAllEstudiantes,
     getEstudianteById,
-    getAllEstudiantesInfo, // Exportar la nueva función
+    getAllEstudiantesInfo, 
     getEstudiantePerfilById,
     getEstudianteInfoById,
     getEstudianteRolById,

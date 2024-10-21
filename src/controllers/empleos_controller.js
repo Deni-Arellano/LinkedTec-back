@@ -30,11 +30,11 @@ exports.getAllEmpleos = async (req, res) => {
       limite: limite,
       total_paginas: totalPaginas,
       pagina_siguiente: {
-        url: pagina < totalPaginas ? `/empleos?pagina=${pagina + 1}&limite=${limite}` : null,
+        url: pagina < totalPaginas ? `http://localhost:3000/empleos?pagina=${pagina + 1}&limite=${limite}` : null,
         exists: pagina < totalPaginas
       },
       pagina_anterior: {
-        url: pagina > 1 ? `/empleos?pagina=${pagina - 1}&limite=${limite}` : null,
+        url: pagina > 1 ? `http://localhost:3000/empleos?pagina=${pagina - 1}&limite=${limite}` : null,
         exists: pagina > 1
       },
       empleos: resultado.data
@@ -44,8 +44,6 @@ exports.getAllEmpleos = async (req, res) => {
     return res.status(500).json({ message: 'Error al obtener empleos', error: error.message });
   }
 };
-
-
 
 
 /**

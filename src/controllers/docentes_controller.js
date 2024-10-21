@@ -6,49 +6,51 @@ const {validarNumeroDocente} = require('../middlewares/validations/validaciones_
 const {validarDocenteExistente} = require('../middlewares/validations/validaciones_docentes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuariosExistentes,validarUsuarioEnUsoPlanB} = require('../middlewares/validations/validaciones_usuarios');
 
-
+/**
+ * Crea un nuevo docente y usuario en la base de datos.
+ * 
+ * @async
+ * @function createDocente
+ * @param {Object} req - Objeto de solicitud HTTP.
+ * @param {Object} req.body - El cuerpo de la solicitud.
+ * @param {Object} req.body.usuario - Datos del usuario a crear.
+ * @param {Object} req.body.docente - Datos del docente a crear.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>} - Devuelve el docente y usuario creados en formato JSON o un error en caso de fallo.
+ * @throws {Error} - Lanza un error si ocurre algún problema al crear el docente o usuario.
+ */
 
 const createDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
 
-        // Validar los datos del docente
         const { error } = validarRegistroDocente(docente);
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        // Validar los datos del usuario
         const { errorUsuario } = validarRegistroUsuario(usuario);
         if (errorUsuario) {
             return res.status(400).json({ error: errorUsuario.details[0].message });
         }
 
-        // Validar si el correo ya está en uso
         await validarCorreoExistente(usuario.correo);
 
         await validarNumeroDocente(docente.numero_empleado);
-        
-
-
-        // Crear el nuevo usuario
+    
         const nuevoUsuario = await Usuario.create(usuario);
 
-        // Validar el nuevo usuario creado
         console.log("Nuevo usuario creado:", nuevoUsuario);
 
-        // Validar que el usuario realmente se creó con un ID
         await validarUsuarioEnUsoPlanB(nuevoUsuario.id);
 
-        // Crear el nuevo docente usando el id del nuevo usuario
         const nuevoDocente = await Docente.create({
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
             numero_empleado: docente.numero_empleado,
             academia: docente.academia,
-            id: nuevoUsuario.id // Asociar el id del usuario creado
+            id: nuevoUsuario.id 
         });
 
-        // Retornar todos los datos
         const docenteCompleto = {
             id: nuevoDocente.id,
             nombre: nuevoUsuario.nombre,
@@ -69,7 +71,6 @@ const createDocente = async (req, res) => {
     } catch (error) {
         console.error(`Error capturado: ${error.message}`); // Mensaje de error general
 
-        // Imprimir más detalles del error, si están disponibles
         if (error.errors) {
             error.errors.forEach(err => {
                 console.error(`Error de validación: ${err.message}`);
@@ -91,29 +92,36 @@ const createDocente = async (req, res) => {
 };
 
 
+/**
+ * Obtiene una lista de todos los docentes con paginación.
+ * 
+ * @async
+ * @function getAllDocentes
+ * @param {Object} req - Objeto de solicitud HTTP.
+ * @param {Object} req.query - Parámetros de consulta (opcional).
+ * @param {number} req.query.pagina - Número de página para paginación (opcional).
+ * @param {number} req.query.limite - Número de resultados por página (opcional).
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>} - Devuelve una lista de docentes paginada en formato JSON o un error.
+ * @throws {Error} - Lanza un error si ocurre algún problema al obtener los docentes.
+ */
 
-// Función para obtener todos los docentes
 const getAllDocentes = async (req, res) => {
     try {
-        // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
-        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
 
-        // Calcular el desplazamiento (offset) y el límite
         const offset = (pagina - 1) * limite;
         const limit = limite;
 
-        // Obtener docentes con paginación
         const { rows: docentes, count } = await Docente.findAndCountAll({
-            include: [Usuario], // Incluye los datos del usuario asociado
-            offset, // Desplazamiento calculado
-            limit // Límite de resultados por página
+            include: [Usuario], 
+            offset, 
+            limit 
         });
 
-        // Validar si hay docentes disponibles
         await validarUsuariosExistentes(docentes);
 
-        // Mapear los resultados a la estructura que necesitas
         const docentesCompletos = docentes.map(docente => ({
             id: docente.id,
             nombre: docente.Usuario.nombre,
@@ -130,25 +138,22 @@ const getAllDocentes = async (req, res) => {
             academia: docente.academia
         }));
 
-        // Calcular el total de páginas
         const totalPaginas = Math.ceil(count / limite);
 
-        // Preparar la respuesta con los datos de paginación y docentes
         const response = {
-            total: count, // Número total de docentes
-            pagina: pagina, // Página actual
-            limite: limite, // Límite de resultados por página
-            total_paginas: totalPaginas, // Total de páginas
-            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            total: count, 
+            pagina: pagina, 
+            limite: limite, 
+            total_paginas: totalPaginas, 
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, 
             url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina + 1}&limite=${limite}` : null,
-            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, 
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            docentes: docentesCompletos // Lista de docentes en esta página
+            docentes: docentesCompletos 
         };
 
-        // Enviar la respuesta
         res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
@@ -161,7 +166,16 @@ const getAllDocentes = async (req, res) => {
 
 
 
-// Función para obtener un docente por ID
+/**
+ * @function getDocenteById
+ * @description Obtiene un docente por su ID, incluyendo los datos del usuario asociado.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {string} req.params.id - El ID del docente a buscar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve los datos completos del docente y su usuario asociado si se encuentra, de lo contrario un mensaje de error.
+ */
+
 const getDocenteById = async (req, res) => {
     try {
         const id = req.params.id;
@@ -201,26 +215,33 @@ const getDocenteById = async (req, res) => {
     }
 };
 
+
+/**
+ * @function getAllDocentesInfo
+ * @description Obtiene todos los docentes con información paginada, incluyendo los datos del usuario asociado, como el último nivel de estudios, número de empleado y academia.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.query - Los parámetros de consulta (query) de la solicitud.
+ * @param {number} [req.query.pagina=1] - Número de la página actual para la paginación (por defecto 1).
+ * @param {number} [req.query.limite=10] - Número de resultados por página (por defecto 10).
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un objeto JSON con los datos de los docentes paginados, incluyendo la información de paginación y enlaces a las páginas anterior y siguiente.
+ */
+
 const getAllDocentesInfo = async (req, res) => {
     try {
-        // Obtener los parámetros de paginación de la solicitud (usando 'pagina' y 'limite')
-        const pagina = parseInt(req.query.pagina) || 1; // Página actual (por defecto 1)
-        const limite = parseInt(req.query.limite) || 10; // Tamaño de página (por defecto 5)
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
 
-        // Calcular el desplazamiento (offset) y el límite
         const offset = (pagina - 1) * limite;
 
-        // Obtener docentes con paginación
         const { rows: docentes, count } = await Docente.findAndCountAll({
-            include: [Usuario], // Incluye los datos del usuario asociado
-            offset, // Desplazamiento calculado
-            limit: limite // Límite de resultados por página
+            include: [Usuario], 
+            offset, 
+            limit: limite 
         });
 
-        // Validar si hay docentes disponibles
         await validarUsuariosExistentes(docentes);
 
-        // Mapear los resultados a la estructura que necesitas
         const docentesConInfoUnica = docentes.map(docente => ({
             id: docente.id, // ID del docente
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
@@ -228,25 +249,22 @@ const getAllDocentesInfo = async (req, res) => {
             academia: docente.academia
         }));
 
-        // Calcular el total de páginas
         const totalPaginas = Math.ceil(count / limite);
 
-        // Preparar la respuesta con los datos de paginación y docentes
         const response = {
-            total: count, // Número total de docentes
-            pagina: pagina, // Página actual
-            limite: limite, // Límite de resultados por página
-            total_paginas: totalPaginas, // Total de páginas
-            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, // Página siguiente, si existe
+            total: count, 
+            pagina: pagina, 
+            limite: limite,
+            total_paginas: totalPaginas, 
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, 
             url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina + 1}&limite=${limite}` : null,
-            pagina_anterior: pagina > 1 ? pagina - 1 : null, // Página anterior, si existe
+            pagina_anterior: pagina > 1 ? pagina - 1 : null, 
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            docentes: docentesConInfoUnica // Lista de docentes en esta página
+            docentes: docentesConInfoUnica 
         };
 
-        // Enviar la respuesta
         res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
@@ -257,15 +275,22 @@ const getAllDocentesInfo = async (req, res) => {
     }
 };
 
-// Función para obtener el perfil del docente usando el ID del cuerpo de la solicitud
-// Función para obtener el perfil del docente
-// Función para obtener el perfil del docente
+/**
+ * @function getDocentePerfilById
+ * @description Obtiene el perfil de un docente específico, incluyendo la información del usuario asociada, como nombre, apellidos, rol, academia, biografía, y datos de contacto.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {number} req.params.id - El ID del docente a buscar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un perfil completo del docente en formato JSON o un error si el docente o el usuario no son encontrados.
+ */
+
 const getDocentePerfilById = async (req, res) => {
     try {
         const id = req.params.id;
         const docente = await Docente.findOne({
             where: { id: id },
-            include: [Usuario] // Incluye los datos del usuario asociado
+            include: [Usuario] 
         });
 
         if (!docente) {
@@ -274,7 +299,6 @@ const getDocentePerfilById = async (req, res) => {
 
         await validarUsuarioExistente(docente.id);
 
-        // Perfil del docente
         const perfilDocente = {
             nombre: docente.Usuario.nombre,
             apellido_paterno: docente.Usuario.apellido_paterno,
@@ -296,12 +320,22 @@ const getDocentePerfilById = async (req, res) => {
     }
 };
 
-// Función para obtener la información única del docente por ID
+
+/**
+ * @function getinfoDocenteById
+ * @description Obtiene información específica de un docente, incluyendo su ID, último nivel de estudios, número de empleado y academia.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {number} req.params.id - El ID del docente a buscar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve la información solicitada del docente en formato JSON o un error si el docente o el usuario no son encontrados.
+ */
+
 const getinfoDocenteById = async (req, res) => {
     try {
         const id = req.params.id;
         const docente = await Docente.findOne({
-            where: { id: id }, // Buscar por ID del docente
+            where: { id: id }, 
         });
 
         if (!docente) {
@@ -310,7 +344,6 @@ const getinfoDocenteById = async (req, res) => {
 
         await validarUsuarioExistente(docente.id);
 
-        // Retornar solo los datos solicitados
         const docenteInfoUnica = {
             id: docente.id,
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
@@ -326,13 +359,22 @@ const getinfoDocenteById = async (req, res) => {
     }
 };
 
-// Función para obtener toda la información del usuario y su rol mediante ID
+/**
+ * @function getUsuariRolById
+ * @description Obtiene la información de un docente junto con los detalles de su usuario asociado, incluyendo el rol y otros datos personales.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {number} req.params.id - El ID del docente a buscar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve la información del docente y su usuario en formato JSON o un error si el docente o el usuario no son encontrados.
+ */
+
 const getUsuariRolById = async (req, res) => {
     try {
         const id = req.params.id;
         const docente = await Docente.findOne({
-            where: { id: id }, // Usar el ID del docente
-            include: [Usuario] // Incluye los datos del usuario asociado
+            where: { id: id }, 
+            include: [Usuario] 
         });
 
         if (!docente) {
@@ -366,25 +408,34 @@ const getUsuariRolById = async (req, res) => {
 };
 
 
+/**
+ * @function editDocente
+ * @description Actualiza la información de un docente y su usuario asociado en la base de datos.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.params - Los parámetros de la solicitud.
+ * @param {number} req.params.id - El ID del docente a editar.
+ * @param {Object} req.body - El cuerpo de la solicitud que contiene la información actualizada del usuario y del docente.
+ * @param {Object} req.body.usuario - Los datos del usuario a actualizar.
+ * @param {Object} req.body.docente - Los datos del docente a actualizar.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un mensaje de éxito si la actualización se realiza correctamente o un error si hay problemas durante la actualización.
+ */
+
 const editDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
-        const docenteId = req.params.id; // Tomamos el ID de la URL
+        const docenteId = req.params.id; 
 
-        // Validar si el docente existe por ID (tomado de los parámetros de la URL)
         await validarDocenteExistente(docenteId);
 
-
-        const { error } = await validarEdicionDocente(docente); // Validar los datos del docente
+        const { error } = await validarEdicionDocente(docente); 
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        // Buscar el usuario existente
         const usuarioExistente = await Usuario.findOne({ where: { id: docenteId } });
 
         if (usuarioExistente) {
-            // Actualizar datos del usuario
             usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
             usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
             usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
@@ -399,11 +450,9 @@ const editDocente = async (req, res) => {
             await usuarioExistente.save();
         }
 
-        // Buscar el docente existente por ID
         const docenteExistente = await Docente.findOne({ where: { id: docenteId } });
 
         if (docenteExistente) {
-            // Actualizar datos del docente
             docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
             docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
             docenteExistente.academia = docente.academia || docenteExistente.academia;

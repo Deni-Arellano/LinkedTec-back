@@ -5,7 +5,7 @@ const Usuario = require('../models/usuarios');
 const db = require('../config/database');
 const { validateEgresado,validateId } = require('../middlewares/validations/validaciones_egresados');
 const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
-
+const { obtenerEgresadosPaginados,obtenerInfoEgresadosPaginados } = require('../services/services_egresados');
 
 
 
@@ -20,50 +20,22 @@ exports.getAllEgresadosWithUserInfo = async (req, res) => {
   try {
     const pagina = parseInt(req.query.pagina) || 1;
     const limite = parseInt(req.query.limite) || 10;
-    const offset = (pagina - 1) * limite;
 
-    const [[{ total }]] = await db.query(`
-      SELECT COUNT(*) AS total 
-      FROM usuarios u
-      JOIN egresados eg ON u.id = eg.id
-    `);
+    const result = await obtenerEgresadosPaginados(pagina, limite);
 
-    const [egresados] = await db.query(`
-      SELECT u.id, u.nombre, u.apellido_paterno, u.apellido_materno, u.correo, u.contraseña, 
-             u.fecha_nacimiento, u.telefono, u.sexo, u.biografia, u.role, u.imagen_usuario, 
-             eg.carrera, eg.año_graduacion, eg.puesto 
-      FROM usuarios u
-      JOIN egresados eg ON u.id = eg.id
-      LIMIT ${limite} OFFSET ${offset}
-    `);
-
-    await validarUsuariosExistentes(egresados);
-
-    const totalPaginas = Math.ceil(total / limite);
-
-    return res.json({
-      total,
-      pagina: pagina,
-      limite: limite,
-      total_paginas: totalPaginas,
-      pagina_siguiente: {
-        url: pagina < totalPaginas ? `/egresados?pagina=${pagina + 1}&limite=${limite}` : null,
-        exists: pagina < totalPaginas
-      },
-      pagina_anterior: {
-        url: pagina > 1 ? `/egresados?pagina=${pagina - 1}&limite=${limite}` : null,
-        exists: pagina > 1
-      },
-      egresados
+    res.json({
+      total: result.total,
+      pagina: result.pagina,
+      limite: result.limite,
+      total_paginas: result.total_paginas,
+      pagina_siguiente: result.pagina_siguiente ? `http://localhost:3000/egresados?pagina=${result.pagina_siguiente}&limite=${limite}` : null,
+      pagina_anterior: result.pagina_anterior ? `http://localhost:3000/egresados?pagina=${result.pagina_anterior}&limite=${limite}` : null,
+      egresados: result.egresados
     });
-
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener los egresados', error: error.message });
   }
 };
-
-
-
 
 
 /**
@@ -77,71 +49,23 @@ exports.getEgresadosInfo = async (req, res) => {
   try {
     const pagina = parseInt(req.query.pagina) || 1;
     const limite = parseInt(req.query.limite) || 10;
-    const offset = (pagina - 1) * limite;
 
-    const [[{ total }]] = await db.query(`
-      SELECT COUNT(*) AS total 
-      FROM egresados
-    `);
-
-    const [egresados] = await db.query(`
-      SELECT id, carrera, año_graduacion, puesto 
-      FROM egresados
-      LIMIT ${limite} OFFSET ${offset}
-    `);
-
-    await validarUsuariosExistentes(egresados);
-
-    const totalPaginas = Math.ceil(total / limite);
+    const result = await obtenerInfoEgresadosPaginados(pagina, limite);
 
     return res.json({
-      total,
-      pagina: pagina,
-      limite: limite,
-      total_paginas: totalPaginas,
-      pagina_siguiente: {
-        url: pagina < totalPaginas ? `/egresados/info?pagina=${pagina + 1}&limite=${limite}` : null,
-        exists: pagina < totalPaginas
-      },
-      pagina_anterior: {
-        url: pagina > 1 ? `/egresados/info?pagina=${pagina - 1}&limite=${limite}` : null,
-        exists: pagina > 1
-      },
-      egresados
+      total: result.total,
+      pagina: result.pagina,
+      limite: result.limite,
+      total_paginas: result.total_paginas,
+      pagina_siguiente: result.pagina_siguiente ? `http://localhost:3000/egresados/info?pagina=${result.pagina_siguiente}&limite=${limite}` : null,
+      pagina_anterior: result.pagina_anterior ? `http://localhost:3000/egresados/info?pagina=${result.pagina_anterior}&limite=${limite}` : null,
+      egresados: result.egresados
     });
     
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener la información de los egresados', error: error.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -328,8 +252,6 @@ exports.getEgresadoProfileById = async (req, res) => {
     return res.status(500).json({ message: 'Error al obtener el perfil del egresado', error: error.message });
   }
 };
-
-
 
 
 /**

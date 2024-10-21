@@ -8,36 +8,73 @@ const sequelize = require('../config/database');
  * @returns {Promise<Object>} La nueva publicación creada.
  */
 const crearPublicacionService = async (datosPublicacion) => {
-  const { descripcion, imagen, id_usuario } = datosPublicacion; // Desestructura los datos de la publicación
+  try {
 
-  // Crea una nueva publicación en la base de datos
-  const nuevaPublicacion = await Publicacion.create({
-    descripcion,
-    imagen,
-    fecha: new Date(), // Establece la fecha actual
-    id_usuario,
-    me_gusta: 0, // Inicializa me_gusta en 0
-    disgusta: 0 // Inicializa disgusta en 0
-  });
+    const { descripcion, imagen, id_usuario } = datosPublicacion; 
 
-  return nuevaPublicacion; // Devuelve la nueva publicación creada
+    // Crea una nueva publicación en la base de datos
+    const nuevaPublicacion = await Publicacion.create({
+      descripcion,
+      imagen,
+      fecha: new Date(), // Establece la fecha actual
+      id_usuario,
+      me_gusta: 0, // Inicializa me_gusta en 0
+      disgusta: 0 // Inicializa disgusta en 0
+    });
+  
+    return nuevaPublicacion; 
+    
+  } catch (error) {
+    console.error('Error al crear la publicación:', error);
+    throw error;
+  }
 };
+
 
 /**
  * Función para obtener todas las publicaciones de un usuario específico.
  * @param {number} id_usuario - ID del usuario cuyas publicaciones se quieren obtener.
  * @returns {Promise<Array>} Lista de publicaciones del usuario.
  */
-const obtenerPublicacionesPorUsuarioService = async (id_usuario) => {
-  
-  // Busca todas las publicaciones que pertenecen al usuario indicado, ordenadas de más recientes a más antiguas
-  const publicaciones = await Publicacion.findAll({
-    where: { id_usuario },
-    order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
-  });
-  return publicaciones; // Devuelve la lista de publicaciones
+const obtenerPublicacionesPorUsuarioService = async (id_usuario, page = 1, limit = 10) => {
+  try {
+    const offset = (page - 1) * limit;
 
+    const publicacionesPorUsuario = await Publicacion.findAndCountAll({
+      where: { id_usuario },
+      limit,
+      offset,
+      order: [['fecha', 'DESC']] 
+    });
+
+    const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limit);
+
+    return {
+      "total": publicacionesPorUsuario.count,
+      "pagina": page,
+      "limite": limit,
+      "total_paginas": totalPaginas,
+      "pagina_siguiente": page < totalPaginas ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page + 1}&limite=${limit}`,
+        "exists": true
+      } : {
+        "url": null,
+        "exists": false
+      },
+      "pagina_anterior": page > 1 ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page - 1}&limite=${limit}`,
+        "exists": true
+      } : {
+        "url": null,
+        "exists": false
+      },
+      "publicaciones": publicacionesPorUsuario.rows,
+    };
+  } catch (error) {
+    throw new Error('Error al obtener publicaciones por usuario: ' + error.message);
+  }
 };
+
 
 /**
  * Función para obtener una publicación específica por su ID.
