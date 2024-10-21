@@ -3,10 +3,10 @@ const {obtenerPostulacionesDeUsuario} = require('../controllers/postulaciones_co
 const router = express.Router();
 
 
-  router.get('/:id', obtenerPostulacionesDeUsuario);
+router.get('/:id', obtenerPostulacionesDeUsuario);
   
 
-
+router.post('/', crearPostulacion);
 
 
 

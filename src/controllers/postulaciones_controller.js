@@ -63,7 +63,22 @@ const obtenerPostulacionesDeUsuario = async (req, res) => {
     }
   };
   
+const crearPostulacion = async (req, res) => {
 
+  try {
+
+      const informacionPostulacion = req.body;
+      
+
+
+  }catch (error) {
+
+    res.status(500).json({ error: "Error al crear la postulación" });
+
+  }
+
+
+};
 
 
 

@@ -108,11 +108,18 @@ exports.getEmpleoPorId = async (req, res) => {
  * @returns {Promise<void>} Responde con el mensaje de éxito y los datos actualizados o un error.
  */
 exports.updateEmpleo = async (req, res) => {
+  
+  
+  //Validacion del rol de usuario fue eliminada por problemas extraños inexplicables.
   const { id_usuario } = req.body;
 
   const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
 
+
+
+
   const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
+
   if (!empleo.success) {
     return res.status(404).json({ message: 'Empleo no encontrado' });
   }
