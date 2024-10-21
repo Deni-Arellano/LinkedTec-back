@@ -5,7 +5,7 @@ CREATE TABLE postulacion (
     descripcion_personal VARCHAR(500), 
     cv VARCHAR(255) ,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id),
-    FOREIGN KEY (id_empleo) REFERENCES evento(id_evento)
+    FOREIGN KEY (id_empleo) REFERENCES empleos(id_empleo)
 );
 
 

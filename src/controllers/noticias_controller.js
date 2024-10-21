@@ -54,9 +54,6 @@ exports.createNoticia = async (req, res) => {
 };
 
 
-
-
-
 /**
  * 
  * @param {id} req Id de la noticia a eliminar 

@@ -2,9 +2,24 @@ const Reporte = require('../models/reportes');
 const Usuario = require('../models/usuarios');
 const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
 
+
+/**
+ * @function createReporte
+ * @description Crea un nuevo reporte asociado a un usuario específico.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} req.body - El cuerpo de la solicitud que contiene los datos del reporte.
+ * @param {number} req.body.id_usuario - El ID del usuario que está creando el reporte.
+ * @param {string} req.body.tipo_reporte - El tipo de reporte (ej. "infracción", "sugerencia").
+ * @param {string} req.body.categoria_reporte - La categoría del reporte (ej. "comportamiento", "incidencia").
+ * @param {string} req.body.descripcion - La descripción del reporte.
+ * @param {number} req.body.id_elemento_reportado - El ID del elemento que está siendo reportado.
+ * @param {string} req.body.titulo_reporte - El título del reporte.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Devuelve el nuevo reporte creado en caso de éxito; de lo contrario, devuelve un error.
+ */
+
 const createReporte = async (req, res) => {
     try {
-        // Validar el cuerpo de la solicitud con Joi
         const { error } = await validarRegistroReportes(req.body);
         if (error) {
             return res.status(400).json({ error: error.details[0].message });
@@ -12,18 +27,15 @@ const createReporte = async (req, res) => {
 
         const { id_usuario, tipo_reporte, categoria_reporte, descripcion, id_elemento_reportado, titulo_reporte } = req.body;
 
-        // Verificar si el ID de usuario es válido
         if (!id_usuario) {
             return res.status(400).json({ error: 'El ID del usuario es requerido.' });
         }
 
-        // Verificar si el usuario existe
         const usuario = await Usuario.findByPk(id_usuario);
         if (!usuario) {
             return res.status(404).json({ error: 'El usuario no existe.' });
         }
 
-        // Crear el nuevo reporte
         const nuevoReporte = await Reporte.create({
             id_usuario,
             tipo_reporte,
@@ -39,8 +51,6 @@ const createReporte = async (req, res) => {
         res.status(500).json({ error: 'Error al crear el reporte: ' + error.message });
     }
 };
-
-
 
 
 /**
@@ -91,10 +101,6 @@ const getReportes = async (req, res) => {
 };
 
 
-
-
-
-
 /**
  * @async
  * Servicio para obtener un reporte por ID.
@@ -115,14 +121,6 @@ const getReporteById = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el reporte: ' + error.message });
     }
 };
-
-
-
-
-
-
-
-
 
 
 
