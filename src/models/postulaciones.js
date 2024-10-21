@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
-const Evento = require('./eventos'); // Modelo correspondiente a la tabla 'evento'
+const Evento = require('./eventos');
 
 class Postulacion extends Model {}
 
@@ -15,36 +15,43 @@ Postulacion.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Usuario, // Hace referencia a la tabla 'usuarios'
+      model: Usuario,
       key: 'id',
     },
-    onDelete: 'CASCADE', // Elimina las postulaciones si el usuario es eliminado
+    onDelete: 'CASCADE',
   },
   id_empleo: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Evento, // Hace referencia a la tabla 'evento'
+      model: Evento,
       key: 'id_evento',
     },
-    onDelete: 'CASCADE', // Elimina las postulaciones si el evento es eliminado
+    onDelete: 'CASCADE',
   },
   descripcion_personal: {
     type: DataTypes.STRING(500),
     allowNull: true,
   },
   cv: {
-    type: DataTypes.STRING(255), // Campo para almacenar la URL del CV
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  id_estado: {  // Nueva columna para el estado
+    type: DataTypes.INTEGER,
+    references: {
+      model: 'estados', 
+      key: 'id_estado',
+    },
     allowNull: true,
   },
 }, {
   sequelize,
   modelName: 'postulacion',
   tableName: 'postulacion',
-  timestamps: false, // No utilizar 'createdAt' y 'updatedAt'
+  timestamps: false,
 });
 
-// Definir relaciones (opcional, para acceso más sencillo)
 Postulacion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 Postulacion.belongsTo(Evento, { foreignKey: 'id_empleo' });
 
