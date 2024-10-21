@@ -17,6 +17,7 @@ const routesImagenes = require('./routes/routes_imagenes');
 const noticiasRoutes = require('./routes/routes_noticias');
 const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
+const routerpostulaciones = require('./routes/routes_postulaciones');
 
 const app = express();
 const port = 3000;
@@ -40,6 +41,7 @@ app.use('/imagenes', routesImagenes);
 app.use('/noticias', noticiasRoutes);
 app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
+app.use('/postulaciones', routerpostulaciones);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
