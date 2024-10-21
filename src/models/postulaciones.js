@@ -1,12 +1,8 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
-const Evento = require('./eventos');
-// Importar el modelo de Estado
-const Estado = require('./estados'); // Asegúrate de que la ruta sea correcta
-
-
-
+const Empleo = require('./empleos');
+const Estado = require('./estados');
 
 class Postulacion extends Model {}
 
@@ -29,8 +25,8 @@ Postulacion.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Evento,
-      key: 'id_evento',
+      model: Empleo, 
+      key: 'id_empleo',
     },
     onDelete: 'CASCADE',
   },
@@ -42,13 +38,13 @@ Postulacion.init({
     type: DataTypes.STRING(255),
     allowNull: true,
   },
-  id_estado: {  // Nueva columna para el estado
+  id_estado: {  // Columna para el estado
     type: DataTypes.INTEGER,
+    allowNull: true,
     references: {
-      model: 'estados', 
+      model: Estado, // Cambiado para hacer referencia al modelo
       key: 'id_estado',
     },
-    allowNull: true,
   },
 }, {
   sequelize,
@@ -57,8 +53,9 @@ Postulacion.init({
   timestamps: false,
 });
 
+// Definir las relaciones
 Postulacion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
-Postulacion.belongsTo(Evento, { foreignKey: 'id_empleo' });
+Postulacion.belongsTo(Empleo, { foreignKey: 'id_empleo' });
 Postulacion.belongsTo(Estado, { foreignKey: 'id_estado' });
 
 module.exports = Postulacion;
