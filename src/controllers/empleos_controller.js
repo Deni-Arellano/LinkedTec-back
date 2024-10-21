@@ -113,16 +113,12 @@ exports.updateEmpleo = async (req, res) => {
   const { id_usuario } = req.body;
 
   const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
-  if (!usuario || usuario.role !== 'Reclutadores') {
-    return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden editar empleos' });
-  }
+
   const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
   if (!empleo.success) {
     return res.status(404).json({ message: 'Empleo no encontrado' });
   }
-  if (empleo.data.id_usuario !== id_usuario) {
-    return res.status(403).json({ message: 'No tienes permiso para editar este empleo' });
-  }
+
   const error = validarEmpleo(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
