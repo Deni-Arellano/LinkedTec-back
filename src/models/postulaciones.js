@@ -2,6 +2,11 @@ const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
 const Evento = require('./eventos');
+// Importar el modelo de Estado
+const Estado = require('./estados'); // Asegúrate de que la ruta sea correcta
+
+
+
 
 class Postulacion extends Model {}
 
@@ -54,5 +59,6 @@ Postulacion.init({
 
 Postulacion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 Postulacion.belongsTo(Evento, { foreignKey: 'id_empleo' });
+Postulacion.belongsTo(Estado, { foreignKey: 'id_estado' });
 
 module.exports = Postulacion;
