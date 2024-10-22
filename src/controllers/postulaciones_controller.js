@@ -87,5 +87,6 @@ const crearPostulacion = async (req, res) => {
   
 
 module.exports = {
-    obtenerPostulacionesDeUsuario
+    obtenerPostulacionesDeUsuario,
+    crearPostulacion
 };
