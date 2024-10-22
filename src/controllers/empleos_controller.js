@@ -61,11 +61,13 @@ exports.createEmpleo = async (req, res) => {
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-
+  /** 
   const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
   if (!usuario || usuario.role !== 'Reclutadores') {
     return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden crear empleos' });
   }
+  */
+  
 
   const resultado = await EmpleoService.crearEmpleo({
     id_usuario,
