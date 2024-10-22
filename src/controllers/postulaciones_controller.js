@@ -2,6 +2,7 @@ const {} = require('../services/services_postulaciones');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados'); 
 const Empleo = require('../models/empleos');
+const Usuario = require('../models/usuarios');
 
 
 
@@ -70,8 +71,67 @@ const obtenerPostulacionesDeUsuario = async (req, res) => {
 };
 
 
+const obtenerPostulacionCompleta = async (req, res) => {
+  const { id_usuario, id_postulacion } = req.params; // Obtener el ID de usuario y el ID de la postulación
+
+  try {
+    // Buscar la postulación asegurando que pertenece al usuario correcto
+    const postulacion = await Postulacion.findOne({
+      where: { id_postulacion, id_usuario }, // Condición para asegurar que la postulación pertenece al usuario
+      include: [
+        {
+          model: Usuario,
+          attributes: ['nombre', 'correo'], // Obtener nombre y correo del usuario
+        },
+        {
+          model: Empleo,
+          attributes: [
+            'id_empleo',
+            'titulo',
+            'empresa',
+            'salario',
+            'descripcion',
+            'ubicacion',
+            'nivel_de_ingles',
+            'fecha_creacion',
+          ], // Obtener todos los detalles del empleo
+        },
+      ],
+    });
+
+    if (!postulacion) {
+      return res.status(404).json({ message: 'Postulación no encontrada' });
+    }
+
+    // Devolver la información completa de la postulación
+    return res.json({
+      empleo: {
+        id_empleo: postulacion.Empleo.id_empleo,
+        titulo: postulacion.Empleo.titulo,
+        empresa: postulacion.Empleo.empresa,
+        salario: postulacion.Empleo.salario,
+        descripcion: postulacion.Empleo.descripcion,
+        ubicacion: postulacion.Empleo.ubicacion,
+        nivel_de_ingles: postulacion.Empleo.nivel_de_ingles,
+        fecha_creacion: postulacion.Empleo.fecha_creacion,
+      },
+      usuario: {
+        nombre: postulacion.Usuario.nombre,
+        correo: postulacion.Usuario.correo,
+        descripcion_personal: postulacion.descripcion_personal,
+        cv: postulacion.cv,
+      },
+
+    });
+  } catch (error) {
+    console.error('Error al obtener la postulación:', error);
+    return res.status(500).json({ message: 'Error al obtener la postulación' });
+  }
+};
+
 module.exports = {
-    obtenerPostulacionesDeUsuario
+    obtenerPostulacionesDeUsuario,
+    obtenerPostulacionCompleta
 };
 
 

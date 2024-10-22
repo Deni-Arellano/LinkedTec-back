@@ -20,6 +20,39 @@ async function obtenerPostulacionesPorUsuario(id_usuario) {
   }
 }
 
+
+
+
+const obtenerPostulacionCompletaPorId = async (id_postulacion) => {
+  try {
+    return await Postulacion.findOne({
+      where: { id_postulacion },
+      include: [
+        {
+          model: Usuario,
+          attributes: ['nombre', 'correo'],
+        },
+        {
+          model: Empleo,
+          attributes: [
+            'id_empleo',
+            'titulo',
+            'empresa',
+            'salario',
+            'descripcion',
+            'ubicacion',
+            'nivel_de_ingles',
+            'fecha_creacion',
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    throw new Error('Error al obtener la postulación');
+  }
+};
+
 module.exports = {
   obtenerPostulacionesPorUsuario,
+  obtenerPostulacionCompletaPorId
 };
