@@ -1,6 +1,7 @@
 const Usuario = require('../models/usuarios');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados');
+con
 
 
 async function obtenerPostulacionesPorUsuario(id_usuario) {
@@ -18,6 +19,21 @@ async function obtenerPostulacionesPorUsuario(id_usuario) {
     console.error('Error en el servicio al obtener las postulaciones:', error);
     throw new Error('Error al obtener las postulaciones');
   }
+}
+
+async function crearPostulacion (informacion_postulacion) {
+  try {
+    const informacionCv = informacion_postulacion.cv;
+
+
+
+
+  } catch (error) {
+    console.error('Error al crear la postulación:', error);
+    throw new Error('Error al crear la postulación');
+  };
+
+
 }
 
 module.exports = {

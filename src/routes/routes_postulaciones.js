@@ -1,5 +1,5 @@
 const express = require('express');
-const {obtenerPostulacionesDeUsuario} = require('../controllers/postulaciones_controller');
+const {obtenerPostulacionesDeUsuario, crearPostulacion} = require('../controllers/postulaciones_controller');
 const router = express.Router();
 
 
