@@ -1,4 +1,3 @@
-const {} = require('../services/services_postulaciones');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados'); // Modelo para la tabla estados
 
@@ -69,6 +68,8 @@ const crearPostulacion = async (req, res) => {
 
       const informacionPostulacion = req.body;
       
+
+      return 
 
 
   }catch (error) {
