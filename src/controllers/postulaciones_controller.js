@@ -209,20 +209,6 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
   }
 };
 
-  try {
-
-      const informacionPostulacion = req.body;
-      
-
-
-  }catch (error) {
-
-    res.status(500).json({ error: "Error al crear la postulación" });
-
-  }
-
-
-
 
 const { obtenerDetallesPostulantePorId } = require('../services/services_postulaciones'); 
 
@@ -262,5 +248,4 @@ module.exports = {
     obtenerPostulantesPorEmpleoController,
     obtenerDetallesPostulanteController
 };
-
 

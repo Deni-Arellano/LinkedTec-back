@@ -1,12 +1,8 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
-const Evento = require('./eventos');
-// Importar el modelo de Estado
-const Estado = require('./estados'); // Asegúrate de que la ruta sea correcta
-
-
-
+const Empleo = require('./empleos');
+const Estado = require('./estados');
 
 class Postulacion extends Model {}
 
