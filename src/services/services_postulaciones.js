@@ -1,7 +1,8 @@
 const Usuario = require('../models/usuarios');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados');
-con
+const SubidaCloudinary = require('../services/services_cloudinary');
+
 
 
 async function obtenerPostulacionesPorUsuario(id_usuario) {
@@ -23,9 +24,21 @@ async function obtenerPostulacionesPorUsuario(id_usuario) {
 
 async function crearPostulacion (informacion_postulacion) {
   try {
-    const informacionCv = informacion_postulacion.cv;
+    const informacion_archivo = informacion_postulacion.cv;
+    const {id_usuario, id_empleo, descripcion_personal, id_estado} = informacion_postulacion;
 
 
+    const subida_cloudinary = SubidaCloudinary.registrarArchivo(informacion_archivo);
+
+    const postulacion = await Postulacion.create({
+      id_usuario,
+      id_empleo,
+      descripcion_personal,
+      subida_cloudinary,
+      id_estado,
+    });
+
+    return postulacion; // Devolver la postulación creada
 
 
   } catch (error) {
@@ -38,4 +51,5 @@ async function crearPostulacion (informacion_postulacion) {
 
 module.exports = {
   obtenerPostulacionesPorUsuario,
+  crearPostulacion
 };
