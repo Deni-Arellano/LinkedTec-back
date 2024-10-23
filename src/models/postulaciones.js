@@ -1,8 +1,12 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
-const Empleo = require('./empleos');
-const Estado = require('./estados');
+const Evento = require('./eventos');
+// Importar el modelo de Estado
+const Estado = require('./estados'); // Asegúrate de que la ruta sea correcta
+
+
+
 
 class Postulacion extends Model {}
 
@@ -17,7 +21,7 @@ Postulacion.init({
     allowNull: false,
     references: {
       model: Usuario,
-      key: 'id',
+      key: 'id_usuario',
     },
     onDelete: 'CASCADE',
   },
@@ -34,23 +38,28 @@ Postulacion.init({
     type: DataTypes.STRING(500),
     allowNull: true,
   },
-  cv: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-  },
   id_estado: {  // Columna para el estado
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: Estado, // Cambiado para hacer referencia al modelo
+      model: Estado,
       key: 'id_estado',
     },
+  },
+  cv: {
+    type: DataTypes.INTEGER, // Cambiado a INTEGER para que coincida con la definición de la tabla
+    allowNull: true,
+  },
+  fecha_postulacion: {  // Columna para la fecha de la postulación
+    type: DataTypes.DATE, // Usar tipo DATE para almacenar la fecha
+    allowNull: false,
+    defaultValue: DataTypes.NOW, // Establecer la fecha y hora actuales como valor por defecto
   },
 }, {
   sequelize,
   modelName: 'postulacion',
   tableName: 'postulacion',
-  timestamps: false,
+  timestamps: false, // Desactivado ya que vamos a usar 'fecha_postulacion'
 });
 
 // Definir las relaciones
