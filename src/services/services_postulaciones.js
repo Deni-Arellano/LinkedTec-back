@@ -22,6 +22,89 @@ async function obtenerPostulacionesPorUsuario(id_usuario) {
   }
 }
 
+
+
+
+const obtenerPostulacionCompletaPorId = async (id_postulacion) => {
+  try {
+    return await Postulacion.findOne({
+      where: { id_postulacion },
+      include: [
+        {
+          model: Usuario,
+          attributes: ['nombre', 'correo'],
+        },
+        {
+          model: Empleo,
+          attributes: [
+            'id_empleo',
+            'titulo',
+            'empresa',
+            'salario',
+            'descripcion',
+            'ubicacion',
+            'nivel_de_ingles',
+            'fecha_creacion',
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    throw new Error('Error al obtener la postulación');
+  }
+};
+
+
+
+const obtenerPostulantesPorEmpleo = async (id_empleo) => {
+  try {
+    const postulaciones = await Postulacion.findAll({
+      where: { id_empleo },
+      include: [
+        {
+          model: Usuario,
+          attributes: ['nombre', 'correo'], // Obtener nombre y correo del usuario
+        },
+        {
+          model: Estado,
+          attributes: ['estado'], // Obtener el estado de la postulación si es necesario
+        },
+      ],
+    });
+
+    return postulaciones;
+  } catch (error) {
+    console.error('Error al obtener postulantes:', error);
+    throw new Error('Error al obtener postulantes'); // Lanzar error para manejarlo en el controlador
+  }
+};
+
+
+const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
+  try {
+    const postulacion = await Postulacion.findOne({
+      where: { id_empleo, id_usuario }, // Filtrar por id_empleo y id_usuario
+      include: [
+        {
+          model: Usuario,
+          attributes: ['nombre', 'correo'],
+        },
+        {
+          model: Estado,
+          attributes: ['estado'],
+        },
+      ],
+    });
+
+    console.log(postulacion); // Verificar si se está obteniendo un resultado
+
+    return postulacion;
+  } catch (error) {
+    console.error('Error al obtener los detalles del postulante:', error);
+    throw error;
+  }
+};
+
 async function crearPostulacion (informacion_postulacion) {
   try {
     const informacion_archivo = informacion_postulacion.cv;
@@ -72,5 +155,9 @@ async function crearPostulacion (informacion_postulacion) {
 
 module.exports = {
   obtenerPostulacionesPorUsuario,
+  obtenerPostulacionCompletaPorId,
+  
+  obtenerPostulantesPorEmpleo,
+  obtenerDetallesPostulantePorId,
   crearPostulacion
 };
