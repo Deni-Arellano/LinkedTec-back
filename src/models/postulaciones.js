@@ -25,7 +25,7 @@ Postulacion.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Empleo, 
+      model: Empleo,
       key: 'id_empleo',
     },
     onDelete: 'CASCADE',
@@ -34,7 +34,7 @@ Postulacion.init({
     type: DataTypes.STRING(500),
     allowNull: true,
   },
-  id_estado: {  // Columna para el estado
+  id_estado: {
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
@@ -43,19 +43,25 @@ Postulacion.init({
     },
   },
   cv: {
-    type: DataTypes.INTEGER, // Cambiado a INTEGER para que coincida con la definición de la tabla
+    type: DataTypes.INTEGER, // Sigue siendo un INTEGER para representar la clave foránea a otro modelo (archivo subido).
     allowNull: true,
   },
-  fecha_postulacion: {  // Columna para la fecha de la postulación
-    type: DataTypes.DATE, // Usar tipo DATE para almacenar la fecha
+  fecha_postulacion: {
+    type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW, // Establecer la fecha y hora actuales como valor por defecto
+    defaultValue: DataTypes.NOW, // Fecha y hora actuales como valor por defecto.
+  },
+  // Nueva columna fecha_creacion
+  fecha_creacion: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,  // Establece la fecha y hora actuales por defecto.
+    allowNull: false
   },
 }, {
   sequelize,
   modelName: 'postulacion',
   tableName: 'postulacion',
-  timestamps: false, // Desactivado ya que vamos a usar 'fecha_postulacion'
+  timestamps: false, // No utilizamos las columnas 'createdAt' y 'updatedAt' de Sequelize.
 });
 
 // Definir las relaciones
