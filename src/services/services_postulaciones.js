@@ -45,7 +45,7 @@ async function crearPostulacion (informacion_postulacion) {
       id_empleo: postulacion.id_empleo,
       id_estado: postulacion.id_estado,
       descripcion_personal: postulacion.descripcion_personal,
-      fecha_postulacion: postulacion.fecha_postulacion,
+      fecha_creacion: postulacion.fecha_creacion,
       cv: postulacion.cv,
       archivo: {
         id_archivo: subida_cloudinary.id,
