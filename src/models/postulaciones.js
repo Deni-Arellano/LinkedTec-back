@@ -46,12 +46,6 @@ Postulacion.init({
     type: DataTypes.INTEGER, // Sigue siendo un INTEGER para representar la clave foránea a otro modelo (archivo subido).
     allowNull: true,
   },
-  fecha_postulacion: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW, // Fecha y hora actuales como valor por defecto.
-  },
-  // Nueva columna fecha_creacion
   fecha_creacion: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,  // Establece la fecha y hora actuales por defecto.
