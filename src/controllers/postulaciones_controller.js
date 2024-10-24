@@ -39,7 +39,7 @@ const obtenerPostulacionesDeUsuario = async (req, res) => {
         id_postulacion: postulacion.id_postulacion,
         id_usuario: postulacion.id_usuario,
         titulo: empleo.titulo || 'Título no disponible',
-        fecha: empleo.fecha_creacion || 'Fecha no disponible',
+        fecha: postulacion.fecha_creacion || 'Fecha no disponible',
         empresa: empleo.empresa || 'Empresa no disponible', 
         estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       };
@@ -178,8 +178,8 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
       return {
         nombre_usuario: postulacion.Usuario?.nombre || 'Nombre no disponible',
         correo_usuario: postulacion.Usuario?.correo || 'Correo no disponible',
-        fecha_envio: postulacion.fecha_postulacion || 'Fecha no disponible',
-        estado: postulacion.Estado?.estado || 'Estado no disponible',
+        fecha_creacion: postulacion.fecha_creacion || 'Fecha no disponible',
+        estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       };
     });
 
@@ -226,7 +226,7 @@ const obtenerDetallesPostulanteController = async (req, res) => {
     const detallePostulante = {
       nombre_usuario: postulacion.Usuario.nombre,
       correo_usuario: postulacion.Usuario.correo,
-      fecha_postulacion: postulacion.fecha_postulacion || 'Fecha no disponible',
+      fecha_postulacion: postulacion.fecha_creacion || 'Fecha no disponible',
       estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       descripcion: postulacion.descripcion_personal || 'Descripción no disponible',
       cv: postulacion.cv || 'CV no disponible',

@@ -76,7 +76,7 @@ const validarRegistroUsuario = async (data) => {
         'string.base': 'El rol debe ser una cadena de texto.',
         'string.empty': 'El rol no puede estar vacío.',
         'any.required': 'El rol es requerido.',
-        'any.only': 'El rol debe ser uno de los siguientes: Estudiante, Maestro, Empleador, Empresa, Egresado'
+        'any.only': 'El rol debe ser uno de los siguientes: Estudiantes, Docentes, Reclutadores, Egresados'
       }),
     imagen_usuario: Joi.string()
       .min(2)
