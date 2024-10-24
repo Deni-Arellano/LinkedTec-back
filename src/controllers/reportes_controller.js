@@ -25,7 +25,7 @@ const createReporte = async (req, res) => {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { id_usuario, tipo_reporte, categoria_reporte, descripcion, id_elemento_reportado, titulo_reporte } = req.body;
+        const { id_usuario, tipo_reporte, categoria_reporte,fecha, descripcion, id_elemento_reportado, titulo_reporte } = req.body;
 
         if (!id_usuario) {
             return res.status(400).json({ error: 'El ID del usuario es requerido.' });
@@ -41,6 +41,7 @@ const createReporte = async (req, res) => {
             tipo_reporte,
             categoria_reporte,
             descripcion,
+            fecha,
             id_elemento_reportado,
             titulo_reporte
         });
