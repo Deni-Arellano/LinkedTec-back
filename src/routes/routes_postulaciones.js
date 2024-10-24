@@ -1,5 +1,5 @@
 const express = require('express');
-const {obtenerPostulacionesDeUsuario,obtenerPostulacionCompleta, obtenerPostulantesPorEmpleoController, obtenerDetallesPostulanteController} = require('../controllers/postulaciones_controller');
+const {crearPostulacion,obtenerPostulacionesDeUsuario,obtenerPostulacionCompleta, obtenerPostulantesPorEmpleoController, obtenerDetallesPostulanteController} = require('../controllers/postulaciones_controller');
 const router = express.Router();
 
 
@@ -15,7 +15,7 @@ router.get('/:id', obtenerPostulacionesDeUsuario);
   router.get('/postulante/:id_empleo/:id_usuario', obtenerDetallesPostulanteController);
 
 
-
+router.post('/', crearPostulacion)
 
 
 

@@ -104,22 +104,23 @@ const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
     throw error;
   }
 };
-
-async function crearPostulacion (informacion_postulacion) {
+async function crearPostulacion(informacion_postulacion) {
   try {
     const informacion_archivo = informacion_postulacion.cv;
-    const {id_usuario, id_empleo, descripcion_personal, id_estado} = informacion_postulacion;
+    const { id_usuario, id_empleo, descripcion_personal, id_estado } = informacion_postulacion;
 
+    // Subir archivo a Cloudinary
     const subida_cloudinary = await SubidaCloudinary.registrarArchivo(informacion_archivo);
+    
+    const id_archivo = subida_cloudinary.id; // Este es el ID que necesitas
 
-    const id_archivo = subida_cloudinary.id_archivo;
-
+    // Crear postulación con el ID del archivo subido
     const postulacion = await Postulacion.create({
       id_usuario,
       id_empleo,
       id_estado,
-      id_archivo,
-      descripcion_personal
+      cv: id_archivo, // Aquí almacenas el ID de Cloudinary en el campo cv
+      descripcion_personal,
     });
 
     const respuesta = {
@@ -129,9 +130,9 @@ async function crearPostulacion (informacion_postulacion) {
       id_estado: postulacion.id_estado,
       descripcion_personal: postulacion.descripcion_personal,
       fecha_creacion: postulacion.fecha_creacion,
-      cv: postulacion.cv,
+      cv: postulacion.cv, // El ID del archivo subido a Cloudinary
       archivo: {
-        id_archivo: subida_cloudinary.id,
+        id_archivo: subida_cloudinary.id, // Este es el ID que has subido
         asset_id: subida_cloudinary.id_recurso,
         public_id: subida_cloudinary.id_publico,
         format: subida_cloudinary.formato,
@@ -140,8 +141,8 @@ async function crearPostulacion (informacion_postulacion) {
         secure_url: subida_cloudinary.url_segura,
         folder: subida_cloudinary.carpeta,
         original_filename: subida_cloudinary.nombre_original,
-        type_upload: subida_cloudinary.tipo_subida
-      }
+        type_upload: subida_cloudinary.tipo_subida,
+      },
     };
 
     return respuesta;

@@ -43,27 +43,30 @@ Postulacion.init({
       key: 'id_estado',
     },
   },
-  cv: {
-    type: DataTypes.INTEGER, // Sigue siendo un INTEGER para representar la clave foránea a otro modelo (archivo subido).
+  cv: {  // Aquí almacenas el ID de la subida en Cloudinary
+    type: DataTypes.INTEGER,
     allowNull: true,
+    references: {
+      model: SubidasCloudinary,
+      key: 'id', // Asegúrate que este es el campo correcto
+    },
   },
   fecha_creacion: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,  // Establece la fecha y hora actuales por defecto.
-    allowNull: false
+    defaultValue: DataTypes.NOW,
+    allowNull: false,
   },
 }, {
   sequelize,
   modelName: 'postulacion',
   tableName: 'postulacion',
-  timestamps: false, // No utilizamos las columnas 'createdAt' y 'updatedAt' de Sequelize.
+  timestamps: false,
 });
 
 // Definir las relaciones
 Postulacion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 Postulacion.belongsTo(Empleo, { foreignKey: 'id_empleo' });
 Postulacion.belongsTo(Estado, { foreignKey: 'id_estado' });
-Postulacion.belongsTo(SubidasCloudinary, { foreignKey: 'id_archivo'});
-
+Postulacion.belongsTo(SubidasCloudinary, { foreignKey: 'cv' }); // Relación con SubidasCloudinary
 
 module.exports = Postulacion;
