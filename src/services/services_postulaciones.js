@@ -27,27 +27,47 @@ async function crearPostulacion (informacion_postulacion) {
     const informacion_archivo = informacion_postulacion.cv;
     const {id_usuario, id_empleo, descripcion_personal, id_estado} = informacion_postulacion;
 
+    const subida_cloudinary = await SubidaCloudinary.registrarArchivo(informacion_archivo);
 
-    const subida_cloudinary = SubidaCloudinary.registrarArchivo(informacion_archivo);
+    const id_archivo = subida_cloudinary.id_archivo;
 
     const postulacion = await Postulacion.create({
       id_usuario,
       id_empleo,
-      descripcion_personal,
-      subida_cloudinary,
       id_estado,
+      id_archivo,
+      descripcion_personal
     });
 
-    return postulacion; // Devolver la postulación creada
+    const respuesta = {
+      id_postulacion: postulacion.id_postulacion,
+      id_usuario: postulacion.id_usuario,
+      id_empleo: postulacion.id_empleo,
+      id_estado: postulacion.id_estado,
+      descripcion_personal: postulacion.descripcion_personal,
+      cv: postulacion.cv,
+      archivo: {
+        id_archivo: subida_cloudinary.id,
+        asset_id: subida_cloudinary.id_recurso,
+        public_id: subida_cloudinary.id_publico,
+        format: subida_cloudinary.formato,
+        resource_type: subida_cloudinary.tipo_recurso,
+        created_at: subida_cloudinary.fecha_creacion,
+        secure_url: subida_cloudinary.url_segura,
+        folder: subida_cloudinary.carpeta,
+        original_filename: subida_cloudinary.nombre_original,
+        type_upload: subida_cloudinary.tipo_subida
+      }
+    };
 
+    return respuesta;
 
   } catch (error) {
     console.error('Error al crear la postulación:', error);
     throw new Error('Error al crear la postulación');
-  };
-
-
+  }
 }
+
 
 module.exports = {
   obtenerPostulacionesPorUsuario,

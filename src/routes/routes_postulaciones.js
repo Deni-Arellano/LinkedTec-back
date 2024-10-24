@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/:id', obtenerPostulacionesDeUsuario);
   
-
+router.post('/', crearPostulacion);
 
 
 

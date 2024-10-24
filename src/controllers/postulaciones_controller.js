@@ -1,3 +1,4 @@
+const postulacionServices = require('../services/services_postulaciones');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados'); // Modelo para la tabla estados
 
@@ -66,18 +67,15 @@ const crearPostulacion = async (req, res) => {
 
   try {
 
-      const informacionPostulacion = req.body;
-      
-
-      return 
-
+    const informacionPostulacion = req.body;
+    const nuevaPostulacion = await postulacionServices.crearPostulacion(informacionPostulacion);
+    return res.status(201).json(nuevaPostulacion);
 
   }catch (error) {
 
     res.status(500).json({ error: "Error al crear la postulación" });
 
   }
-
 
 };
 

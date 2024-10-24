@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 const Usuario = require('./usuarios');
 const Empleo = require('./empleos');
 const Estado = require('./estados');
+const SubidasCloudinary = require('./subidas_cloudinary');
 
 class Postulacion extends Model {}
 
@@ -57,5 +58,7 @@ Postulacion.init({
 Postulacion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 Postulacion.belongsTo(Empleo, { foreignKey: 'id_empleo' });
 Postulacion.belongsTo(Estado, { foreignKey: 'id_estado' });
+Postulacion.belongsTo(SubidasCloudinary, { foreignKey: 'id_archivo'});
+
 
 module.exports = Postulacion;
