@@ -11,20 +11,7 @@ const Reclutador = require('../models/reclutadores');
  */
 const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
   try {
-    const nuevoUsuario = await Usuario.create({
-      nombre: usuarioData.nombre,
-      apellido_paterno: usuarioData.apellido_paterno,
-      apellido_materno: usuarioData.apellido_materno,
-      correo: usuarioData.correo,
-      contraseña: usuarioData.contraseña,
-      tipo_usuario: usuarioData.tipo_usuario,
-      telefono: usuarioData.telefono,
-      sexo: usuarioData.sexo,
-      biografia: usuarioData.biografia,
-      fecha_nacimiento: usuarioData.fecha_nacimiento,
-      role: 'Reclutadores',
-      imagen_usuario: usuarioData.imagen_usuario
-    });
+    const nuevoUsuario = await Usuario.create(usuarioData);
 
     console.log('ID del nuevo usuario:', nuevoUsuario.id);
 

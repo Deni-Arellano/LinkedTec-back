@@ -71,7 +71,7 @@ const validarRegistroUsuario = async (data) => {
       }),
     role: Joi.string()
       .required()
-      .valid('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado')
+      .valid('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados')
       .messages({
         'string.base': 'El rol debe ser una cadena de texto.',
         'string.empty': 'El rol no puede estar vacío.',

@@ -44,7 +44,7 @@ Usuario.init({
     type: DataTypes.TEXT, 
   },
   role: {
-    type: DataTypes.ENUM('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado'), // Tipo de dato para el rol con opciones limitadas
+    type: DataTypes.ENUM('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados'), // Tipo de dato para el rol con opciones limitadas
     allowNull: false, 
   },
   imagen_usuario: {

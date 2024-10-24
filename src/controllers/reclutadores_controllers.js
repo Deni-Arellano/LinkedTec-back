@@ -310,6 +310,18 @@ const actualizarReclutador = async (req, res) => {
   const { usuario, reclutador } = req.body;
 
   try {
+    const {error} = await validarRegistroUsuario(usuario);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    
+    // Validamos el objeto reclutador primero
+  
+    const { error1 } = validarReclutador(reclutador);
+    if (error1) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    
     await validarUsuarioExistente(id);
     
     const resultado = await actualizarReclutadorServicio(id, usuario, reclutador);
