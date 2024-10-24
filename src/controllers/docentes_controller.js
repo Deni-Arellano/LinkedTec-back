@@ -24,14 +24,14 @@ const createDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
 
-        const { error } = validarRegistroDocente(docente);
-        if (error) {
-            return res.status(400).json({ error: error.details[0].message });
+        const { error: errorDocente } = validarRegistroDocente(docente);
+        if (errorDocente) {
+            return res.status(400).json({ error: errorDocente.details[0].message });
         }
 
-        const { errorUsuario } = validarRegistroUsuario(usuario);
-        if (errorUsuario) {
-            return res.status(400).json({ error: errorUsuario.details[0].message });
+        const {error} = await validarRegistroUsuario(usuario);
+        if (error) {
+          return res.status(400).json({ message: error.details[0].message });
         }
 
         await validarCorreoExistente(usuario.correo);

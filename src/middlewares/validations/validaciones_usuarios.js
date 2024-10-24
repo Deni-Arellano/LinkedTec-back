@@ -71,12 +71,12 @@ const validarRegistroUsuario = async (data) => {
       }),
     role: Joi.string()
       .required()
-      .valid('Estudiantes', 'Docentes', 'Reclutadores', 'Egresados')
+      .valid('Estudiante', 'Maestro', 'Empleador', 'Empresa', 'Egresado')
       .messages({
         'string.base': 'El rol debe ser una cadena de texto.',
         'string.empty': 'El rol no puede estar vacío.',
         'any.required': 'El rol es requerido.',
-        'any.only': 'El rol debe ser uno de los siguientes: Estudiantes, Docentes, Reclutadores, Egresados.'
+        'any.only': 'El rol debe ser uno de los siguientes: Estudiante, Maestro, Empleador, Empresa, Egresado'
       }),
     imagen_usuario: Joi.string()
       .min(2)

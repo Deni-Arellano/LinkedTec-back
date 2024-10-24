@@ -22,14 +22,14 @@ const createEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
         
-        const { error } = validarRegistroEstudiante(estudiante);
-        if (error) {
-            return res.status(400).json({ error: error.details[0].message });
+        const { error: errorEstudiante } = validarRegistroEstudiante(estudiante);
+        if (errorEstudiante) {
+            return res.status(400).json({ error: errorEstudiante.details[0].message });
         }
 
-        const { errorUsuario } = validarRegistroUsuario(usuario);
-        if (errorUsuario) {
-            return res.status(400).json({ error: errorUsuario.details[0].message });
+        const {error} = await validarRegistroUsuario(usuario);
+        if (error) {
+          return res.status(400).json({ message: error.details[0].message });
         }
 
         await validarCorreoExistente(usuario.correo);

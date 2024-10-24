@@ -16,7 +16,7 @@ const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
       apellido_paterno: usuarioData.apellido_paterno,
       apellido_materno: usuarioData.apellido_materno,
       correo: usuarioData.correo,
-      contraseña: usuarioData.contrasena,
+      contraseña: usuarioData.contraseña,
       tipo_usuario: usuarioData.tipo_usuario,
       telefono: usuarioData.telefono,
       sexo: usuarioData.sexo,
