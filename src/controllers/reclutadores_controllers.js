@@ -1,7 +1,7 @@
 const { crearReclutadorServicio, obtenerReclutadorServicio, obtenerTodosReclutadoresServicio, obtenerTodosUsuariosYReclutadores,obtenerReclutadorDetalladoPorIdServicio, obtenerReclutadorPorIdServicio, actualizarReclutadorServicio } = require('../services/services_reclutadores');
 const { validarReclutador } = require('../middlewares/validations/validaciones_reclutadores');
 const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, validarUsuariosExistentes,   } = require('../middlewares/validations/validaciones_usuarios');
-
+const {validarRegistroUsuario} = require('../middlewares/validations/validaciones_usuarios');
 /**
  * Controlador para crear un reclutador.
  * @async
@@ -13,16 +13,22 @@ const {  validarUsuarioExistente, validarCorreoExistente,validarUsuarioEnUso, va
 const crearReclutador = async (req, res) => {
   const { usuario, reclutador } = req.body;
 
-  // Validamos el objeto reclutador primero
-  const { error } = validarReclutador(reclutador);
+  const {error} = await validarRegistroUsuario(usuario);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
+  
+  // Validamos el objeto reclutador primero
+
+  const { error1 } = validarReclutador(reclutador);
+  if (error1) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  
 
 
   try {
     // Validamos que el correo y el usuario no existan antes de continuar
-    console.log(usuario.id);
     await validarCorreoExistente(usuario.correo);
     
 

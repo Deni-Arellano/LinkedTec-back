@@ -111,7 +111,7 @@ exports.getEgresadoRoleInfoById = async (req, res) => {
 exports.createEgresado = async (req, res) => {
   const { usuario, egresado } = req.body;
 
-  const { error: usuarioError } = await validarRegistroUsuario(usuario);
+  const {usuarioError } = await validarRegistroUsuario(usuario);
   if (usuarioError) {
     return res.status(400).json({ message: usuarioError.details.map(err => err.message) });
   }
