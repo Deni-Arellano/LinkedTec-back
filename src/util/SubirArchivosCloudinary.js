@@ -59,14 +59,6 @@ class SubirArchivoCloudinary {
         }
     }
 
-    
-
-    
-
-
-    
-
-
-
-
 }
+
+module.exports = SubirArchivoCloudinary;
