@@ -43,7 +43,7 @@ app.use('/noticias', noticiasRoutes);
 app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
-app.use('/imagenes', routerImagenes);
+app.use('/subidas', routerImagenes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

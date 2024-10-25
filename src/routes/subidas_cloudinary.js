@@ -19,5 +19,16 @@ router.post('/subir-imagen', upload.single('imagen'), async (req, res) => {
 });
 
 
+router.post('/subir-archivo', upload.single('archivo'), async (req, res) => {
+    try {
+        const resultado = await subirArchivoCloudinary.subirArchivo(req.file.path);
+        res.status(200).json({ mensaje: 'Archivo subido con éxito', data: resultado });
+
+    } catch (error) {
+        res.status(500).json({ mensaje: error.message });
+    }
+});
+
+
 // Exportar el router
 module.exports = router;
