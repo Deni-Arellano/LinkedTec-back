@@ -4,7 +4,9 @@ const Estado = require('../models/estados');
 const Empleo = require('../models/empleos');
 const Usuario = require('../models/usuarios');
 
-
+//importacion de middlewares de validacion
+const validarUsuario = require('../middlewares/validations/validaciones_usuarios');
+const validarEmpleo = require('../middlewares/validations/validaciones_empleos');
 //visulaicasion de usarios
 const obtenerPostulacionesDeUsuario = async (req, res) => {
   const id_usuario = req.params.id; 
@@ -245,10 +247,34 @@ const crearPostulacion = async (req, res) => {
   try {
 
     const informacionPostulacion = req.body;
+
+    if (informacionPostulacion.descripcion_personal.length > 500) {
+      res.status(400).json({ error: "La descripción personal no puede tener más de 500 caracteres" });
+    } else if (informacionPostulacion.descripcion_personal.length === 0) {
+      res.status(400).json({ error: "La descripción personal no puede estar vacía" });
+    }
+
+
+    //Validaciones con metodos y excepciones especificos
+    await validarUsuario.validarUsuarioExistente(informacionPostulacion.id_usuario);
+    //await validarEmpleo.validarEmpleoNoEncontrado(informacionPostulacion.id_empleo);
+
+    if (informacionPostulacion.cv === null) {
+      res.status(400).json({ error: "El campo CV es requerido" });
+    }
+
+    
     const nuevaPostulacion = await postulacionServices.crearPostulacion(informacionPostulacion);
+
     return res.status(201).json(nuevaPostulacion);
 
   }catch (error) {
+
+    if (error.name == 'UserNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    } else if (error.name == 'EmpleoNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    }
 
     res.status(500).json({ error: "Error al crear la postulación" });
 

@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
 const Usuario = require('./usuarios'); 
+const subidas_cloudinary = require('../config/cloudinary');
 
 // Define el modelo de Publicación
 const Publicacion = sequelize.define('Publicacion', {
@@ -26,8 +27,8 @@ const Publicacion = sequelize.define('Publicacion', {
     type: DataTypes.INTEGER, 
     allowNull: false, 
     references: {
-      model: 'Usuarios', // Referencia al modelo 'Usuarios'
-      key: 'id' // La clave en el modelo 'Usuarios'
+      model: 'Usuarios', 
+      key: 'id'
     }
   },
   me_gusta: {
