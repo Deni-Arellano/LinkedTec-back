@@ -1,6 +1,6 @@
 const Reporte = require('../models/reportes'); 
 const Usuario = require('../models/usuarios');
-const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
+const { validarRegistroReportes,validarReportesExistentes } = require('../middlewares/validations/validaciones_reportes');
 
 
 /**
@@ -71,6 +71,7 @@ const getReportes = async (req, res) => {
             limit: limite,
             offset: offset
         });
+        await validarReportesExistentes();
 
         if (!resultado.rows.length) {
             return res.status(404).json({ message: 'No se encontraron reportes.' });
@@ -96,9 +97,10 @@ const getReportes = async (req, res) => {
         });
 
     } catch (error) {
+        if (error.name === 'ReporteNotFoundError') {
         console.error(error);
-        return res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
-    }
+        res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
+    }};
 };
 
 
