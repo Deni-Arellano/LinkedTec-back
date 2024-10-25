@@ -1,9 +1,6 @@
 const EmpleoService = require('../services/services_empleos.js');
 const UsuarioService = require('../services/services_usuarios.js'); 
-const { validarEmpleo,verificarEmpleoPorId } = require('../middlewares/validations/validaciones_empleos');
-const EmpleoNotFoundError=require('../middlewares/exceptions/EmpleoNotFoundError');
-const UserNotFoundError=require('../middlewares/exceptions/UserNotFoundError');
-const UpdateConflictError = require('../middlewares/exceptions/UpdateConflictError');
+const { validarEmpleo,verificarEmpleoPorId, validarActualizacionEmpleo } = require('../middlewares/validations/validaciones_empleos');
 const Joi = require('joi');
 
 /**
@@ -128,9 +125,6 @@ exports.getEmpleoPorId = async (req, res) => {
     const empleo = await verificarEmpleoPorId(req.params.id_empleo);
     return res.json(empleo);
   } catch (error) {
-    if (error instanceof EmpleoNotFoundError) {
-      return res.status(404).json({ message: error.message });
-    }
     return res.status(500).json({ message: 'Error al obtener el empleo: ' + error.message });
   }
 };
@@ -156,10 +150,10 @@ exports.deleteEmpleo = async (req, res) => {
       return res.json({ message: resultado.message });
     }
   } catch (error) {
-    if (error instanceof EmpleoNotFoundError) {
+    if (error.name === 'verificarEmpleoPorId') {
       return res.status(404).json({ message: error.message });
     }
-    return res.status(500).json({ message: 'Error al eliminar el empleo: ' + error.message });
+    return res.status(400).json({ message: 'Error al eliminar el empleo: ' + error.message });
   }
 };
 
@@ -181,23 +175,15 @@ exports.updateEmpleo = async (req, res) => {
 
   try {
     const resultado = await EmpleoService.actualizarEmpleo(id_empleo, req.body);
-    
+    await verificarEmpleoPorId(id_empleo);
+    await validarActualizacionEmpleo(id_empleo, req.body);
     if (!resultado.success) {
       return res.status(400).json({ message: resultado.error });
     }
 
     return res.json(resultado.data);
   } catch (error) {
-    if (error instanceof EmpleoNotFoundError) {
-      return res.status(404).json({ message: error.message });
-    }
-    if (error instanceof UserNotFoundError) {
-      return res.status(404).json({ message: error.message });
-    }
-    if (error instanceof UpdateConflictError) {
-      return res.status(409).json({ message: error.message });
-    }
-    return res.status(500).json({ message: 'Error al actualizar el empleo: ' + error.message });
+    return res.status(400).json({ message: 'Error al actualizar el empleo: ' + error.message });
   }
 };
 
