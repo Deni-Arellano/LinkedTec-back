@@ -131,8 +131,9 @@ const obtenerPublicacionPorId = async (req, res) => {
  */
 const obtenerTodasLasPublicaciones = async (req, res) => {
   try {
-
-    const publicaciones = await obtenerTodasLasPublicacionesService(); 
+    const pagina = req.query.pagina || 1;
+    const limite = req.query.limite || 10;
+    const publicaciones = await obtenerTodasLasPublicacionesService(pagina, limite); 
 
     await validarPublicacionesExistentes(publicaciones);
 

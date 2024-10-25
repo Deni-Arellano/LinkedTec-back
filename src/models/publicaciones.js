@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
 const Usuario = require('./usuarios'); 
-const subidas_cloudinary = require('../config/cloudinary');
 
 // Define el modelo de Publicación
 const Publicacion = sequelize.define('Publicacion', {
