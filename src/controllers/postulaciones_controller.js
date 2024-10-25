@@ -1,6 +1,6 @@
 const postulacionServices = require('../services/services_postulaciones');
 const Postulacion = require('../models/postulaciones');
-const Estado = require('../models/estados'); // Modelo para la tabla estados
+const Estado = require('../models/estados'); 
 const Empleo = require('../models/empleos');
 const Usuario = require('../models/usuarios');
 
@@ -8,8 +8,8 @@ const Usuario = require('../models/usuarios');
 //visulaicasion de usarios
 const obtenerPostulacionesDeUsuario = async (req, res) => {
   const id_usuario = req.params.id; 
-  const { page = 1, limit = 10 } = req.query; 
-  const offset = (page - 1) * limit;
+  const { pagina= 1, limite = 10 } = req.query; 
+  const offset = (pagina- 1) * limite;
 
   try {
     const { count, rows } = await Postulacion.findAndCountAll({
@@ -24,11 +24,11 @@ const obtenerPostulacionesDeUsuario = async (req, res) => {
           attributes: ['titulo', 'fecha_creacion', 'empresa'], 
         },
       ],
-      limit: parseInt(limit), 
+      limit: parseInt(limite), 
       offset: parseInt(offset),
     });
 
-    const total_paginas = Math.ceil(count / limit);
+    const total_paginas = Math.ceil(count / limite);
 
    
     const postulaciones = rows.map((postulacion) => {
@@ -39,26 +39,26 @@ const obtenerPostulacionesDeUsuario = async (req, res) => {
         id_postulacion: postulacion.id_postulacion,
         id_usuario: postulacion.id_usuario,
         titulo: empleo.titulo || 'Título no disponible',
-        fecha: empleo.fecha_creacion || 'Fecha no disponible',
+        fecha: postulacion.fecha_creacion || 'Fecha no disponible',
         empresa: empleo.empresa || 'Empresa no disponible', 
         estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       };
     });
 
     const pagina_siguiente = {
-      url: page < total_paginas ? `http://localhost:3000/postulaciones/${id_usuario}?page=${parseInt(page) + 1}&limit=${limit}` : null,
-      exists: page < total_paginas,
+      url: pagina< total_paginas ? `http://localhost:3000/postulaciones/${id_usuario}?pagina=${parseInt(pagina) + 1}&limite=${limite}` : null,
+      exists: pagina< total_paginas,
     };
 
     const pagina_anterior = {
-      url: page > 1 ? `http://localhost:3000/postulaciones/${id_usuario}?page=${page - 1}&limit=${limit}` : null,
-      exists: page > 1,
+      url: pagina> 1 ? `http://localhost:3000/postulaciones/${id_usuario}?pagina=${pagina- 1}&limite=${limite}` : null,
+      exists: pagina> 1,
     };
 
     return res.json({
       total: count,
-      pagina: parseInt(page),
-      limite: parseInt(limit),
+      pagina: parseInt(pagina),
+      limite: parseInt(limite),
       total_paginas,
       pagina_siguiente,
       pagina_anterior,
@@ -127,11 +127,11 @@ const obtenerPostulacionCompleta = async (req, res) => {
 
 //visualizacion de reclutadores
 const obtenerPostulantesPorEmpleoController = async (req, res) => {
-  const { id_empleo } = req.params; // Obtener el ID del empleo desde los parámetros de la solicitud
-  const { page = 1, limit = 10 } = req.query; // Obtener los parámetros de paginación (cambiado el límite a 2 como deseabas)
+  const { id_empleo } = req.params; 
+  const { pagina= 1, limite = 10 } = req.query; 
 
-  // Calcular el desplazamiento (offset) para la paginación
-  const offset = (page - 1) * limit;
+  
+  const offset = (pagina- 1) * limite;
 
   try {
     const postulaciones = await Postulacion.findAll({
@@ -139,65 +139,65 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
       include: [
         {
           model: Usuario,
-          attributes: ['nombre', 'correo'], // Obtener nombre y correo del usuario
+          attributes: ['nombre', 'correo'], 
         },
         {
           model: Estado,
-          attributes: ['estado'], // Obtener el estado de la postulación
+          attributes: ['estado'], 
         },
       ],
-      limit: parseInt(limit, 10), // Limitar el número de resultados
-      offset: parseInt(offset, 10), // Desplazar los resultados
+      limit: parseInt(limite, 10), 
+      offset: parseInt(offset, 10), 
     });
 
-    const totalPostulaciones = await Postulacion.count({ where: { id_empleo } }); // Contar el total de postulaciones para este empleo
+    const totalPostulaciones = await Postulacion.count({ where: { id_empleo } }); 
 
-    // Calcular el total de páginas
-    const total_paginas = Math.ceil(totalPostulaciones / limit);
+
+    const total_paginas = Math.ceil(totalPostulaciones / limite);
 
     if (!postulaciones.length) {
       return res.json({
         total: totalPostulaciones,
-        pagina: parseInt(page),
-        limite: parseInt(limit),
+        pagina: parseInt(pagina),
+        limitee: parseInt(limite),
         total_paginas,
         pagina_siguiente: {
           url: null,
           exists: false
         },
         pagina_anterior: {
-          url: page > 1 ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?page=${page - 1}&limit=${limit}` : null,
-          exists: page > 1
+          url: pagina> 1 ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?pagina=${pagina- 1}&limite=${limite}` : null,
+          exists: pagina> 1
         },
         postulaciones: [],
       });
     }
 
-    // Estructurar la respuesta para incluir detalles específicos
+
     const resultados = postulaciones.map(postulacion => {
       return {
         nombre_usuario: postulacion.Usuario?.nombre || 'Nombre no disponible',
         correo_usuario: postulacion.Usuario?.correo || 'Correo no disponible',
-        fecha_envio: postulacion.fecha_postulacion || 'Fecha no disponible',
-        estado: postulacion.Estado?.estado || 'Estado no disponible',
+        fecha_creacion: postulacion.fecha_creacion || 'Fecha no disponible',
+        estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       };
     });
 
-    // Construir la respuesta final
+   
     const pagina_siguiente = {
-      url: page < total_paginas ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?page=${parseInt(page) + 1}&limit=${limit}` : null,
-      exists: page < total_paginas,
+      url: pagina< total_paginas ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?pagina=${parseInt(pagina) + 1}&limite=${limite}` : null,
+      exists: pagina< total_paginas,
     };
 
     const pagina_anterior = {
-      url: page > 1 ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?page=${page - 1}&limit=${limit}` : null,
-      exists: page > 1,
+      url: pagina> 1 ? `http://localhost:3000/postulaciones/empleo/${id_empleo}?pagina=${pagina- 1}&limite=${limite}` : null,
+      exists: pagina> 1,
     };
 
     return res.json({
       total: totalPostulaciones,
-      pagina: parseInt(page),
-      limite: parseInt(limit),
+      pagina: parseInt(pagina),
+      limite: parseInt(limite),
       total_paginas,
       pagina_siguiente,
       pagina_anterior,
@@ -213,26 +213,26 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
 const { obtenerDetallesPostulantePorId } = require('../services/services_postulaciones'); 
 
 const obtenerDetallesPostulanteController = async (req, res) => {
-  const { id_empleo, id_usuario } = req.params; // Obtener el ID del empleo y del usuario desde los parámetros
+  const { id_empleo, id_usuario } = req.params;
 
   try {
-    const postulacion = await obtenerDetallesPostulantePorId(id_empleo, id_usuario); // Llamar al servicio
+    const postulacion = await obtenerDetallesPostulantePorId(id_empleo, id_usuario); 
 
     if (!postulacion) {
       return res.status(404).json({ message: 'No se encontró la postulación para este usuario y empleo' });
     }
 
-    // Estructurar la respuesta para incluir todos los detalles necesarios
+    
     const detallePostulante = {
       nombre_usuario: postulacion.Usuario.nombre,
       correo_usuario: postulacion.Usuario.correo,
-      fecha_postulacion: postulacion.fecha_postulacion || 'Fecha no disponible',
+      fecha_postulacion: postulacion.fecha_creacion || 'Fecha no disponible',
       estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
       descripcion: postulacion.descripcion_personal || 'Descripción no disponible',
       cv: postulacion.cv || 'CV no disponible',
     };
 
-    // Devolver la información del postulante
+   
     return res.json(detallePostulante);
   } catch (error) {
     console.error('Error al obtener detalles del postulante:', error);
