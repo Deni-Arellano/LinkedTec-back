@@ -36,33 +36,33 @@ const crearPublicacionService = async (datosPublicacion) => {
  * @param {number} id_usuario - ID del usuario cuyas publicaciones se quieren obtener.
  * @returns {Promise<Array>} Lista de publicaciones del usuario.
  */
-const obtenerPublicacionesPorUsuarioService = async (id_usuario, page = 1, limit = 10) => {
+const obtenerPublicacionesPorUsuarioService = async (id_usuario, pagina = 1, limite = 10) => {
   try {
-    const offset = (page - 1) * limit;
+    const offset = (pagina - 1) * limite;
 
     const publicacionesPorUsuario = await Publicacion.findAndCountAll({
       where: { id_usuario },
-      limit,
+      limite,
       offset,
       order: [['fecha', 'DESC']] 
     });
-
-    const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limit);
+    console.log(publicacionesPorUsuario.rows);
+    const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limite);
 
     return {
       "total": publicacionesPorUsuario.count,
-      "pagina": page,
-      "limite": limit,
+      "pagina": pagina,
+      "limite": limite,
       "total_paginas": totalPaginas,
-      "pagina_siguiente": page < totalPaginas ? {
-        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page + 1}&limite=${limit}`,
+      "pagina_siguiente": pagina < totalPaginas ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${pagina + 1}&limite=${limite}`,
         "exists": true
       } : {
         "url": null,
         "exists": false
       },
-      "pagina_anterior": page > 1 ? {
-        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page - 1}&limite=${limit}`,
+      "pagina_anterior": pagina > 1 ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${pagina - 1}&limite=${limite}`,
         "exists": true
       } : {
         "url": null,
@@ -71,7 +71,9 @@ const obtenerPublicacionesPorUsuarioService = async (id_usuario, page = 1, limit
       "publicaciones": publicacionesPorUsuario.rows,
     };
   } catch (error) {
+    console.log('Error al obtener publicaciones por usuario:', error);
     throw new Error('Error al obtener publicaciones por usuario: ' + error.message);
+
   }
 };
 
