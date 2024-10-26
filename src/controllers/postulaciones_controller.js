@@ -7,6 +7,10 @@ const Usuario = require('../models/usuarios');
 //importacion de middlewares de validacion
 const validarUsuario = require('../middlewares/validations/validaciones_usuarios');
 const validarEmpleo = require('../middlewares/validations/validaciones_empleos');
+const validarpostulacion = require('../middlewares/validations/validaciones_postulaciones');
+
+
+
 //visulaicasion de usarios
 const obtenerPostulacionesDeUsuario = async (req, res) => {
   const id_usuario = req.params.id; 
@@ -248,22 +252,19 @@ const crearPostulacion = async (req, res) => {
 
     const informacionPostulacion = req.body;
 
-    if (informacionPostulacion.descripcion_personal.length > 500) {
-      res.status(400).json({ error: "La descripción personal no puede tener más de 500 caracteres" });
-    } else if (informacionPostulacion.descripcion_personal.length === 0) {
-      res.status(400).json({ error: "La descripción personal no puede estar vacía" });
+     
+    const {error} = await validarpostulacion.validarCamposCrearPostulacion(informacionPostulacion);
+    if (error) {
+      return res.status(400).json({"error": error.details[0].message});
     }
 
 
     //Validaciones con metodos y excepciones especificos
     await validarUsuario.validarUsuarioExistente(informacionPostulacion.id_usuario);
-    //await validarEmpleo.validarEmpleoNoEncontrado(informacionPostulacion.id_empleo);
-
-    if (informacionPostulacion.cv === null) {
-      res.status(400).json({ error: "El campo CV es requerido" });
-    }
-
+    await validarEmpleo.verificarEmpleoPorId(informacionPostulacion.id_empleo);
     
+    //await validarpostulacion.validarRecursoExistente(informacionPostulacion.cv);
+
     const nuevaPostulacion = await postulacionServices.crearPostulacion(informacionPostulacion);
 
     return res.status(201).json(nuevaPostulacion);
@@ -272,11 +273,16 @@ const crearPostulacion = async (req, res) => {
 
     if (error.name == 'UserNotFoundError') {
       return res.status(404).json({ error: error.message });
+
     } else if (error.name == 'EmpleoNotFoundError') {
       return res.status(404).json({ error: error.message });
+
+    } else if (error.name == 'ResourceNotFoundError') {
+      return res.status(404).json({ error: error.message });
+
     }
 
-    res.status(500).json({ error: "Error al crear la postulación" });
+    res.status(500).json({ error: "Error al crear la postulación", message: error.message });
 
   }
 
