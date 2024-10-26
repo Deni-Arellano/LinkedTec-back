@@ -1,7 +1,7 @@
 const postulacionServices = require('../services/services_postulaciones');
 const {validarPostulacionExistente}=require('../middlewares/validations/validaciones_postulaciones');
 const {validarUsuarioExistente}=require('../middlewares/validations/validaciones_usuarios');
-const {validarEmpleoNoEncontrado}=require('../middlewares/validations/validaciones_empleos');
+const {verificarEmpleoPorId}=require('../middlewares/validations/validaciones_empleos');
 
 
 //importacion de middlewares de validacion
@@ -51,8 +51,9 @@ const obtenerPostulacionCompleta = async (req, res) => {
   const { id_postulacion } = req.params;
 
   try {
-    const postulacion = await postulacionServices.obtenerPostulacionCompletaService(id_postulacion);
     await validarPostulacionExistente(id_postulacion);
+    const postulacion = await postulacionServices.obtenerPostulacionCompletaService(id_postulacion);
+    
 
     return res.json(postulacion);
   } catch (error) {
@@ -71,6 +72,7 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
   const { pagina = 1, limite = 10 } = req.query;
 
   try {
+    await verificarEmpleoPorId(id_empleo);
     const { totalPostulaciones, total_paginas, resultados } = await postulacionServices.obtenerPostulantesPorEmpleoService(id_empleo, pagina, limite);
 
     const pagina_siguiente = {
@@ -93,6 +95,9 @@ const obtenerPostulantesPorEmpleoController = async (req, res) => {
       postulaciones: resultados,
     });
   } catch (error) {
+    if (error.name === 'EmpleoNotFoundError') {
+      return res.status(404).json({ message: 'Empleo no encontrado' });
+    }
     console.error('Error al obtener postulantes:', error);
     return res.status(500).json({ message: 'Error al obtener postulantes' });
   }
@@ -102,8 +107,10 @@ const obtenerDetallesPostulanteController = async (req, res) => {
   const { id_empleo, id_usuario } = req.params;
 
   try {
-    const detallePostulante = await postulacionServices.obtenerDetallesPostulantePorId(id_empleo, id_usuario); 
+    await verificarEmpleoPorId(id_empleo);
     await validarUsuarioExistente(id_usuario);
+    const detallePostulante = await postulacionServices.obtenerDetallesPostulantePorId(id_empleo, id_usuario); 
+    
 
     if (!detallePostulante) {
       return res.status(404).json({ message: 'No se encontró la postulación para este usuario y empleo' });
@@ -111,6 +118,9 @@ const obtenerDetallesPostulanteController = async (req, res) => {
 
     return res.json(detallePostulante);
   } catch (error) {
+    if (error.name === 'EmpleoNotFoundError') {
+      return res.status(404).json({ message: 'Empleo no encontrado' });
+    }
     if(error.name==='UserNotFoundError'){
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }

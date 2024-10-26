@@ -88,7 +88,6 @@ const verificarEmpleoPorId = async (id_empleo) => {
 
     return empleo[0];
   } catch (error) {
-    console.error('Error al buscar el empleo:', error);
     throw error;
   }
 };
