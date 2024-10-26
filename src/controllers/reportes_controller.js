@@ -1,7 +1,7 @@
 const Reporte = require('../models/reportes'); 
 const Usuario = require('../models/usuarios');
-const { validarRegistroReportes,validarReportesExistentes } = require('../middlewares/validations/validaciones_reportes');
-
+const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
+const {obtenerReportesPaginados,obtenerReportePorId} = require('../services/services_reportes')
 
 /**
  * @function createReporte
@@ -56,75 +56,71 @@ const createReporte = async (req, res) => {
 
 /**
  * @async
- * Servicio para obtener todos los reportes con paginación.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {Object} res - El objeto de respuesta HTTP.
- * @returns {Promise<void>} Responde con los reportes paginados o un error.
+ * Controlador para obtener todos los reportes con paginación.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con los reportes paginados o un error.
  */
 const getReportes = async (req, res) => {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = parseInt(req.query.limite) || 10;
-        const offset = (pagina - 1) * limite;
+        if (pagina <= 0 || limite <= 0) {
+            return res.status(400).json({ message: 'Los parámetros de paginación deben ser números positivos.' });
+          }
 
-        const resultado = await Reporte.findAndCountAll({
-            limit: limite,
-            offset: offset
-        });
-        await validarReportesExistentes();
+        const resultado = await obtenerReportesPaginados(pagina, limite);
 
-        if (!resultado.rows.length) {
-            return res.status(404).json({ message: 'No se encontraron reportes.' });
+        if (pagina > resultado.total_paginas) {
+            return res.status(404).json({ message: 'No se encontraron reportes en esta página.' });
         }
 
-        const totalReportes = resultado.count;
-        const totalPaginas = Math.ceil(totalReportes / limite);
-
-        return res.json({
-            total: totalReportes,
-            pagina: pagina,
-            limite: limite,
-            total_paginas: totalPaginas,
-            pagina_siguiente: {
-                url: pagina < totalPaginas ? `http://localhost:3000/reportes?pagina=${pagina + 1}&limite=${limite}` : null,
-                exists: pagina < totalPaginas
-            },
-            pagina_anterior: {
-                url: pagina > 1 ? `http://localhost:3000/reportes?pagina=${pagina - 1}&limite=${limite}` : null,
-                exists: pagina > 1
-            },
-            reportes: resultado.rows
+        res.json({
+            total: resultado.total,
+            pagina: resultado.pagina,
+            limite: resultado.limite,
+            total_paginas: resultado.total_paginas,
+            pagina_siguiente: resultado.pagina_siguiente ? `http://localhost:3000/reportes?pagina=${resultado.pagina_siguiente}&limite=${limite}` : null,
+            pagina_anterior: resultado.pagina_anterior ? `http://localhost:3000/reportes?pagina=${resultado.pagina_anterior}&limite=${limite}` : null,
+            reportes: resultado.reportes
         });
-
-    } catch (error) {
-        if (error.name === 'ReporteNotFoundError') {
-        console.error(error);
-        res.status(500).json({ error: 'Error al obtener los reportes: ' + error.message });
-    }};
-};
-
-
-/**
- * @async
- * Servicio para obtener un reporte por ID.
- * @param {number} id - El ID del reporte.
- * @returns {Promise<Object>} Devuelve el reporte o un error.
- */
-
-const getReporteById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const reporte = await Reporte.findByPk(id);
-        if (!reporte) {
-            return res.status(404).json({ error: 'Reporte no encontrado.' });
-        }
-        res.json(reporte);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error al obtener el reporte: ' + error.message });
+        return res.status(500).json({ message: 'Error al obtener los reportes', error: error.message });
     }
 };
 
 
 
-module.exports = { createReporte, getReportes, getReporteById };
+
+
+/**
+ * @async
+ * Controlador para obtener un reporte por ID.
+ * @param {Object} req - El objeto de solicitud (request) de Express.
+ * @param {Object} res - El objeto de respuesta (response) de Express.
+ * @returns {Promise<void>} Devuelve una respuesta JSON con el reporte o un error.
+ */
+const getReportePorId = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'El ID debe ser un número válido.' });
+        }
+
+        const reporte = await obtenerReportePorId(id);
+
+        if (!reporte) {
+            return res.status(404).json({ message: 'Reporte no encontrado.' });
+        }
+
+        res.json(reporte);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Error al obtener el reporte', error: error.message });
+    }
+};
+
+
+
+module.exports = { createReporte, getReportes, getReportePorId };

@@ -4,7 +4,7 @@ const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
 const { validateEgresado,validateId } = require('../middlewares/validations/validaciones_egresados');
-const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
+const { validarRegistroUsuario,validarCorreoExistente,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
 const { obtenerEgresadosPaginados,obtenerInfoEgresadosPaginados } = require('../services/services_egresados');
 
 

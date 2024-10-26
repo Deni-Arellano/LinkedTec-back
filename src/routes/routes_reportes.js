@@ -19,7 +19,7 @@ router.get('/', reportesController.getReportes);
 /**
  * Ruta para obtener un reporte por ID
  */
-router.get('/:id', reportesController.getReporteById);
+router.get('/:id', reportesController.getReportePorId);
 
 
 
