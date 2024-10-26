@@ -1,6 +1,6 @@
 const Reporte = require('../models/reportes'); 
 const Usuario = require('../models/usuarios');
-const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
+const { validarRegistroReportes,validarReporteExistente,validarReportesExistentes } = require('../middlewares/validations/validaciones_reportes');
 const {obtenerReportesPaginados,obtenerReportePorId} = require('../services/services_reportes')
 
 /**
@@ -63,11 +63,16 @@ const createReporte = async (req, res) => {
  */
 const getReportes = async (req, res) => {
     try {
+        const existenReportes = await validarReportesExistentes();
+        if (!existenReportes) {
+            return res.status(404).json({ message: 'No hay reportes en la base de datos.' });
+        }
+
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = parseInt(req.query.limite) || 10;
         if (pagina <= 0 || limite <= 0) {
             return res.status(400).json({ message: 'Los parámetros de paginación deben ser números positivos.' });
-          }
+        }
 
         const resultado = await obtenerReportesPaginados(pagina, limite);
 
@@ -80,16 +85,19 @@ const getReportes = async (req, res) => {
             pagina: resultado.pagina,
             limite: resultado.limite,
             total_paginas: resultado.total_paginas,
-            pagina_siguiente: resultado.pagina_siguiente ? `http://localhost:3000/reportes?pagina=${resultado.pagina_siguiente}&limite=${limite}` : null,
-            pagina_anterior: resultado.pagina_anterior ? `http://localhost:3000/reportes?pagina=${resultado.pagina_anterior}&limite=${limite}` : null,
-            reportes: resultado.reportes
+            pagina_siguiente: resultado.pagina_siguiente
+                ? `http://localhost:3000/reportes?pagina=${resultado.pagina_siguiente}&limite=${limite}`
+                : null,
+            pagina_anterior: resultado.pagina_anterior
+                ? `http://localhost:3000/reportes?pagina=${resultado.pagina_anterior}&limite=${limite}`
+                : null,
+            reportes: resultado.reportes,
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Error al obtener los reportes', error: error.message });
+        res.status(500).json({ message: 'Error al obtener los reportes', error: error.message });
     }
 };
-
 
 
 
@@ -107,19 +115,19 @@ const getReportePorId = async (req, res) => {
         if (isNaN(id)) {
             return res.status(400).json({ message: 'El ID debe ser un número válido.' });
         }
-
+        await validarReporteExistente(id);
         const reporte = await obtenerReportePorId(id);
-
-        if (!reporte) {
-            return res.status(404).json({ message: 'Reporte no encontrado.' });
-        }
 
         res.json(reporte);
     } catch (error) {
+        if (error.name === 'ReporteNotFoundError') {
+            return res.status(404).json({ message: error.message });
+        }
         console.error(error);
         return res.status(500).json({ message: 'Error al obtener el reporte', error: error.message });
     }
 };
+
 
 
 
