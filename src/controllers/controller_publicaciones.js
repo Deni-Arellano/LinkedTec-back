@@ -65,14 +65,15 @@ const crearPublicacion = async (req, res) => {
 const obtenerPublicacionesPorUsuario = async (req, res) => {
   try {
     const { id_usuario } = req.params; // Extrae el ID del usuario de los parámetros
-    const { pagina = 1, limite = 10 } = req.query;
+    const pagina = req.query.pagina || 1;
+    const limite = req.query.limite || 10;
 
-    await validarUsuarioExistente(id_usuario);
+    //await validarUsuarioExistente(id_usuario);
 
 
     const publicaciones = await obtenerPublicacionesPorUsuarioService(id_usuario, pagina, limite); // Llama al servicio para obtener las publicaciones
     
-    await validarPublicacionesExistentes(publicaciones);//Valida si existen publicaciones
+    //await validarPublicacionesExistentes(publicaciones);//Valida si existen publicaciones
     
     res.status(200).json(publicaciones); // Responde con las publicaciones
 
