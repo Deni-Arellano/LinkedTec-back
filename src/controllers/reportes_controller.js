@@ -48,7 +48,6 @@ const createReporte = async (req, res) => {
 
         res.status(201).json(nuevoReporte);
     } catch (error) {
-        console.error('Error al crear el reporte:', error);
         res.status(500).json({ error: 'Error al crear el reporte: ' + error.message });
     }
 };
@@ -94,7 +93,6 @@ const getReportes = async (req, res) => {
             reportes: resultado.reportes,
         });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Error al obtener los reportes', error: error.message });
     }
 };
@@ -123,7 +121,6 @@ const getReportePorId = async (req, res) => {
         if (error.name === 'ReporteNotFoundError') {
             return res.status(404).json({ message: error.message });
         }
-        console.error(error);
         return res.status(500).json({ message: 'Error al obtener el reporte', error: error.message });
     }
 };

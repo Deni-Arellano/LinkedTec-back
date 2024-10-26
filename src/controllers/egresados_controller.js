@@ -151,7 +151,6 @@ exports.createEgresado = async (req, res) => {
       egresado: nuevoEgresado
     });
   } catch (error) {
-    console.error('Error al crear egresado y usuario:', error);
     res.status(500).json({ message: 'El email ya existe o está en uso', error: error.message });
   }
 };

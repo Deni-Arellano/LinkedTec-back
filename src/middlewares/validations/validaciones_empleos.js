@@ -114,7 +114,6 @@ const validarActualizacionEmpleo = async (id_empleo, datosActualizados) => {
 
     return empleoActualizado;
   } catch (error) {
-    console.error('Error al actualizar el empleo:', error);
     throw error;
   }
 };
@@ -136,7 +135,6 @@ const validarCreacionEmpleo = async (datosEmpleo) => {
 
     return nuevoEmpleo;
   } catch (error) {
-    console.error('Error al crear el empleo:', error);
     throw error;
   }
 };
