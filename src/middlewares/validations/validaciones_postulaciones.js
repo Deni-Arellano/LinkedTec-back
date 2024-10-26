@@ -132,14 +132,14 @@ const crearPostulacionSchema = Joi.object({
 
 
 
-exports.validarCamposCrearPostulacion = async (descripcion) => {
+const validarCamposCrearPostulacion = async (descripcion) => {
 
     return crearPostulacionSchema.validate(descripcion);
 
 };
 
 
-exports.validarRecursoExistente = async (recurso) => {
+const validarRecursoExistente = async (recurso) => {
     try {
         const resultado = await subirArchivoCloudinary.verificarArchivo(recurso.id_publico);
         return resultado;
@@ -166,5 +166,8 @@ const validarPostulacionExistente = async (id_postulacion) => {
 };
 
 module.exports = {
-    validarPostulacionExistente
+    validarPostulacionExistente,
+    validarCamposCrearPostulacion,
+    validarRecursoExistente
+    
 }
