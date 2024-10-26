@@ -1,6 +1,7 @@
 const EmpleoService = require('../services/services_empleos.js');
 const UsuarioService = require('../services/services_usuarios.js'); 
-const { validarEmpleo,validarEmpleoNoEncontrado } = require('../middlewares/validations/validaciones_empleos');
+const { validarEmpleo,verificarEmpleoPorId, validarActualizacionEmpleo } = require('../middlewares/validations/validaciones_empleos');
+const Joi = require('joi');
 
 /**
  * @async
@@ -11,13 +12,21 @@ const { validarEmpleo,validarEmpleoNoEncontrado } = require('../middlewares/vali
  */
 exports.getAllEmpleos = async (req, res) => {
   try {
-    const pagina = parseInt(req.query.pagina) || 1;
-    const limite = parseInt(req.query.limite) || 10;
-    const offset = (pagina - 1) * limite;
+    const pagina = parseInt(req.query.pagina, 10) || 1;
+    const limite = parseInt(req.query.limite, 10) || 10;
+    
+    if (pagina <= 0 || limite <= 0) {
+      return res.status(400).json({ message: 'Los parámetros de paginación deben ser números positivos.' });
+    }
 
+    const offset = (pagina - 1) * limite;
     const resultado = await EmpleoService.obtenerTodosLosEmpleos(limite, offset);
 
-    if (!resultado.data.length) {
+    if (!resultado.success) {
+      return res.status(500).json({ message: 'Error al obtener empleos', error: resultado.error });
+    }
+
+    if (resultado.data.length === 0) {
       return res.status(404).json({ message: 'No se encontraron empleos.' });
     }
 
@@ -56,33 +65,46 @@ exports.getAllEmpleos = async (req, res) => {
 exports.createEmpleo = async (req, res) => {
   const { id_usuario, titulo, empresa, salario, descripcion, ubicacion, nivel_de_ingles } = req.body;
 
-
   const error = validarEmpleo(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-  /** 
-  const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
-  if (!usuario || usuario.role !== 'Reclutadores') {
-    return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden crear empleos' });
-  }
-  */
-  
 
-  const resultado = await EmpleoService.crearEmpleo({
-    id_usuario,
-    titulo,
-    empresa,
-    salario,
-    descripcion,
-    ubicacion,
-    nivel_de_ingles,
-  });
+  try {
+    const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
+    
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
 
-  if (resultado.success) {
-    return res.status(201).json(resultado.data);
+    /*
+    if (usuario.role !== 'Reclutadores') {
+      return res.status(403).json({ message: 'Solo los usuarios con rol Reclutadores pueden crear empleos' });
+    }
+    */
+
+    const resultado = await EmpleoService.crearEmpleo({
+      id_usuario,
+      titulo,
+      empresa,
+      salario,
+      descripcion,
+      ubicacion,
+      nivel_de_ingles,
+    });
+
+    if (resultado.success) {
+      return res.status(201).json(resultado.data);
+    }
+
+    return res.status(400).json({ message: resultado.error });
+  } catch (error) {
+    if (error.message.includes('Usuario no encontrado')) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    
+    return res.status(500).json({ message: 'Error al crear empleo: ' + error.message });
   }
-  return res.status(400).json({ message: resultado.error });
 };
 
 
@@ -94,11 +116,45 @@ exports.createEmpleo = async (req, res) => {
  * @returns {Promise<void>} Responde con el empleo encontrado o un error.
  */
 exports.getEmpleoPorId = async (req, res) => {
-  const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
+  const { error } = Joi.number().required().validate(req.params.id_empleo);
+  if (error) {
+    return res.status(400).json({ message: 'El ID del empleo debe ser un número.' });
+  }
 
-  validarEmpleoNoEncontrado(empleo);
+  try {
+    const empleo = await verificarEmpleoPorId(req.params.id_empleo);
+    return res.json(empleo);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al obtener el empleo: ' + error.message });
+  }
+};
 
-  return res.json(empleo);
+
+/**
+ * @async
+ * Elimina un empleo específico por su ID.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @returns {Promise<void>} Responde con el mensaje de éxito o un error.
+ */
+
+exports.deleteEmpleo = async (req, res) => {
+  const { error } = Joi.number().required().validate(req.params.id_empleo);
+  if(error){
+    return res.status(400).json({ message: 'El ID del empleo debe ser un número.' });
+  }
+  try {
+    const empleo = await verificarEmpleoPorId(req.params.id_empleo);
+    const resultado = await EmpleoService.eliminarEmpleo(req.params.id_empleo);
+    if (resultado.success) {
+      return res.json({ message: resultado.message });
+    }
+  } catch (error) {
+    if (error.name === 'verificarEmpleoPorId') {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(400).json({ message: 'Error al eliminar el empleo: ' + error.message });
+  }
 };
 
 
@@ -110,52 +166,25 @@ exports.getEmpleoPorId = async (req, res) => {
  * @returns {Promise<void>} Responde con el mensaje de éxito y los datos actualizados o un error.
  */
 exports.updateEmpleo = async (req, res) => {
-  
-  
-  //Validacion del rol de usuario fue eliminada por problemas extraños inexplicables.
-  const { id_usuario } = req.body;
-
-  const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
-
-
-
-
-  const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
-
-  if (!empleo.success) {
-    return res.status(404).json({ message: 'Empleo no encontrado' });
-  }
-
+  const { id_empleo } = req.params;
   const error = validarEmpleo(req.body);
+  
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
 
-  const resultado = await EmpleoService.editarEmpleo(req.params.id_empleo, req.body);
-  if (resultado.success) {
-    return res.json({ message: resultado.message, data: resultado.data });
+  try {
+    const resultado = await EmpleoService.actualizarEmpleo(id_empleo, req.body);
+    await verificarEmpleoPorId(id_empleo);
+    await validarActualizacionEmpleo(id_empleo, req.body);
+    if (!resultado.success) {
+      return res.status(400).json({ message: resultado.error });
+    }
+
+    return res.json(resultado.data);
+  } catch (error) {
+    return res.status(400).json({ message: 'Error al actualizar el empleo: ' + error.message });
   }
-  
-  return res.status(400).json({ message: resultado.error });
 };
 
 
-
-
-/**
- * @async
- * Elimina un empleo específico por su ID.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {Object} res - El objeto de respuesta HTTP.
- * @returns {Promise<void>} Responde con un mensaje de éxito o un error.
- */
-exports.deleteEmpleo = async (req, res) => {
-  const empleo = await EmpleoService.obtenerEmpleoPorId(req.params.id_empleo);
-  validarEmpleoNoEncontrado(empleo);
-
-  const resultado = await EmpleoService.eliminarEmpleo(req.params.id_empleo);
-  if (resultado.success) {
-    return res.json({ message: resultado.message });
-  }
-  return res.status(500).json({ message: 'Error al eliminar el empleo', error: resultado.error });
-};

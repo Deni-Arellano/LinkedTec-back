@@ -49,7 +49,35 @@ const validarRegistroReportes = async (data) => {
     });
     return validarRegistroReportes.validate(data);
 }
+const validarReporteExistente = async (id) => {
+    const reporte = await Reporte.findByPk(id);
+
+    if (!reporte) {
+        throw new ReporteNotFoundError("El reporte no existe. Verifique el ID.");
+    }
+}
+
+const validarReportesPorUsuario = async (id_usuario) => {
+    const reportes = await sequelize.query('SELECT * FROM reportes WHERE id_usuario = :id_usuario',
+        {
+            replacements: { id_usuario: id_usuario },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+    if (reportes.length === 0) {
+        throw new ReporteNotFoundError("El usuario no tiene reportes.");
+    }
+}
+
+const validarReportesExistentes = async (reportes) => {
+    if (reportes.length === 0) {
+        throw new ReporteNotFoundError("No hay reportes en la base de datos.");
+    }
+}
 
 module.exports = {
-    validarRegistroReportes
+    validarRegistroReportes,
+    validarReporteExistente,
+    validarReportesPorUsuario,
+    validarReportesExistentes
 };

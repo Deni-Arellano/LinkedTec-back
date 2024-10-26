@@ -18,8 +18,8 @@ exports.createNoticia = async (req, res) => {
         const { titulo_noticia, descripcion, imagen_noticia, enlace_noticia, fecha_noticia, categoria_noticia, id_usuario } = req.body;
 
         const usuario = await UsuarioService.obtenerUsuarioPorId(id_usuario);
-        if (!usuario || (usuario.role !== 'Docentes' && usuario.role !== 'Egresados')) {
-            return res.status(403).json({ message: 'Solo los usuarios con rol Docentes o Egresados pueden crear noticias' });
+        if (!usuario || (usuario.role !== 'Docentes' && usuario.role !== 'Reclutadores')) {
+            return res.status(403).json({ message: 'Solo los usuarios con rol Docentes o Reclutadores pueden crear noticias' });
         }
 
         await validarNoticiaExistente(req.body);

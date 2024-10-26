@@ -26,8 +26,8 @@ const Publicacion = sequelize.define('Publicacion', {
     type: DataTypes.INTEGER, 
     allowNull: false, 
     references: {
-      model: 'Usuarios', // Referencia al modelo 'Usuarios'
-      key: 'id' // La clave en el modelo 'Usuarios'
+      model: 'Usuarios', 
+      key: 'id'
     }
   },
   me_gusta: {

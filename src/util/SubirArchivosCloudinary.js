@@ -59,14 +59,32 @@ class SubirArchivoCloudinary {
         }
     }
 
-    
 
-    
-
-
-    
-
-
-
+    //Metodos para la gestion de archivos
+    async subirArchivo(ruta_archivo) {
+      try {
+          const result = await cloudinary.uploader.upload(ruta_archivo, {
+              folder: 'files', 
+              resource_type: 'auto', // Usa 'auto' para que Cloudinary detecte el tipo de archivo
+          });
+  
+          return {
+              asset_id: result.asset_id,
+              public_id: result.public_id,
+              format: result.format,
+              resource_type: result.resource_type,
+              created_at: result.created_at,
+              secure_url: result.secure_url,
+              folder: result.folder,
+              original_filename: result.original_filename,
+          };
+      } catch (error) {
+          console.error('Error al subir archivo:', error);
+          throw new Error('No se pudo subir el archivo a Cloudinary');
+      }
+  }
+  
 
 }
+
+module.exports = SubirArchivoCloudinary;
