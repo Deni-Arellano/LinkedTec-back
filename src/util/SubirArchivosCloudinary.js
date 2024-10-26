@@ -83,6 +83,38 @@ class SubirArchivoCloudinary {
           throw new Error('No se pudo subir el archivo a Cloudinary');
       }
   }
+
+  async eliminarArchivo(public_id) {
+      try {
+          const result = await cloudinary.uploader.destroy(public_id);
+          return result;
+      } catch (error) {
+          console.error('Error al eliminar archivo:', error);
+          throw new Error('No se pudo eliminar el archivo de Cloudinary');
+      }
+  }
+
+  async obtenerArchivo(public_id) {
+      try {
+          const result = await cloudinary.api.resource(public_id);
+          return result;
+      } catch (error) {
+          console.error('Error al obtener archivo:', error);
+          throw new Error('No se pudo obtener el archivo de Cloudinary');
+      }
+  }
+  
+
+  async verificarArchivo(public_id) {
+
+    try {
+        const result = await cloudinary.api.resource(public_id);
+        return result;
+        
+    } catch (error) {
+        throw new Error('No se pudo verificar el archivo de Cloudinary');
+    }
+  };
   
 
 }
