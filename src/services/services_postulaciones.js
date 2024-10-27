@@ -44,7 +44,7 @@ const obtenerPostulacionesDeUsuarioService = async (id_usuario, pagina = 1, limi
       titulo: empleo.titulo || 'Título no disponible',
       fecha: postulacion.fecha_creacion || 'Fecha no disponible',
       empresa: empleo.empresa || 'Empresa no disponible',
-      estado: estado.estado || 'Estado no disponible',
+      estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
     };
   });
 
@@ -134,10 +134,11 @@ const obtenerPostulantesPorEmpleoService = async (id_empleo, pagina, limite) => 
 
   const resultados = postulaciones.map((postulacion) => {
     return {
+      id_usuario: postulacion.id_usuario,
       nombre_usuario: postulacion.Usuario?.nombre || 'Nombre no disponible',
       correo_usuario: postulacion.Usuario?.correo || 'Correo no disponible',
       fecha_creacion: postulacion.fecha_creacion || 'Fecha no disponible',
-      estado: postulacion.Estado ? postulacion.Estado.estado : 'Estado no disponible',
+      estado: postulacion.estado?.estado || 'Estado no disponible',
     };
   });
 
@@ -160,35 +161,35 @@ const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
         },
         {
           model: Estado,
-          attributes: ['estado'], 
+          attributes: ['estado'],
         },
         {
           model: SubidasCloudinary,
           attributes: ['url_segura'],
-          where: { id: sequelize.col('Postulacion.cv') }, 
+          where: { id: sequelize.col('Postulacion.cv') },
           required: false,
         },
       ],
     });
 
     if (!postulacion) {
-      return null; // Si no se encuentra la postulación, devolver null.
+      return null;
     }
 
     return {
+      id_usuario: postulacion.id_usuario,
       nombre_usuario: postulacion.Usuario.nombre,
       correo_usuario: postulacion.Usuario.correo,
       fecha_postulacion: postulacion.fecha_creacion || 'Fecha no disponible',
-      estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
+      estado: postulacion.estado?.estado || 'Estado no disponible',
       descripcion: postulacion.descripcion_personal || 'Descripción no disponible',
       cv: postulacion.SubidasCloudinary?.url_segura || 'CV no disponible',
     };
   } catch (error) {
     console.error('Error al obtener detalles del postulante:', error);
-    throw new Error('Error al obtener detalles del postulante'); // Lanzar error para ser manejado en el controlador.
+    throw new Error('Error al obtener detalles del postulante');
   }
 };
-
 
 //
 
@@ -204,7 +205,7 @@ async function crearPostulacion(informacion_postulacion) {
     
     const id_archivo = subida_cloudinary.id; // Este es el ID que necesitas
 
-    // Crear postulación con el ID del archivo subido
+    
     const postulacion = await Postulacion.create({
       id_usuario,
       id_empleo,
