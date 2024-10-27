@@ -134,6 +134,7 @@ const obtenerPostulantesPorEmpleoService = async (id_empleo, pagina, limite) => 
 
   const resultados = postulaciones.map((postulacion) => {
     return {
+      id_usuario: postulacion.id_usuario,
       nombre_usuario: postulacion.Usuario?.nombre || 'Nombre no disponible',
       correo_usuario: postulacion.Usuario?.correo || 'Correo no disponible',
       fecha_creacion: postulacion.fecha_creacion || 'Fecha no disponible',
