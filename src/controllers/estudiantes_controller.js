@@ -29,7 +29,6 @@ const createEstudiante = async (req, res) => {
     try {
         const { usuario, estudiante } = req.body;
 
-        // Validaciones iniciales
         const { error: errorEstudiante } = validarRegistroEstudiante(estudiante);
         if (errorEstudiante) {
             return res.status(400).json({ error: errorEstudiante.details[0].message });
@@ -40,16 +39,12 @@ const createEstudiante = async (req, res) => {
             return res.status(400).json({ message: error.details[0].message });
         }
 
-        // Validar si el correo ya existe
         await validarCorreoExistente(usuario.correo);
 
-        // Validar si el número de control ya existe
         await validarNumeroControl(estudiante.no_control);
 
-        // Llamada al servicio para crear el estudiante
         const nuevoEstudiante = await estudiantesService.createEstudiante(usuario, estudiante);
 
-        // Enviar la respuesta con el estudiante creado
         res.status(201).json(nuevoEstudiante);
 
     } catch (error) {
@@ -61,7 +56,6 @@ const createEstudiante = async (req, res) => {
             });
         }
 
-        // Manejar errores específicos de validación
         if (error.name === 'EmailExistsError') {
             return res.status(400).json({ error: 'El correo ya está en uso.' });
         } else if (error.name === 'UserExistsError') {
@@ -164,7 +158,6 @@ const getAllEstudiantesInfo = async (req, res) => {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = parseInt(req.query.limite) || 10;
 
-        // Llama al servicio para obtener la información de los estudiantes
         const { estudiantesConInfoUnica, count } = await getAllEstudiantesInfoService(pagina, limite);
 
         const totalPaginas = Math.ceil(count / limite);
@@ -206,7 +199,6 @@ const getEstudiantePerfilById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener el perfil del estudiante
         const perfilEstudiante = await getEstudiantePerfilByIdService(id);
 
         res.status(200).json(perfilEstudiante);
@@ -235,7 +227,6 @@ const getEstudianteInfoById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener la información del estudiante
         const estudiante = await getEstudianteInfoByIdService(id);
 
         res.status(200).json(estudiante);
@@ -264,7 +255,6 @@ const getEstudianteRolById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener la información del estudiante
         const respuesta = await getEstudianteRolByIdService(id);
 
         res.status(200).json(respuesta);
@@ -303,7 +293,6 @@ const editEstudiante = async (req, res) => {
 
         await validarEstudianteExistente(req.params.id);
 
-        // Llama al servicio para editar el estudiante y el usuario
         const response = await editEstudianteService(req.params.id, usuario, estudiante);
 
         res.status(200).json(response);

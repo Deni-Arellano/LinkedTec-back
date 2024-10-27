@@ -5,38 +5,32 @@ const { validarRegistroDocente, validarNumeroDocente } = require('../middlewares
 const { validarCorreoExistente } = require('../middlewares/validations/validaciones_usuarios');
 const { validarDocenteExistente, validarEdicionDocente } = require('../middlewares/validations/validaciones_docentes');
 
-const createDocente = async (usuario, docente) => {  // Aquí cambié de 'Docente' a 'docente'
+const createDocente = async (usuario, docente) => {  
     try {
-        // Validamos los datos del docente
-        const { error: errorDocente } = validarRegistroDocente(docente); // Usamos 'docente' en vez de 'Docente'
+        const { error: errorDocente } = validarRegistroDocente(docente); 
         if (errorDocente) {
             throw new Error(errorDocente.details[0].message);
         }
 
-        // Validamos los datos del usuario
         const {error} = await validarRegistroUsuario(usuario);
         if (error) {
           return res.status(400).json({ message: error.details[0].message });
         }
 
-        // Verificamos si el correo ya existe
         await validarCorreoExistente(usuario.correo);
 
-        // Validamos el número de empleado
-        await validarNumeroDocente(docente.numero_empleado);  // Usamos 'docente' en vez de 'Docente'
+        await validarNumeroDocente(docente.numero_empleado);  
 
-        // Creación del usuario
+        
         const nuevoUsuario = await Usuario.create(usuario);
 
-        // Creación del docente vinculado al usuario
         const nuevoDocente = await Docente.create({
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,  // Usamos 'docente' en vez de 'Docente'
-            numero_empleado: docente.numero_empleado,  // Usamos 'docente' en vez de 'Docente'
-            academia: docente.academia,  // Usamos 'docente' en vez de 'Docente'
-            id: nuevoUsuario.id // Asignamos el ID del usuario como clave foránea
+            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,  
+            numero_empleado: docente.numero_empleado,  
+            academia: docente.academia,  
+            id: nuevoUsuario.id 
         });
 
-        // Retornamos los datos completos
         return {
             id: nuevoDocente.id,
             nombre: nuevoUsuario.nombre,
@@ -54,7 +48,7 @@ const createDocente = async (usuario, docente) => {  // Aquí cambié de 'Docent
         };
     } catch (error) {
         console.error(`Error en createDocente service: ${error.message}`);
-        throw error; // Lanza el error para ser manejado en el Controller
+        throw error; 
     }
 };
 
@@ -94,7 +88,7 @@ const getDocenteByIdService = async (id) => {
     });
 
     if (!docente) {
-        throw new Error("Docente no encontrado."); // Lanza un error si no se encuentra el docente
+        throw new Error("Docente no encontrado."); 
     }
 
     return docente;
@@ -109,8 +103,7 @@ const getAllDocentesInfoService = async (pagina, limite) => {
         limit: limite,
     });
 
-    // Aquí podrías llamar a validarUsuariosExistentes si es necesario
-
+   
     const docentesConInfoUnica = docentes.map(docente => ({
         id: docente.id,
         ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
@@ -118,7 +111,7 @@ const getAllDocentesInfoService = async (pagina, limite) => {
         academia: docente.academia,
     }));
 
-    return { docentes: docentesConInfoUnica, count }; // Devuelve los docentes y el conteo total
+    return { docentes: docentesConInfoUnica, count }; 
 };
 
 const getDocentePerfilByIdService = async (id) => {
@@ -131,7 +124,6 @@ const getDocentePerfilByIdService = async (id) => {
         throw new Error("Docente no encontrado.");
     }
 
-    // Devuelve el perfil del docente
     return {
         nombre: docente.Usuario.nombre,
         apellido_paterno: docente.Usuario.apellido_paterno,
@@ -156,7 +148,7 @@ const getInfoDocenteByIdService = async (id) => {
         throw new Error("Docente no encontrado.");
     }
 
-    // Devuelve la información única del docente
+    
     return {
         id: docente.id,
         ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
@@ -168,14 +160,13 @@ const getInfoDocenteByIdService = async (id) => {
 const getUsuariRolByIdService = async (id) => {
     const docente = await Docente.findOne({
         where: { id: id },
-        include: [Usuario], // Incluye el modelo Usuario
+        include: [Usuario], 
     });
 
     if (!docente) {
         throw new Error("Docente no encontrado.");
     }
 
-    // Devuelve la información del docente y su usuario
     return {
         id: docente.id,
         nombre: docente.Usuario.nombre,
@@ -194,17 +185,16 @@ const getUsuariRolByIdService = async (id) => {
 };
 
 const editDocenteService = async (docenteId, usuario, docente) => {
-    await validarDocenteExistente(docenteId); // Verifica si el docente existe
+    await validarDocenteExistente(docenteId); 
 
     const { error } = await validarEdicionDocente(docente);
     if (error) {
-        throw new Error(error.details[0].message); // Lanza un error si hay un problema de validación
+        throw new Error(error.details[0].message); 
     }
 
     const usuarioExistente = await Usuario.findOne({ where: { id: docenteId } });
 
     if (usuarioExistente) {
-        // Actualiza los campos del usuario
         usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
         usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
         usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
@@ -218,23 +208,22 @@ const editDocenteService = async (docenteId, usuario, docente) => {
 
         await usuarioExistente.save();
     } else {
-        throw new Error("Usuario no encontrado."); // Manejo del caso si el usuario no existe
+        throw new Error("Usuario no encontrado."); 
     }
 
     const docenteExistente = await Docente.findOne({ where: { id: docenteId } });
 
     if (docenteExistente) {
-        // Actualiza los campos del docente
         docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
         docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
         docenteExistente.academia = docente.academia || docenteExistente.academia;
 
         await docenteExistente.save();
     } else {
-        throw new Error("Docente no encontrado."); // Manejo del caso si el docente no existe
+        throw new Error("Docente no encontrado."); 
     }
 
-    return { message: 'Docente actualizado correctamente' }; // Devuelve un mensaje de éxito
+    return { message: 'Docente actualizado correctamente' }; 
 };
 
 

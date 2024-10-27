@@ -10,36 +10,29 @@ const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,va
 
 const createEstudiante = async (usuario, estudiante) => {
     try {
-        // Validamos los datos del estudiante
         const { error: errorEstudiante } = validarRegistroEstudiante(estudiante);
         if (errorEstudiante) {
             throw new Error(errorEstudiante.details[0].message);
         }
 
-        // Validamos los datos del usuario
         const { error } = await validarRegistroUsuario(usuario);
         if (error) {
             throw new Error(error.details[0].message);
         }
 
-        // Verificamos si el correo ya existe
         await validarCorreoExistente(usuario.correo);
 
-        // Validamos el número de control
         await validarNumeroControl(estudiante.no_control);
 
-        // Creación del usuario
         const nuevoUsuario = await Usuario.create(usuario);
 
-        // Creación del estudiante vinculado al usuario
         const nuevoEstudiante = await Estudiante.create({
             no_control: estudiante.no_control,
             carrera: estudiante.carrera,
             semestre: estudiante.semestre,
-            id: nuevoUsuario.id // Asignamos el ID del usuario como clave foránea
+            id: nuevoUsuario.id 
         });
 
-        // Retornamos los datos completos
         return {
             id: nuevoEstudiante.id,
             nombre: nuevoUsuario.nombre,
@@ -57,7 +50,7 @@ const createEstudiante = async (usuario, estudiante) => {
         };
     } catch (error) {
         console.error(`Error en createEstudiante service: ${error.message}`);
-        throw error; // Lanza el error para ser manejado en el Controller
+        throw error;
     }
 };
 
@@ -71,10 +64,8 @@ const getAllEstudiantesService = async (pagina, limite) => {
         limit: limite
     });
 
-    // Llama a la función para validar la existencia de usuarios
     await validarUsuariosExistentes(estudiantes);
 
-    // Mapea los estudiantes a un formato más simple
     const estudiantesCompletos = estudiantes.map(estudiante => ({
         id: estudiante.id, 
         no_control: estudiante.no_control, 
@@ -101,13 +92,12 @@ const getEstudianteByIdService = async (id) => {
     });
 
     if (!estudiante) {
-        throw new Error("Estudiante no encontrado."); // Lanza un error si no se encuentra el estudiante
+        throw new Error("Estudiante no encontrado."); 
     }
 
-    // Llama a la función para validar la existencia del usuario
+    
     await validarUsuarioExistente(estudiante.id);
 
-    // Mapea la información del estudiante a un formato más simple
     const estudianteCompleto = {
         id: estudiante.id, 
         nombre: estudiante.Usuario.nombre,
@@ -147,7 +137,7 @@ const getAllEstudiantesInfoService = async (pagina, limite) => {
         semestre: estudiante.semestre
     }));
 
-    return { estudiantesConInfoUnica, count }; // Devuelve los estudiantes y el conteo total
+    return { estudiantesConInfoUnica, count }; 
 };
 
 const getEstudiantePerfilByIdService = async (id) => {
@@ -174,7 +164,7 @@ const getEstudiantePerfilByIdService = async (id) => {
         sexo: estudiante.Usuario.sexo
     };
 
-    return perfilEstudiante; // Devuelve el perfil del estudiante
+    return perfilEstudiante; 
 };
 
 
@@ -190,7 +180,7 @@ const getEstudianteInfoByIdService = async (id) => {
 
     await validarUsuarioExistente(estudiante.id);
 
-    return estudiante; // Devuelve el estudiante encontrado
+    return estudiante; 
 };
 
 const getEstudianteRolByIdService = async (id) => {
@@ -221,7 +211,7 @@ const getEstudianteRolByIdService = async (id) => {
         sexo: estudiante.Usuario.sexo
     };
 
-    return respuesta; // Devuelve la respuesta con la información completa
+    return respuesta; 
 };
 
 
@@ -232,7 +222,6 @@ const editEstudianteService = async (id, usuarioData, estudianteData) => {
         throw new Error("Usuario no encontrado.");
     }
 
-    // Actualizar los datos del usuario
     usuarioExistente.nombre = usuarioData.nombre || usuarioExistente.nombre;
     usuarioExistente.apellido_paterno = usuarioData.apellido_paterno || usuarioExistente.apellido_paterno;
     usuarioExistente.apellido_materno = usuarioData.apellido_materno || usuarioExistente.apellido_materno;
@@ -246,13 +235,11 @@ const editEstudianteService = async (id, usuarioData, estudianteData) => {
 
     await usuarioExistente.save();
 
-    // Buscar el estudiante existente por ID
     const estudianteExistente = await Estudiante.findOne({ where: { id } });
     if (!estudianteExistente) {
         throw new Error("Estudiante no encontrado.");
     }
 
-    // Actualizar los datos del estudiante
     estudianteExistente.carrera = estudianteData.carrera || estudianteExistente.carrera;
     estudianteExistente.semestre = estudianteData.semestre || estudianteExistente.semestre;
 

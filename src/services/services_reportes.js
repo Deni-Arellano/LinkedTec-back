@@ -1,24 +1,30 @@
 const Reporte = require('../models/reportes');
+const Usuario = require('../models/usuarios');
 
-const crearReporte = async ({ id_usuario, tipo_reporte, categoria_reporte, descripcion, id_elemento_reportado, titulo_reporte }) => {
-    try {
-        // Crear un nuevo reporte
-        const nuevoReporte = await Reporte.create({
-            id_usuario,
-            tipo_reporte,
-            categoria_reporte,
-            descripcion,
-            id_elemento_reportado,
-            titulo_reporte,
-            fecha_reporte: new Date() // Fecha de creación automática
-        });
+const createReporteService = async (body) => {
+    const { id_usuario, tipo_reporte, categoria_reporte, fecha, descripcion, id_elemento_reportado, titulo_reporte } = body;
 
-        return nuevoReporte;
-    } catch (error) {
-        throw new Error('Error al crear el reporte: ' + error.message);
+    if (!id_usuario) {
+        throw new Error('El ID del usuario es requerido.');
     }
-};
 
+    const usuario = await Usuario.findByPk(id_usuario);
+    if (!usuario) {
+        throw new Error('El usuario no existe.');
+    }
+
+    const nuevoReporte = await Reporte.create({
+        id_usuario,
+        tipo_reporte,
+        categoria_reporte,
+        descripcion,
+        fecha,
+        id_elemento_reportado,
+        titulo_reporte,
+    });
+
+    return nuevoReporte; 
+};
 
 
 
@@ -56,7 +62,7 @@ const obtenerReportePorId = async (id) => {
 
 
 module.exports = {
-    crearReporte,
+    createReporteService,
     obtenerReportes,
     obtenerReportePorId
 };
@@ -76,6 +82,3 @@ module.exports = {
 
 
 
-module.exports = {
-    crearReporte
-};

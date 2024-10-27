@@ -1,6 +1,7 @@
 const Reporte = require('../models/reportes'); 
 const Usuario = require('../models/usuarios');
 const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
+const { createReporteService } = require('../services/services_reportes');
 
 
 /**
@@ -25,34 +26,21 @@ const createReporte = async (req, res) => {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { id_usuario, tipo_reporte, categoria_reporte,fecha, descripcion, id_elemento_reportado, titulo_reporte } = req.body;
+        const nuevoReporte = await createReporteService(req.body);
 
-        if (!id_usuario) {
-            return res.status(400).json({ error: 'El ID del usuario es requerido.' });
-        }
-
-        const usuario = await Usuario.findByPk(id_usuario);
-        if (!usuario) {
-            return res.status(404).json({ error: 'El usuario no existe.' });
-        }
-
-        const nuevoReporte = await Reporte.create({
-            id_usuario,
-            tipo_reporte,
-            categoria_reporte,
-            descripcion,
-            fecha,
-            id_elemento_reportado,
-            titulo_reporte
-        });
-
-        res.status(201).json(nuevoReporte);
+        res.status(201).json(nuevoReporte); 
     } catch (error) {
         console.error('Error al crear el reporte:', error);
-        res.status(500).json({ error: 'Error al crear el reporte: ' + error.message });
+        // Manejo de errores personalizados
+        if (error.message === 'El ID del usuario es requerido.') {
+            return res.status(400).json({ error: error.message });
+        } else if (error.message === 'El usuario no existe.') {
+            return res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Error al crear el reporte: ' + error.message });
+        }
     }
 };
-
 
 /**
  * @async

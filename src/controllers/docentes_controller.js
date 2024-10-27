@@ -44,16 +44,12 @@ const createDocente = async (req, res) => {
             return res.status(400).json({ message: error.details[0].message });
         }
 
-        // Validar si el correo ya existe
         await validarCorreoExistente(usuario.correo);
 
-        // Validar si el número de empleado ya existe
         await validarNumeroDocente(docente.numero_empleado);
 
-        // Llamada al servicio para crear el docente
         const nuevoDocente = await docentesService.createDocente(usuario, docente);
 
-        // Enviar la respuesta con el docente creado
         res.status(201).json(nuevoDocente);
 
     } catch (error) {
@@ -65,7 +61,6 @@ const createDocente = async (req, res) => {
             });
         }
 
-        // Manejar errores específicos de validación
         if (error.name === 'EmailExistsError') {
             return res.status(400).json({ error: "El correo ya está en uso." });
         } else if (error.name === 'UserExistsError') {
@@ -95,16 +90,13 @@ const createDocente = async (req, res) => {
 
 const getAllDocentes = async (req, res) => {
     try {
-        const pagina = parseInt(req.query.pagina) || 1; // Página por defecto: 1
-        const limite = parseInt(req.query.limite) || 10; // Límite de resultados por página, por defecto: 10
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
 
-        // Llamamos al servicio para obtener docentes
         const { docentesCompletos, count } = await getAllDocentesService(pagina, limite);
 
-        // Calculamos el total de páginas
         const totalPaginas = Math.ceil(count / limite);
 
-        // Construimos la respuesta incluyendo información de paginación
         const response = {
             total: count,  
             pagina: pagina, 
@@ -119,7 +111,6 @@ const getAllDocentes = async (req, res) => {
             docentes: docentesCompletos,
         };
 
-        // Enviamos la respuesta
         res.status(200).json(response);
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
@@ -142,10 +133,9 @@ const getAllDocentes = async (req, res) => {
 
 const getDocenteById = async (req, res) => {
     try {
-        const id = req.params.id; // Obtén el ID del parámetro de la URL
-        const docente = await getDocenteByIdService(id); // Llama al servicio para obtener el docente
+        const id = req.params.id; 
+        const docente = await getDocenteByIdService(id); 
 
-        // Construye el objeto de respuesta con la información del docente
         const docenteCompleto = {
             id: docente.id,
             nombre: docente.Usuario.nombre,
@@ -163,12 +153,12 @@ const getDocenteById = async (req, res) => {
             academia: docente.academia,
         };
 
-        res.status(200).json(docenteCompleto); // Devuelve el docente completo
+        res.status(200).json(docenteCompleto); 
     } catch (error) {
         if (error.message === "Docente no encontrado.") {
-            return res.status(404).json({ error: "Docente no encontrado." }); // Maneja el error de docente no encontrado
+            return res.status(404).json({ error: "Docente no encontrado." }); 
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
@@ -190,7 +180,6 @@ const getAllDocentesInfo = async (req, res) => {
         const pagina = parseInt(req.query.pagina) || 1; 
         const limite = parseInt(req.query.limite) || 10; 
 
-        // Llama al servicio para obtener la información de los docentes
         const { docentes, count } = await getAllDocentesInfoService(pagina, limite);
 
         const totalPaginas = Math.ceil(count / limite);
@@ -206,15 +195,15 @@ const getAllDocentesInfo = async (req, res) => {
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            docentes: docentes, // Envía los docentes obtenidos
+            docentes: docentes, 
         };
 
-        res.status(200).json(response); // Devuelve la respuesta
+        res.status(200).json(response); 
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: "Usuarios no encontrados." });
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
@@ -233,15 +222,14 @@ const getDocentePerfilById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener el perfil del docente
         const perfilDocente = await getDocentePerfilByIdService(id);
 
-        res.status(200).json(perfilDocente); // Devuelve el perfil del docente
+        res.status(200).json(perfilDocente); 
     } catch (error) {
         if (error.message === 'Docente no encontrado.') {
             return res.status(404).json({ error: "Docente no encontrado." });
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message });
         }
     }
 };      
@@ -261,15 +249,14 @@ const getinfoDocenteById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener la información del docente
         const docenteInfoUnica = await getInfoDocenteByIdService(id);
 
-        res.status(200).json(docenteInfoUnica); // Devuelve la información del docente
+        res.status(200).json(docenteInfoUnica); 
     } catch (error) {
         if (error.message === 'Docente no encontrado.') {
             return res.status(404).json({ error: "Docente no encontrado." });
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
@@ -289,15 +276,14 @@ const getUsuariRolById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Llama al servicio para obtener la información del docente y su usuario
         const respuesta = await getUsuariRolByIdService(id);
 
-        res.status(200).json(respuesta); // Devuelve la respuesta
+        res.status(200).json(respuesta); 
     } catch (error) {
         if (error.message === 'Docente no encontrado.') {
             return res.status(404).json({ error: "Docente no encontrado." });
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
@@ -321,15 +307,14 @@ const editDocente = async (req, res) => {
         const { usuario, docente } = req.body;
         const docenteId = req.params.id; 
 
-        // Llama al servicio para editar el docente
         const response = await editDocenteService(docenteId, usuario, docente);
 
-        res.status(200).json(response); // Devuelve la respuesta
+        res.status(200).json(response); 
     } catch (error) {
         if (error.message === 'Docente no encontrado.' || error.message === 'Usuario no encontrado.') {
             return res.status(404).json({ error: error.message });
         } else {
-            res.status(500).json({ error: error.message }); // Maneja otros errores
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
