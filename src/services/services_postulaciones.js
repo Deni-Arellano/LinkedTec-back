@@ -176,6 +176,7 @@ const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
     }
 
     return {
+      id_usuario: postulacion.id_usuario,
       nombre_usuario: postulacion.Usuario.nombre,
       correo_usuario: postulacion.Usuario.correo,
       fecha_postulacion: postulacion.fecha_creacion || 'Fecha no disponible',
@@ -203,7 +204,7 @@ async function crearPostulacion(informacion_postulacion) {
     
     const id_archivo = subida_cloudinary.id; // Este es el ID que necesitas
 
-    // Crear postulación con el ID del archivo subido
+    
     const postulacion = await Postulacion.create({
       id_usuario,
       id_empleo,
