@@ -8,7 +8,6 @@ const upload = multer({ dest: 'uploads/' }); // Directorio temporal para almacen
 const subirArchivoCloudinary = new SubirArchivoCloudinary();
 
 router.post('/subir-imagen', upload.single('imagen'), async (req, res) => {
-    console.log('entro a subir imagen');
     try {
         const resultado = await subirArchivoCloudinary.subirImagen(req.file.path);
         res.status(200).json({ mensaje: 'Imagen subida con éxito', data: resultado });

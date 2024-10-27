@@ -46,7 +46,6 @@ const obtenerPublicacionesPorUsuarioService = async (id_usuario, pagina = 1, lim
       offset,
       order: [['fecha', 'DESC']] 
     });
-    console.log(publicacionesPorUsuario.rows);
     const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limite);
 
     return {
