@@ -23,4 +23,6 @@ router.get('/:id/', EstudianteController.getEstudianteRolById); //
 
 router.patch('/:id', EstudianteController.editEstudiante);
 
+router.delete('/:id', EstudianteController.deleteEstudiante);
+
 module.exports = router;

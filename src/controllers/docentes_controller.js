@@ -13,7 +13,7 @@ const {getDocentePerfilByIdService} = require('../services/services_docentes');
 const {getInfoDocenteByIdService} = require('../services/services_docentes');
 const {getUsuariRolByIdService} = require('../services/services_docentes');
 const {editDocenteService} = require('../services/services_docentes');
-
+const {deleteDocenteService} = require('../services/services_docentes');
 /**
  * Crea un nuevo docente y usuario en la base de datos.
  * 
@@ -319,13 +319,32 @@ const editDocente = async (req, res) => {
     }
 };
 
+const deleteDocente = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const result = await deleteDocenteService(id);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error al eliminar el docente:', error);
+
+        if (error.message === 'Docente no encontrado') {
+            return res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Error al eliminar el docente: ' + error.message });
+        }
+    }
+};
+
 module.exports = {
     createDocente,
     getAllDocentes,
     getDocenteById,
-    getAllDocentesInfo, // Exportar la nueva función
+    getAllDocentesInfo, 
     getDocentePerfilById,
     getinfoDocenteById,
     getUsuariRolById,
-    editDocente
+    editDocente,
+    deleteDocente
 };

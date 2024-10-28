@@ -13,6 +13,8 @@ const { getEstudiantePerfilByIdService } = require('../services/services_estudia
 const { getEstudianteInfoByIdService } = require('../services/services_estudiantes');
 const { getEstudianteRolByIdService } = require('../services/services_estudiantes');
 const { editEstudianteService } = require('../services/services_estudiantes');
+const { deleteEstudianteService } = require('../services/services_estudiantes');
+
 
 /**
  * @function createEstudiante
@@ -306,6 +308,23 @@ const editEstudiante = async (req, res) => {
     }
 };
 
+const deleteEstudiante = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const result = await deleteEstudianteService(id);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error al eliminar el estudiante:', error);
+
+        if (error.message === 'Estudiante no encontrado') {
+            return res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Error al eliminar el estudiante: ' + error.message });
+        }
+    }
+};
 
 module.exports = {
     createEstudiante,
@@ -315,5 +334,6 @@ module.exports = {
     getEstudiantePerfilById,
     getEstudianteInfoById,
     getEstudianteRolById,
-    editEstudiante
+    editEstudiante,
+    deleteEstudiante
 };

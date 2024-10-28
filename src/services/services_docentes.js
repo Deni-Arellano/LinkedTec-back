@@ -226,6 +226,16 @@ const editDocenteService = async (docenteId, usuario, docente) => {
     return { message: 'Docente actualizado correctamente' }; 
 };
 
+const deleteDocenteService = async (id) => {
+    const docente = await Docente.findByPk(id);
+
+    if (!docente) {
+        throw new Error('Docente no encontrado');
+    }
+
+    await docente.destroy();
+    return { message: 'Docente eliminado exitosamente' };
+};
 
 module.exports = {
     createDocente,
@@ -236,4 +246,5 @@ module.exports = {
     getInfoDocenteByIdService,
     getUsuariRolByIdService,
     editDocenteService,
+    deleteDocenteService
 };

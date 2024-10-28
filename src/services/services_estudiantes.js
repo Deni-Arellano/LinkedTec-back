@@ -248,6 +248,20 @@ const editEstudianteService = async (id, usuarioData, estudianteData) => {
     return { message: 'Estudiante actualizado correctamente' };
 };
 
+const deleteEstudianteService = async (id) => {
+    // Buscar el estudiante por ID
+    const estudiante = await Estudiante.findByPk(id);
+
+    // Verificar si el estudiante existe
+    if (!estudiante) {
+        throw new Error('Estudiante no encontrado');
+    }
+
+    // Eliminar el estudiante
+    await estudiante.destroy();
+    return { message: 'Estudiante eliminado exitosamente' };
+};
+
 module.exports = {
     createEstudiante,
     getAllEstudiantesService,
@@ -256,5 +270,6 @@ module.exports = {
     getEstudiantePerfilByIdService,
     getEstudianteInfoByIdService,
     getEstudianteRolByIdService,
-    editEstudianteService
+    editEstudianteService,
+    deleteEstudianteService
 };
