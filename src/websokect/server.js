@@ -14,15 +14,15 @@ wss.on('connection', (ws) => {
             const data = JSON.parse(message); // Asegúrate de que es JSON
             console.log('Mensaje procesado:', data);
 
-            // Aquí puedes enviar una respuesta de vuelta como JSON
-            const response = JSON.stringify({ type: 'response', content: 'Mensaje recibido correctamente' });
-            ws.send(response);
+            // Envía el mensaje a todos los clientes conectados
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(data)); // Reenvía el mensaje recibido a todos los clientes
+                }
+            });
         } catch (error) {
             console.error('Error al analizar el mensaje:', error);
-            // Notificar al cliente que se recibió un Blob (si corresponde)
-            if (message instanceof Blob) {
-                ws.send(JSON.stringify({ type: 'error', content: 'Se recibió un Blob, no se puede procesar.' }));
-            }
+            ws.send(JSON.stringify({ type: 'error', content: 'Error al procesar el mensaje.' }));
         }
     });
 

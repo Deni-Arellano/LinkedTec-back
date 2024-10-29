@@ -2,89 +2,35 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cliente 2 - WhatsApp Clone</title>
+    <title>Cliente 2 - Chat WebSocket</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            margin: 0;
-        }
-        #chat-list {
-            width: 30%;
-            border-right: 1px solid #ccc;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        #chat-window {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+        #chat-container {
+            width: 300px;
+            border: 1px solid #ccc;
             padding: 10px;
         }
         #messages {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
             margin-bottom: 10px;
-            background-color: #f9f9f9;
+            padding: 5px;
         }
-        .message {
-            margin: 5px 0;
-            padding: 8px;
-            border-radius: 5px;
-        }
-        .sent {
-            background-color: #dcf8c6;
-            align-self: flex-end;
-        }
-        .received {
-            background-color: #fff;
-            align-self: flex-start;
-        }
-        #input-area {
-            display: flex;
-        }
-        #message {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-right: 5px;
-        }
-        #send {
-            padding: 10px;
-            border: none;
-            background-color: #25d366;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #send:hover {
-            background-color: #128C7E;
-        }
+        .message.sent { text-align: right; color: blue; }
+        .message.received { text-align: left; color: green; }
     </style>
 </head>
 <body>
-    <div id="chat-list">
-        <h3>Chats</h3>
-        <ul>
-            <li><a href="#" onclick="selectChat(1)">Usuario 1</a></li>
-        </ul>
-    </div>
-    <div id="chat-window">
+    <div id="chat-container">
+        <h3>Cliente 2</h3>
         <div id="messages"></div>
-        <div id="input-area">
-            <input type="text" id="message" placeholder="Escribe un mensaje..." />
-            <button id="send">Enviar</button>
-        </div>
+        <input type="text" id="message" placeholder="Escribe un mensaje...">
+        <button id="send">Enviar</button>
     </div>
 
     <script>
         const socket = new WebSocket('ws://localhost:8080');
-        let currentRecipientId = 1; // ID del destinatario
+        let currentRecipientId = 1; // ID del destinatario predeterminado
 
         socket.onopen = function() {
             console.log('Conexión WebSocket establecida.');
@@ -92,21 +38,12 @@
 
         socket.onmessage = function(event) {
             try {
-                const message = JSON.parse(event.data); 
-
-
+                const message = JSON.parse(event.data);
+                console.log(`Soy cliente 2, llegó este mensaje de Cliente ${message.senderId}: ${message.content}`);
+                displayMessage(message.senderId, message.content, 'received');
             } catch (error) {
                 console.error('Error al procesar el mensaje:', error);
-                console.log('Datos recibidos sin procesar:', event.data); // Log para verificar datos recibidos
             }
-        };
-
-        socket.onerror = function(error) {
-            console.error('Error en la conexión WebSocket: ', error);
-        };
-
-        socket.onclose = function() {
-            console.log('Conexión WebSocket cerrada.');
         };
 
         document.getElementById('send').onclick = function() {
@@ -115,13 +52,13 @@
 
             if (message) {
                 const payload = JSON.stringify({
-                    senderId: 2, // Cambia según el cliente
+                    senderId: 2, // ID de Cliente 2
                     recipientId: currentRecipientId, // ID del destinatario
                     content: message
                 });
                 socket.send(payload);
-                displayMessage(2, message, 'sent'); // 2 es el ID del remitente (este usuario)
-                messageInput.value = ''; // Limpia el campo de mensaje
+                displayMessage(2, message, 'sent');
+                messageInput.value = '';
             }
         };
 
@@ -130,12 +67,7 @@
             messageElement.className = `message ${type}`;
             messageElement.textContent = `${senderId === 2 ? 'Tú' : 'Usuario ' + senderId}: ${content}`;
             document.getElementById('messages').appendChild(messageElement);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; // Desplazar hacia abajo
-        }
-
-        function selectChat(recipientId) {
-            currentRecipientId = recipientId; // Cambia el destinatario seleccionado
-            document.getElementById('messages').innerHTML = ''; // Limpiar mensajes
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         }
     </script>
 </body>
