@@ -11,7 +11,7 @@ const Login = async (correo, contraseña) => {
     ];
 
     for (const { modelo, tipoUsuario } of tablas) {
-        const usuario = await modelo.findOne({ where: { correo, contraseña } }); 
+        const usuario = await modelo.findOne({ where: { correo, contraseña } });  
         if (usuario) {
             return { id: usuario.id, tipoUsuario, nombre: usuario.nombre, role: usuario.role };
         }
