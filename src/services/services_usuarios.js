@@ -110,12 +110,10 @@ const obtenerTodosLosUsuarios = async () => {
 };
 
 const deleteUsuario = async (id) => {
-  // Primero, busca al usuario para determinar su rol
   const usuario = await Usuario.findByPk(id);
   if (!usuario) {
       throw new Error('Usuario no encontrado');
   }
-
 
   if (usuario.role === 'Docentes') {
       await Docente.destroy({ where: { id: usuario.id } });
@@ -129,7 +127,6 @@ const deleteUsuario = async (id) => {
       throw new Error('Rol no válido');
   }
 
- 
   await Usuario.destroy({ where: { id: usuario.id } });
 
   return { message: `Usuario con ID ${id} y rol ${usuario.role} eliminado con éxito` };
