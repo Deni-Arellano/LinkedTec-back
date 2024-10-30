@@ -19,6 +19,7 @@ const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const routerImagenes = require('./routes/subidas_cloudinary');
+const server = require('./websokect/server');
 
 const app = express();
 const port = 3000;
