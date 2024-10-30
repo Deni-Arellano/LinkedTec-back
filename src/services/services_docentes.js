@@ -48,7 +48,6 @@ const createDocente = async (usuario, docente) => {
             academia: nuevoDocente.academia
         };
     } catch (error) {
-        console.error(`Error en createDocente service: ${error.message}`);
         throw error; 
     }
 };

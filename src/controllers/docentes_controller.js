@@ -53,7 +53,6 @@ const createDocente = async (req, res) => {
         res.status(201).json(nuevoDocente);
 
     } catch (error) {
-        console.error(`Error capturado en el controlador: ${error.message}`);
 
         if (error.errors) {
             error.errors.forEach(err => {

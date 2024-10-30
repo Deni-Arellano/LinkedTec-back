@@ -50,7 +50,6 @@ const createEstudiante = async (usuario, estudiante) => {
             no_control: nuevoEstudiante.no_control
         };
     } catch (error) {
-        console.error(`Error en createEstudiante service: ${error.message}`);
         throw error;
     }
 };
@@ -217,7 +216,6 @@ const getEstudianteRolByIdService = async (id) => {
 
 
 const editEstudianteService = async (id, usuarioData, estudianteData) => {
-    // Buscar el usuario existente por ID
     const usuarioExistente = await Usuario.findOne({ where: { id } });
     if (!usuarioExistente) {
         throw new Error("Usuario no encontrado.");
@@ -250,15 +248,12 @@ const editEstudianteService = async (id, usuarioData, estudianteData) => {
 };
 
 const deleteEstudianteService = async (id) => {
-    // Buscar el estudiante por ID
     const estudiante = await Estudiante.findByPk(id);
 
-    // Verificar si el estudiante existe
     if (!estudiante) {
         throw new Error('Estudiante no encontrado');
     }
 
-    // Eliminar el estudiante
     await estudiante.destroy();
     return { message: 'Estudiante eliminado exitosamente' };
 };

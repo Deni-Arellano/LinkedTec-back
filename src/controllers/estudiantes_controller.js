@@ -50,7 +50,6 @@ const createEstudiante = async (req, res) => {
         res.status(201).json(nuevoEstudiante);
 
     } catch (error) {
-        console.error(`Error capturado en el controlador: ${error.message}`);
 
         if (error.errors) {
             error.errors.forEach(err => {
@@ -316,7 +315,6 @@ const deleteEstudiante = async (req, res) => {
 
         res.status(200).json(result);
     } catch (error) {
-        console.error('Error al eliminar el estudiante:', error);
 
         if (error.message === 'Estudiante no encontrado') {
             return res.status(404).json({ error: error.message });
