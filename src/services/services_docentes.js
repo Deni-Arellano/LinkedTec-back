@@ -37,6 +37,7 @@ const createDocente = async (usuario, docente) => {
             apellido_paterno: nuevoUsuario.apellido_paterno,
             apellido_materno: nuevoUsuario.apellido_materno,
             rol: nuevoUsuario.role,
+            contraseña: nuevoUsuario.contraseña,
             biografia: nuevoUsuario.biografia,
             telefono: nuevoUsuario.telefono,
             correo: nuevoUsuario.correo,

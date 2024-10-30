@@ -42,6 +42,7 @@ const createEstudiante = async (usuario, estudiante) => {
             biografia: nuevoUsuario.biografia,
             telefono: nuevoUsuario.telefono,
             correo: nuevoUsuario.correo,
+            contraseña: nuevoUsuario.contraseña,
             fecha_nacimiento: nuevoUsuario.fecha_nacimiento,
             sexo: nuevoUsuario.sexo,
             carrera: nuevoEstudiante.carrera,
