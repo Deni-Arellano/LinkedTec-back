@@ -45,10 +45,10 @@
                 type: 'message', 
                 content: input.value, 
                 sender: clientId, 
-                recipient: 1 // Cambia este ID si es necesario
+                recipient: 1 
             };
             ws.send(JSON.stringify(message));
-            input.value = ''; // Limpiar el campo de entrada
+            input.value = ''; 
         };
     </script>
 </body>

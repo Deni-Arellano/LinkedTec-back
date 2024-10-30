@@ -1,10 +1,10 @@
 
-const {processMessage}= require('../services/services_mensajes');
+const {procesamientomensajes}= require('../services/services_mensajes');
 
-function handleConnection(wss, ws) {
+function manejodeconexion(wss, ws) {
     console.log('Cliente conectado');
 
-    ws.on('message', (message) =>processMessage(wss, ws, message));
+    ws.on('message', (message) =>procesamientomensajes(wss, ws, message));
 
     ws.on('close', () => {
         console.log('Cliente desconectado');
@@ -17,5 +17,5 @@ function handleConnection(wss, ws) {
 }
 
 module.exports = {
-    handleConnection,
+    manejodeconexion,
 };
