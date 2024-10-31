@@ -3,23 +3,53 @@ const EmpleoNotFoundError = require('../middlewares/exceptions/EmpleoNotFoundErr
 const UserNotFoundError = require('../middlewares/exceptions/UserNotFoundError');
 const UpdateConflictError = require('../middlewares/exceptions/UpdateConflictError');
 const Usuario = require('../models/usuarios');
+const NotificacionService = require('./services_notificaciones');
+const { Op } = require('sequelize');
 
 
 /**
- * @async
- * Servicio para crear un nuevo empleo.
- * @param {Object} datosEmpleo - Los datos del nuevo empleo.
- * @returns {Promise<Object>} Devuelve el empleo creado o un error.
- */
+
+@async
+Servicio para crear un nuevo empleo.
+@param {Object} datosEmpleo - Los datos del nuevo empleo.
+@returns {Promise} Devuelve el empleo creado o un error.
+*/
 exports.crearEmpleo = async (datosEmpleo) => {
   try {
     const empleo = await Empleo.create(datosEmpleo);
+
+    const usuarios = await Usuario.findAll({
+      where: {
+        role: {
+          [Op.or]: ['Egresados', 'Estudiantes']
+        }
+      }
+    });
+
+    if (usuarios.length > 0) {
+      const notificacionesPromises = usuarios.map(async usuario => {
+        const notificacionData = {
+          tipo: 'empleo',
+          mensaje: `Se ha creado un nuevo empleo: ${empleo.titulo}`,
+          id_usuario_emisor: datosEmpleo.id_usuario,
+          id_usuario_destinatario: usuario.id,
+          id_referencia: empleo.id,
+        };
+
+        const notificacionCreada = await NotificacionService.crearNotificacion(notificacionData);
+
+        await NotificacionService.enviarNotificacion(global.wss, notificacionCreada);
+      });
+
+      await Promise.all(notificacionesPromises);
+    }
+
     return { success: true, data: empleo };
+
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
-
 
 
 /**
