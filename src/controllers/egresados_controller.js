@@ -4,7 +4,7 @@ const Egresado = require('../models/egresados');
 const Usuario = require('../models/usuarios');
 const db = require('../config/database');
 const { validateEgresado,validateId } = require('../middlewares/validations/validaciones_egresados');
-const { validarRegistroUsuario,validarCorreoExistente,validarUsuariosExistentes,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
+const { validarRegistroUsuario,validarCorreoExistente,validarUsuarioExistente } = require('../middlewares/validations/validaciones_usuarios');
 const { obtenerEgresadosPaginados,obtenerInfoEgresadosPaginados } = require('../services/services_egresados');
 
 
@@ -151,7 +151,6 @@ exports.createEgresado = async (req, res) => {
       egresado: nuevoEgresado
     });
   } catch (error) {
-    console.error('Error al crear egresado y usuario:', error);
     res.status(500).json({ message: 'El email ya existe o está en uso', error: error.message });
   }
 };

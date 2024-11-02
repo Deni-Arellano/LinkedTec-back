@@ -19,6 +19,8 @@ const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const loginRoutes = require('./routes/routes_login');
+const routerImagenes = require('./routes/subidas_cloudinary');
+const server = require('./websokect/server');
 
 const app = express();
 const port = 3000;
@@ -44,6 +46,7 @@ app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
 app.use('/acceso', loginRoutes); 
+app.use('/subidas', routerImagenes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

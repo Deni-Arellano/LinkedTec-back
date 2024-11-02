@@ -1,89 +1,159 @@
 const Usuario = require('../models/usuarios');
 const Postulacion = require('../models/postulaciones');
 const Estado = require('../models/estados');
+const Empleo = require('../models/empleos');
+const SubidasCloudinary = require('../models/subidas_cloudinary');
+sequelize = require('../config/database');
 const SubidaCloudinary = require('../services/services_cloudinary');
 
 
 
-async function obtenerPostulacionesPorUsuario(id_usuario) {
-  try {
-    const postulaciones = await Postulacion.findAll({
-      where: { id_usuario: id_usuario }, 
-      include: {
+
+
+//visulaicasion de usarios
+
+const obtenerPostulacionesDeUsuarioService = async (id_usuario, pagina = 1, limite = 10) => {
+  const offset = (pagina - 1) * limite;
+
+  const { count, rows } = await Postulacion.findAndCountAll({
+    where: { id_usuario },
+    include: [
+      {
         model: Estado,
-        attributes: ['estado'], 
+        attributes: ['estado'],
       },
-    });
+      {
+        model: Empleo,
+        attributes: ['titulo', 'fecha_creacion', 'empresa'],
+      },
+    ],
+    limit: parseInt(limite),
+    offset: parseInt(offset),
+  });
 
-    return postulaciones; // Devolver las postulaciones encontradas
-  } catch (error) {
-    console.error('Error en el servicio al obtener las postulaciones:', error);
-    throw new Error('Error al obtener las postulaciones');
-  }
-}
+  const total_paginas = Math.ceil(count / limite);
 
+ 
+  const postulaciones = rows.map((postulacion) => {
+    const empleo = postulacion.Empleo || {};
+    const estado = postulacion.Estado || {};
 
+    return {
+      id_postulacion: postulacion.id_postulacion,
+      id_usuario: postulacion.id_usuario,
+      titulo: empleo.titulo || 'Título no disponible',
+      fecha: postulacion.fecha_creacion || 'Fecha no disponible',
+      empresa: empleo.empresa || 'Empresa no disponible',
+      estado: postulacion.estado ? postulacion.estado.estado : 'Estado no disponible',
+    };
+  });
 
-
-const obtenerPostulacionCompletaPorId = async (id_postulacion) => {
-  try {
-    return await Postulacion.findOne({
-      where: { id_postulacion },
-      include: [
-        {
-          model: Usuario,
-          attributes: ['nombre', 'correo'],
-        },
-        {
-          model: Empleo,
-          attributes: [
-            'id_empleo',
-            'titulo',
-            'empresa',
-            'salario',
-            'descripcion',
-            'ubicacion',
-            'nivel_de_ingles',
-            'fecha_creacion',
-          ],
-        },
-      ],
-    });
-  } catch (error) {
-    throw new Error('Error al obtener la postulación');
-  }
+  return {
+    total: count,
+    total_paginas,
+    postulaciones,
+  };
 };
 
+const obtenerPostulacionCompletaService = async (id_postulacion) => {
+  const postulacion = await Postulacion.findOne({
+    where: { id_postulacion },
+    include: [
+      {
+        model: Usuario,
+        attributes: ['nombre', 'correo'],
+      },
+      {
+        model: Empleo,
+        attributes: [
+          'id_empleo',
+          'titulo',
+          'empresa',
+          'salario',
+          'descripcion',
+          'ubicacion',
+          'nivel_de_ingles',
+          'fecha_creacion',
+        ],
+      },
+      {
+        model: SubidasCloudinary,
+        attributes: ['url_segura'],
+        where: { id: sequelize.col('Postulacion.cv') },
+        required: false,
+      },
+    ],
+  });
 
-
-const obtenerPostulantesPorEmpleo = async (id_empleo) => {
-  try {
-    const postulaciones = await Postulacion.findAll({
-      where: { id_empleo },
-      include: [
-        {
-          model: Usuario,
-          attributes: ['nombre', 'correo'], // Obtener nombre y correo del usuario
-        },
-        {
-          model: Estado,
-          attributes: ['estado'], // Obtener el estado de la postulación si es necesario
-        },
-      ],
-    });
-
-    return postulaciones;
-  } catch (error) {
-    console.error('Error al obtener postulantes:', error);
-    throw new Error('Error al obtener postulantes'); // Lanzar error para manejarlo en el controlador
+  if (!postulacion) {
+    throw new Error('Postulación no encontrada');
   }
+
+  return {
+    empleo: {
+      id_empleo: postulacion.Empleo?.id_empleo || 'ID no disponible',
+      titulo: postulacion.Empleo?.titulo || 'Título no disponible',
+      empresa: postulacion.Empleo?.empresa || 'Empresa no disponible',
+      salario: postulacion.Empleo?.salario || 'Salario no disponible',
+      descripcion: postulacion.Empleo?.descripcion || 'Descripción no disponible',
+      ubicacion: postulacion.Empleo?.ubicacion || 'Ubicación no disponible',
+      nivel_de_ingles: postulacion.Empleo?.nivel_de_ingles || 'Nivel de inglés no disponible',
+      fecha_creacion: postulacion.Empleo?.fecha_creacion || 'Fecha de creación no disponible',
+    },
+    usuario: {
+      nombre: postulacion.Usuario?.nombre || 'Nombre no disponible',
+      correo: postulacion.Usuario?.correo || 'Correo no disponible',
+      descripcion_personal: postulacion.descripcion_personal || 'Descripción personal no disponible',
+      cv: postulacion.SubidasCloudinary?.url_segura || 'CV no disponible',
+    },
+  };
+};
+//visualizacion de reclutadores
+const obtenerPostulantesPorEmpleoService = async (id_empleo, pagina, limite) => {
+  const offset = (pagina - 1) * limite;
+
+  const postulaciones = await Postulacion.findAll({
+    where: { id_empleo },
+    include: [
+      {
+        model: Usuario,
+        attributes: ['nombre', 'correo'],
+      },
+      {
+        model: Estado,
+        attributes: ['estado'],
+      },
+    ],
+    limit: parseInt(limite, 10),
+    offset: parseInt(offset, 10),
+  });
+
+  const totalPostulaciones = await Postulacion.count({ where: { id_empleo } });
+
+  const total_paginas = Math.ceil(totalPostulaciones / limite);
+
+  const resultados = postulaciones.map((postulacion) => {
+    return {
+      id_usuario: postulacion.id_usuario,
+      nombre_usuario: postulacion.Usuario?.nombre || 'Nombre no disponible',
+      correo_usuario: postulacion.Usuario?.correo || 'Correo no disponible',
+      fecha_creacion: postulacion.fecha_creacion || 'Fecha no disponible',
+      estado: postulacion.estado?.estado || 'Estado no disponible',
+    };
+  });
+
+  return {
+    totalPostulaciones,
+    total_paginas,
+    resultados,
+  };
 };
 
 
 const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
   try {
     const postulacion = await Postulacion.findOne({
-      where: { id_empleo, id_usuario }, // Filtrar por id_empleo y id_usuario
+      where: { id_empleo, id_usuario },
       include: [
         {
           model: Usuario,
@@ -93,17 +163,38 @@ const obtenerDetallesPostulantePorId = async (id_empleo, id_usuario) => {
           model: Estado,
           attributes: ['estado'],
         },
+        {
+          model: SubidasCloudinary,
+          attributes: ['url_segura'],
+          where: { id: sequelize.col('Postulacion.cv') },
+          required: false,
+        },
       ],
     });
 
-    console.log(postulacion); // Verificar si se está obteniendo un resultado
+    if (!postulacion) {
+      return null;
+    }
 
-    return postulacion;
+    return {
+      id_usuario: postulacion.id_usuario,
+      nombre_usuario: postulacion.Usuario.nombre,
+      correo_usuario: postulacion.Usuario.correo,
+      fecha_postulacion: postulacion.fecha_creacion || 'Fecha no disponible',
+      estado: postulacion.estado?.estado || 'Estado no disponible',
+      descripcion: postulacion.descripcion_personal || 'Descripción no disponible',
+      cv: postulacion.SubidasCloudinary?.url_segura || 'CV no disponible',
+    };
   } catch (error) {
-    console.error('Error al obtener los detalles del postulante:', error);
-    throw error;
+    console.error('Error al obtener detalles del postulante:', error);
+    throw new Error('Error al obtener detalles del postulante');
   }
 };
+
+//
+
+
+
 async function crearPostulacion(informacion_postulacion) {
   try {
     const informacion_archivo = informacion_postulacion.cv;
@@ -114,7 +205,7 @@ async function crearPostulacion(informacion_postulacion) {
     
     const id_archivo = subida_cloudinary.id; // Este es el ID que necesitas
 
-    // Crear postulación con el ID del archivo subido
+    
     const postulacion = await Postulacion.create({
       id_usuario,
       id_empleo,
@@ -155,10 +246,9 @@ async function crearPostulacion(informacion_postulacion) {
 
 
 module.exports = {
-  obtenerPostulacionesPorUsuario,
-  obtenerPostulacionCompletaPorId,
-  
-  obtenerPostulantesPorEmpleo,
+  obtenerPostulacionesDeUsuarioService,
+  obtenerPostulacionCompletaService,
+  obtenerPostulantesPorEmpleoService,
   obtenerDetallesPostulantePorId,
   crearPostulacion
 };

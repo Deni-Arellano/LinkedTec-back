@@ -1,33 +1,24 @@
 const Joi = require('joi');
+const db = require('../../config/database');
+const ReporteNotFoundError = require('../exceptions/ReporteNotFoundError');
 
 const validarRegistroReportes = async (data) => {
-    const validarRegistroReportes = Joi.object({
+    const schema = Joi.object({
         id_usuario: Joi.number().integer().required().messages({
             'number.base': 'El ID del usuario debe ser un número.',
             'any.required': 'El ID del usuario es requerido.',
             'any.only': 'El usuario no existe.'
         }),
         tipo_reporte: Joi.string().valid(
-            'acoso', 
-            'amenaza', 
-            'discriminación', 
-            'difamación', 
-            'ofensa', 
-            'suplantación de identidad', 
-            'fraude', 
-            'otros'
+            'acoso', 'amenaza', 'discriminación', 'difamación', 
+            'ofensa', 'suplantación de identidad', 'fraude', 'otros'
         ).required().messages({
             'any.only': 'El tipo de reporte debe ser uno de los valores permitidos.',
             'any.required': 'El tipo de reporte es requerido.'
         }),
         categoria_reporte: Joi.string().valid(
-            'perfil', 
-            'publicaciones', 
-            'noticias', 
-            'empleos', 
-            'foros', 
-            'eventos', 
-            'otros'
+            'perfil', 'publicaciones', 'noticias', 
+            'empleos', 'foros', 'eventos', 'otros'
         ).required().messages({
             'any.only': 'La categoría de reporte debe ser uno de los valores permitidos.',
             'any.required': 'La categoría del reporte es requerida.'
@@ -47,9 +38,49 @@ const validarRegistroReportes = async (data) => {
             'any.required': 'El título del reporte es requerido.'
         })
     });
-    return validarRegistroReportes.validate(data);
-}
+    return schema.validate(data);
+};
+
+const validarReporteExistente = async (id) => {
+    const [reporte] = await db.query(
+        'SELECT * FROM reportes WHERE id_reporte = :id',
+        {
+            replacements: { id },
+            type: db.QueryTypes.SELECT
+        }
+    );
+
+    if (!reporte) {
+        throw new ReporteNotFoundError("El reporte no existe. Verifique el ID.");
+    }
+};
+
+const validarReportesPorUsuario = async (id_usuario) => {
+    const reportes = await db.query(
+        'SELECT * FROM reportes WHERE id_usuario = :id_usuario',
+        {
+            replacements: { id_usuario },
+            type: db.QueryTypes.SELECT
+        }
+    );
+
+    if (reportes.length === 0) {
+        throw new ReporteNotFoundError("El usuario no tiene reportes.");
+    }
+};
+
+const validarReportesExistentes = async () => {
+    const reportes = await db.query(
+        'SELECT * FROM reportes',
+        { type: db.QueryTypes.SELECT }
+    );
+    return reportes.length > 0;
+};
+
 
 module.exports = {
-    validarRegistroReportes
+    validarRegistroReportes,
+    validarReporteExistente,
+    validarReportesPorUsuario,
+    validarReportesExistentes
 };

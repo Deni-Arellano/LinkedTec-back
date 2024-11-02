@@ -36,33 +36,33 @@ const crearPublicacionService = async (datosPublicacion) => {
  * @param {number} id_usuario - ID del usuario cuyas publicaciones se quieren obtener.
  * @returns {Promise<Array>} Lista de publicaciones del usuario.
  */
-const obtenerPublicacionesPorUsuarioService = async (id_usuario, page = 1, limit = 10) => {
+const obtenerPublicacionesPorUsuarioService = async (id_usuario, pagina = 1, limite = 10) => {
   try {
-    const offset = (page - 1) * limit;
+    const offset = (pagina - 1) * limite;
 
     const publicacionesPorUsuario = await Publicacion.findAndCountAll({
       where: { id_usuario },
-      limit,
+      limite,
       offset,
       order: [['fecha', 'DESC']] 
     });
-
-    const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limit);
+    console.log(publicacionesPorUsuario.rows);
+    const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limite);
 
     return {
       "total": publicacionesPorUsuario.count,
-      "pagina": page,
-      "limite": limit,
+      "pagina": pagina,
+      "limite": limite,
       "total_paginas": totalPaginas,
-      "pagina_siguiente": page < totalPaginas ? {
-        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page + 1}&limite=${limit}`,
+      "pagina_siguiente": pagina < totalPaginas ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${pagina + 1}&limite=${limite}`,
         "exists": true
       } : {
         "url": null,
         "exists": false
       },
-      "pagina_anterior": page > 1 ? {
-        "url": `/publicaciones/usuario/${id_usuario}?pagina=${page - 1}&limite=${limit}`,
+      "pagina_anterior": pagina > 1 ? {
+        "url": `/publicaciones/usuario/${id_usuario}?pagina=${pagina - 1}&limite=${limite}`,
         "exists": true
       } : {
         "url": null,
@@ -71,7 +71,9 @@ const obtenerPublicacionesPorUsuarioService = async (id_usuario, page = 1, limit
       "publicaciones": publicacionesPorUsuario.rows,
     };
   } catch (error) {
+    console.log('Error al obtener publicaciones por usuario:', error);
     throw new Error('Error al obtener publicaciones por usuario: ' + error.message);
+
   }
 };
 
@@ -88,17 +90,50 @@ const obtenerPublicacionPorIdService = async (id_publicacion) => {
 };
 
 /**
- * Función para obtener todas las publicaciones.
- * @returns {Promise<Array>} Lista de todas las publicaciones.
+ * Función para obtener todas las publicaciones con paginación.
+ * @param {number} page - Número de la página.
+ * @param {number} limit - Cantidad de publicaciones por página.
+ * @returns {Promise<Object>} Lista paginada de publicaciones.
  */
-const obtenerTodasLasPublicacionesService = async () => {
-  // Busca todas las publicaciones en la base de datos, ordenadas de más recientes a más antiguas
-  const publicaciones = await Publicacion.findAll({
-    order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
-  });
+const obtenerTodasLasPublicacionesService = async (pagina = 1, limite = 10) => {
+  try {
+    const offset = (pagina - 1) * limite;
 
-  return publicaciones; // Devuelve la lista de todas las publicaciones
+    // Busca todas las publicaciones con paginación y ordenadas por fecha
+    const publicaciones = await Publicacion.findAndCountAll({
+      limite,
+      offset,
+      order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
+    });
+
+    const totalPaginas = Math.ceil(publicaciones.count / limite);
+
+    return {
+      "total": publicaciones.count,
+      "pagina": pagina,
+      "limite": limite,
+      "total_paginas": totalPaginas,
+      "pagina_siguiente": pagina < totalPaginas ? {
+        "url": `/publicaciones?pagina=${pagina + 1}&limite=${limite}`,
+        "exists": true
+      } : {
+        "url": null,
+        "exists": false
+      },
+      "pagina_anterior": pagina > 1 ? {
+        "url": `/publicaciones?pagina=${pagina - 1}&limite=${limite}`,
+        "exists": true
+      } : {
+        "url": null,
+        "exists": false
+      },
+      "publicaciones": publicaciones.rows,
+    };
+  } catch (error) {
+    throw new Error('Error al obtener todas las publicaciones: ' + error.message);
+  }
 };
+
 
 /**
  * Función para actualizar completamente una publicación (PUT).
