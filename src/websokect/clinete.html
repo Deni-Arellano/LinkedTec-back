@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+        }
+        #chat-list {
+            width: 30%;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+        }
+        #chat-container {
+            width: 70%;
+            display: none; /* Ocultar inicialmente */
+            flex-direction: column;
+        }
+        #chat-header {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        #chat {
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+            flex-grow: 1;
+        }
+        #message {
+            width: calc(100% - 100px);
+        }
+        #send {
+            width: 80px;
+        }
+        .chat-button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            text-align: left;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .chat-button:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-list">
+        <h2>Chats</h2>
+        <button class="chat-button" onclick="openChat(2, 'Chat 2')">Chat 2</button>
+        <button class="chat-button" onclick="openChat(3, 'Chat 3')">Chat 3</button>
+        <button class="chat-button" onclick="openChat(100, 'Chat 4')">Chat 4</button>
+    </div>
+    <div id="chat-container">
+        <div id="chat-header"></div>
+        <div id="chat"></div>
+        <input type="text" id="message" placeholder="Escribe un mensaje...">
+        <button id="send">Enviar</button>
+    </div>
+
+    <script>
+        let currentChatId = null;
+        let userId = 1; // Establecer el ID del usuario directamente
+        let socket;
+
+        function openChat(chatId, chatName) {
+            currentChatId = chatId;
+            console.log(`Chat ${chatId} seleccionado. Usuario ID: ${userId}`);
+            document.getElementById('chat-header').textContent = `Estás en ${chatName}`;
+            document.getElementById('chat').innerHTML = ''; // Limpiar el chat actual
+            document.getElementById('chat-container').style.display = 'flex'; // Mostrar el contenedor del chat
+
+            // Cerrar la conexión WebSocket anterior si existe
+            if (socket) {
+                socket.close();
+            }
+
+            // Crear una nueva conexión WebSocket con el userId en la URL
+            socket = new WebSocket(`ws://localhost:8080/chat/${chatId}?userId=${userId}`);
+
+            socket.addEventListener('open', function (event) {
+                console.log('Conectado al servidor WebSocket');
+            });
+
+            socket.addEventListener('message', function (event) {
+                const chat = document.getElementById('chat');
+                const message = document.createElement('div');
+                message.textContent = event.data;
+                chat.appendChild(message);
+                chat.scrollTop = chat.scrollHeight;
+            });
+
+            socket.addEventListener('close', function (event) {
+                console.log('Desconectado del servidor WebSocket');
+            });
+        }
+
+        document.getElementById('send').addEventListener('click', function () {
+            const input = document.getElementById('message');
+            const message = input.value;
+            if (message && currentChatId !== null) {
+                console.log(`Enviando mensaje desde el usuario ${userId} en el chat ${currentChatId}`);
+                socket.send(JSON.stringify({ clientId: userId, chatId: currentChatId, message }));
+                input.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
