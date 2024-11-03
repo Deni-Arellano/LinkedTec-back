@@ -4,6 +4,6 @@ const router = express.Router();
 const reaccionarController  = require('../controllers/reaccion_controller');
 
 // Ruta para reaccionar a una publicación
-router.post('/reaccionar', reaccionarController.reaccionar);
+router.post('/', reaccionarController.reaccionar);
 
 module.exports = router;
