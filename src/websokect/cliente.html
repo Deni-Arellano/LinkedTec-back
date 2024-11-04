@@ -34,18 +34,18 @@
 
             ws.onopen = () => {
                 console.log(`Conectado al servidor WebSocket como usuario ID: ${userId}`);
+                ws.send(JSON.stringify({ userId: userId }));
             };
 
             ws.onmessage = (event) => {
-                console.log('Mensaje recibido del servidor:', event.data); // Log del mensaje recibido
+                console.log('Mensaje recibido del servidor:', event.data);
                 const mensaje = JSON.parse(event.data);
-                console.log('Notificación recibida:', mensaje);
-
-                // Verifica si la notificación es del tipo 'empleo' y para este usuario
-                if (mensaje.tipo === 'empleo' && mensaje.id_usuario_destinatario == userId) {
-                    mostrarNotificacion(mensaje.mensaje);
-                } else {
-                    console.log(`No es para el usuario ID: ${userId} o no es del tipo 'empleo'`);
+                
+                if (mensaje.tipo === 'empleo' && mensaje.id_usuario == userId) {
+                    mostrarNotificacion(`Empleo: ${mensaje.mensaje}`);
+                } 
+                else if (mensaje.tipo === 'noticia') {
+                    mostrarNotificacion(`Noticia: ${mensaje.mensaje}`);
                 }
             };
 
@@ -57,7 +57,6 @@
                 console.error('Error en la conexión WebSocket:', error);
             };
         }
-
 
         function mostrarNotificacion(mensaje) {
             const notificacionesDiv = document.getElementById('notificaciones');

@@ -4,20 +4,12 @@ const { manejodeconexion_notificaciones } = require('../controllers/notificacion
 
 // Configura el servidor WebSocket en el puerto 8080
 const wss = new WebSocket.Server({ port: 8080 });
-global.wss = wss;
 
+// Maneja una única conexión que se suscribe a ambos tipos de eventos
 wss.on('connection', (ws) => {
-    
-    ws.on('message', (message) => {
-        
-        const { tipo } = JSON.parse(message);
-
-        if (tipo === 'mensajes') {
-            manejodeconexion(wss, ws);
-        } else if (tipo === 'notificaciones') {
-            manejodeconexion_notificaciones(wss, ws);
-        }
-    });
+  // Pasar la conexión WebSocket a ambos controladores
+  manejodeconexion(wss, ws); // Configura para escuchar y manejar mensajes
+  manejodeconexion_notificaciones(wss, ws); // Configura para escuchar y manejar notificaciones
 });
 
 console.log('Servidor WebSocket en funcionamiento en ws://localhost:8080');

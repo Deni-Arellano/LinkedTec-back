@@ -3,53 +3,45 @@ const EmpleoNotFoundError = require('../middlewares/exceptions/EmpleoNotFoundErr
 const UserNotFoundError = require('../middlewares/exceptions/UserNotFoundError');
 const UpdateConflictError = require('../middlewares/exceptions/UpdateConflictError');
 const Usuario = require('../models/usuarios');
-const NotificacionService = require('./services_notificaciones');
-const { Op } = require('sequelize');
-
+const { obtenerIdsUsuariosEmpleo } = require('../services/services_notificaciones');
+const Notificaciones = require('../models/notificaciones');
+const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 
 /**
-
-@async
-Servicio para crear un nuevo empleo.
-@param {Object} datosEmpleo - Los datos del nuevo empleo.
-@returns {Promise} Devuelve el empleo creado o un error.
-*/
+ * @async
+ * Servicio para crear un nuevo empleo.
+ * @param {Object} datosEmpleo - Los datos del nuevo empleo.
+ * @returns {Promise<Object>} Devuelve el empleo creado o un error.
+ */
 exports.crearEmpleo = async (datosEmpleo) => {
   try {
-    const empleo = await Empleo.create(datosEmpleo);
+      const empleo = await Empleo.create(datosEmpleo);
 
-    const usuarios = await Usuario.findAll({
-      where: {
-        role: {
-          [Op.or]: ['Egresados', 'Estudiantes']
-        }
-      }
-    });
+      const mensajeNotificacion = `Se ha publicado una nueva oferta de empleo: "${empleo.titulo}"`;
 
-    if (usuarios.length > 0) {
-      const notificacionesPromises = usuarios.map(async usuario => {
-        const notificacionData = {
+      const notificacionCreada = await Notificaciones.create({
           tipo: 'empleo',
-          mensaje: `Se ha creado un nuevo empleo: ${empleo.titulo}`,
-          id_usuario_emisor: datosEmpleo.id_usuario,
-          id_usuario_destinatario: usuario.id,
-          id_referencia: empleo.id,
-        };
-
-        const notificacionCreada = await NotificacionService.crearNotificacion(notificacionData);
-
-        await NotificacionService.enviarNotificacion(global.wss, notificacionCreada);
+          mensaje: mensajeNotificacion,
+          id_creador: datosEmpleo.id_usuario,
+          id_referencia_tipo: empleo.id_empleo,
+          fecha_creacion: new Date(),
       });
 
-      await Promise.all(notificacionesPromises);
-    }
+      const idsUsuarios = await obtenerIdsUsuariosEmpleo();
 
-    return { success: true, data: empleo };
+      await Promise.all(idsUsuarios.map(id_usuario => 
+          NotificacionesUsuarios.create({
+              id_notificacion: notificacionCreada.id_notificacion,
+              id_usuario: id_usuario
+          })
+      ));
 
+      return { success: true, data: empleo };
   } catch (error) {
-    return { success: false, error: error.message };
+      return { success: false, error: error.message };
   }
 };
+
 
 
 /**
