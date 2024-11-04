@@ -5,7 +5,15 @@ const {validarEdicionDocente} = require('../middlewares/validations/validaciones
 const {validarNumeroDocente} = require('../middlewares/validations/validaciones_docentes');
 const {validarDocenteExistente} = require('../middlewares/validations/validaciones_docentes');
 const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,validarUsuarioEnUso,validarUsuariosExistentes,validarUsuarioEnUsoPlanB} = require('../middlewares/validations/validaciones_usuarios');
-
+const docentesService = require('../services/services_docentes');
+const {getAllDocentesService} = require('../services/services_docentes');
+const {getDocenteByIdService} = require('../services/services_docentes');
+const {getAllDocentesInfoService} = require('../services/services_docentes');
+const {getDocentePerfilByIdService} = require('../services/services_docentes');
+const {getInfoDocenteByIdService} = require('../services/services_docentes');
+const {getUsuariRolByIdService} = require('../services/services_docentes');
+const {editDocenteService} = require('../services/services_docentes');
+const {deleteDocenteService} = require('../services/services_docentes');
 /**
  * Crea un nuevo docente y usuario en la base de datos.
  * 
@@ -20,56 +28,31 @@ const {validarUsuarioExistente, validarCorreoExistente,validarRegistroUsuario,va
  * @throws {Error} - Lanza un error si ocurre algún problema al crear el docente o usuario.
  */
 
+
 const createDocente = async (req, res) => {
     try {
         const { usuario, docente } = req.body;
 
+        // Validaciones iniciales
         const { error: errorDocente } = validarRegistroDocente(docente);
         if (errorDocente) {
             return res.status(400).json({ error: errorDocente.details[0].message });
         }
 
-        const {error} = await validarRegistroUsuario(usuario);
+        const { error } = await validarRegistroUsuario(usuario);
         if (error) {
-          return res.status(400).json({ message: error.details[0].message });
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         await validarCorreoExistente(usuario.correo);
 
         await validarNumeroDocente(docente.numero_empleado);
-    
-        const nuevoUsuario = await Usuario.create(usuario);
 
-        console.log("Nuevo usuario creado:", nuevoUsuario);
+        const nuevoDocente = await docentesService.createDocente(usuario, docente);
 
-        await validarUsuarioEnUsoPlanB(nuevoUsuario.id);
+        res.status(201).json(nuevoDocente);
 
-        const nuevoDocente = await Docente.create({
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
-            numero_empleado: docente.numero_empleado,
-            academia: docente.academia,
-            id: nuevoUsuario.id 
-        });
-
-        const docenteCompleto = {
-            id: nuevoDocente.id,
-            nombre: nuevoUsuario.nombre,
-            apellido_paterno: nuevoUsuario.apellido_paterno,
-            apellido_materno: nuevoUsuario.apellido_materno,
-            rol: nuevoUsuario.role,
-            biografia: nuevoUsuario.biografia,
-            telefono: nuevoUsuario.telefono,
-            correo: nuevoUsuario.correo,
-            fecha_nacimiento: nuevoUsuario.fecha_nacimiento,
-            sexo: nuevoUsuario.sexo,
-            ultimo_nivel_estudios: nuevoDocente.ultimo_nivel_estudios,
-            numero_empleado: nuevoDocente.numero_empleado,
-            academia: nuevoDocente.academia
-        };
-
-        res.status(201).json(docenteCompleto);
     } catch (error) {
-        console.error(`Error capturado: ${error.message}`); // Mensaje de error general
 
         if (error.errors) {
             error.errors.forEach(err => {
@@ -81,9 +64,7 @@ const createDocente = async (req, res) => {
             return res.status(400).json({ error: "El correo ya está en uso." });
         } else if (error.name === 'UserExistsError') {
             return res.status(400).json({ error: "El usuario ya existe." });
-        } else if (error.name === 'UserNotFoundError') {
-            return res.status(400).json({ error: "El usuario no existe." });
-        }else if (error.name === 'ValidationNumberEmployeeError') {
+        } else if (error.name === 'ValidationNumberEmployeeError') {
             return res.status(400).json({ error: "El número de empleado ya está en uso." });
         } else {
             res.status(500).json({ error: error.message });
@@ -111,47 +92,22 @@ const getAllDocentes = async (req, res) => {
         const pagina = parseInt(req.query.pagina) || 1; 
         const limite = parseInt(req.query.limite) || 10; 
 
-        const offset = (pagina - 1) * limite;
-        const limit = limite;
-
-        const { rows: docentes, count } = await Docente.findAndCountAll({
-            include: [Usuario], 
-            offset, 
-            limit 
-        });
-
-        await validarUsuariosExistentes(docentes);
-
-        const docentesCompletos = docentes.map(docente => ({
-            id: docente.id,
-            nombre: docente.Usuario.nombre,
-            apellido_paterno: docente.Usuario.apellido_paterno,
-            apellido_materno: docente.Usuario.apellido_materno,
-            rol: docente.Usuario.role,
-            biografia: docente.Usuario.biografia,
-            telefono: docente.Usuario.telefono,
-            correo: docente.Usuario.correo,
-            fecha_nacimiento: docente.Usuario.fecha_nacimiento,
-            sexo: docente.Usuario.sexo,
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
-            numero_empleado: docente.numero_empleado,
-            academia: docente.academia
-        }));
+        const { docentesCompletos, count } = await getAllDocentesService(pagina, limite);
 
         const totalPaginas = Math.ceil(count / limite);
 
         const response = {
-            total: count, 
+            total: count,  
             pagina: pagina, 
             limite: limite, 
-            total_paginas: totalPaginas, 
-            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null, 
+            total_paginas: totalPaginas,  
+            pagina_siguiente: pagina < totalPaginas ? pagina + 1 : null,
             url_pagina_siguiente: pagina < totalPaginas ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina + 1}&limite=${limite}` : null,
-            pagina_anterior: pagina > 1 ? pagina - 1 : null, 
+            pagina_anterior: pagina > 1 ? pagina - 1 : null,
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            docentes: docentesCompletos 
+            docentes: docentesCompletos,
         };
 
         res.status(200).json(response);
@@ -163,8 +119,6 @@ const getAllDocentes = async (req, res) => {
         }
     }
 };
-
-
 
 /**
  * @function getDocenteById
@@ -178,17 +132,8 @@ const getAllDocentes = async (req, res) => {
 
 const getDocenteById = async (req, res) => {
     try {
-        const id = req.params.id;
-        const docente = await Docente.findOne({
-            where: { id: id },
-            include: [Usuario]
-        });
-
-        if (!docente) {
-            return res.status(404).json({ error: "Docente no encontrado." });
-        }
-
-        await validarUsuarioExistente(docente.id);
+        const id = req.params.id; 
+        const docente = await getDocenteByIdService(id); 
 
         const docenteCompleto = {
             id: docente.id,
@@ -204,14 +149,16 @@ const getDocenteById = async (req, res) => {
             sexo: docente.Usuario.sexo,
             ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
             numero_empleado: docente.numero_empleado,
-            academia: docente.academia
+            academia: docente.academia,
         };
 
-        res.status(200).json(docenteCompleto);
+        res.status(200).json(docenteCompleto); 
     } catch (error) {
-        if (error.name === 'UserNotFoundError') {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }else {res.status(500).json({ error: error.message });}
+        if (error.message === "Docente no encontrado.") {
+            return res.status(404).json({ error: "Docente no encontrado." }); 
+        } else {
+            res.status(500).json({ error: error.message }); 
+        }
     }
 };
 
@@ -232,22 +179,7 @@ const getAllDocentesInfo = async (req, res) => {
         const pagina = parseInt(req.query.pagina) || 1; 
         const limite = parseInt(req.query.limite) || 10; 
 
-        const offset = (pagina - 1) * limite;
-
-        const { rows: docentes, count } = await Docente.findAndCountAll({
-            include: [Usuario], 
-            offset, 
-            limit: limite 
-        });
-
-        await validarUsuariosExistentes(docentes);
-
-        const docentesConInfoUnica = docentes.map(docente => ({
-            id: docente.id, // ID del docente
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
-            numero_empleado: docente.numero_empleado,
-            academia: docente.academia
-        }));
+        const { docentes, count } = await getAllDocentesInfoService(pagina, limite);
 
         const totalPaginas = Math.ceil(count / limite);
 
@@ -262,15 +194,15 @@ const getAllDocentesInfo = async (req, res) => {
             url_pagina_anterior: pagina > 1 ? `${req.protocol}://${req.get('host')}/usuarios/docentes/info?pagina=${pagina - 1}&limite=${limite}` : null,
             exists_pagina_siguiente: pagina < totalPaginas,
             exists_pagina_anterior: pagina > 1,
-            docentes: docentesConInfoUnica 
+            docentes: docentes, 
         };
 
-        res.status(200).json(response);
+        res.status(200).json(response); 
     } catch (error) {
         if (error.name === 'UserNotFoundError') {
             return res.status(404).json({ error: "Usuarios no encontrados." });
         } else {
-            res.status(500).json({ error: error.message });
+            res.status(500).json({ error: error.message }); 
         }
     }
 };
@@ -288,37 +220,18 @@ const getAllDocentesInfo = async (req, res) => {
 const getDocentePerfilById = async (req, res) => {
     try {
         const id = req.params.id;
-        const docente = await Docente.findOne({
-            where: { id: id },
-            include: [Usuario] 
-        });
 
-        if (!docente) {
-            return res.status(404).json({ error: "Docente no encontrado." });
-        }
+        const perfilDocente = await getDocentePerfilByIdService(id);
 
-        await validarUsuarioExistente(docente.id);
-
-        const perfilDocente = {
-            nombre: docente.Usuario.nombre,
-            apellido_paterno: docente.Usuario.apellido_paterno,
-            apellido_materno: docente.Usuario.apellido_materno,
-            rol: docente.Usuario.role,
-            academia: docente.academia,
-            biografia: docente.Usuario.biografia,
-            telefono: docente.Usuario.telefono,
-            correo: docente.Usuario.correo,
-            fecha_nacimiento: docente.Usuario.fecha_nacimiento,
-            sexo: docente.Usuario.sexo
-        };
-
-        res.status(200).json(perfilDocente);
+        res.status(200).json(perfilDocente); 
     } catch (error) {
-        if (error.name === 'UserNotFoundError') {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }else{res.status(500).json({ error: error.message });}
+        if (error.message === 'Docente no encontrado.') {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
-};
+};      
 
 
 /**
@@ -334,30 +247,19 @@ const getDocentePerfilById = async (req, res) => {
 const getinfoDocenteById = async (req, res) => {
     try {
         const id = req.params.id;
-        const docente = await Docente.findOne({
-            where: { id: id }, 
-        });
 
-        if (!docente) {
-            return res.status(404).json({ error: "Docente no encontrado." });
-        }
+        const docenteInfoUnica = await getInfoDocenteByIdService(id);
 
-        await validarUsuarioExistente(docente.id);
-
-        const docenteInfoUnica = {
-            id: docente.id,
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
-            numero_empleado: docente.numero_empleado,
-            academia: docente.academia
-        };
-
-        res.status(200).json(docenteInfoUnica);
+        res.status(200).json(docenteInfoUnica); 
     } catch (error) {
-        if (error.name === 'UserNotFoundError') {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }else{res.status(500).json({ error: error.message });}
+        if (error.message === 'Docente no encontrado.') {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        } else {
+            res.status(500).json({ error: error.message }); 
+        }
     }
 };
+
 
 /**
  * @function getUsuariRolById
@@ -372,38 +274,16 @@ const getinfoDocenteById = async (req, res) => {
 const getUsuariRolById = async (req, res) => {
     try {
         const id = req.params.id;
-        const docente = await Docente.findOne({
-            where: { id: id }, 
-            include: [Usuario] 
-        });
 
-        if (!docente) {
-            return res.status(404).json({ error: "Docente no encontrado." });
-        }
+        const respuesta = await getUsuariRolByIdService(id);
 
-        await validarUsuarioExistente(docente.id);
-
-        const respuesta = {
-            id: docente.id,
-            nombre: docente.Usuario.nombre,
-            apellido_paterno: docente.Usuario.apellido_paterno,
-            apellido_materno: docente.Usuario.apellido_materno,
-            rol: docente.Usuario.role,
-            biografia: docente.Usuario.biografia,
-            telefono: docente.Usuario.telefono,
-            correo: docente.Usuario.correo,
-            fecha_nacimiento: docente.Usuario.fecha_nacimiento,
-            sexo: docente.Usuario.sexo,
-            ultimo_nivel_estudios: docente.ultimo_nivel_estudios,
-            numero_empleado: docente.numero_empleado,
-            academia: docente.academia,
-        };
-
-        res.status(200).json(respuesta);
+        res.status(200).json(respuesta); 
     } catch (error) {
-        if (error.name === 'UserNotFoundError') {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }else {res.status(500).json({ error: error.message });}
+        if (error.message === 'Docente no encontrado.') {
+            return res.status(404).json({ error: "Docente no encontrado." });
+        } else {
+            res.status(500).json({ error: error.message }); 
+        }
     }
 };
 
@@ -426,59 +306,44 @@ const editDocente = async (req, res) => {
         const { usuario, docente } = req.body;
         const docenteId = req.params.id; 
 
-        await validarDocenteExistente(docenteId);
+        const response = await editDocenteService(docenteId, usuario, docente);
 
-        const { error } = await validarEdicionDocente(docente); 
-        if (error) {
-            return res.status(400).json({ error: error.details[0].message });
-        }
-
-        const usuarioExistente = await Usuario.findOne({ where: { id: docenteId } });
-
-        if (usuarioExistente) {
-            usuarioExistente.nombre = usuario.nombre || usuarioExistente.nombre;
-            usuarioExistente.apellido_paterno = usuario.apellido_paterno || usuarioExistente.apellido_paterno;
-            usuarioExistente.apellido_materno = usuario.apellido_materno || usuarioExistente.apellido_materno;
-            usuarioExistente.correo = usuario.correo || usuarioExistente.correo;
-            usuarioExistente.fecha_nacimiento = usuario.fecha_nacimiento || usuarioExistente.fecha_nacimiento;
-            usuarioExistente.contraseña = usuario.contraseña || usuarioExistente.contraseña;
-            usuarioExistente.telefono = usuario.telefono || usuarioExistente.telefono;
-            usuarioExistente.sexo = usuario.sexo || usuarioExistente.sexo;
-            usuarioExistente.biografia = usuario.biografia || usuarioExistente.biografia;
-            usuarioExistente.role = usuario.role || usuarioExistente.role;
-
-            await usuarioExistente.save();
-        }
-
-        const docenteExistente = await Docente.findOne({ where: { id: docenteId } });
-
-        if (docenteExistente) {
-            docenteExistente.numero_empleado = docente.numero_empleado || docenteExistente.numero_empleado;
-            docenteExistente.ultimo_nivel_estudios = docente.ultimo_nivel_estudios || docenteExistente.ultimo_nivel_estudios;
-            docenteExistente.academia = docente.academia || docenteExistente.academia;
-
-            await docenteExistente.save();
-        } else {
-            return res.status(404).json({ error: "Docente no encontrado" });
-        }
-
-        res.status(200).json({ message: 'Docente actualizado correctamente' });
+        res.status(200).json(response); 
     } catch (error) {
-        if (error.name === 'DocenteNotFoundError') {
-            return res.status(404).json({ error: "Docente no encontrado." });
-        }else {res.status(500).json({ error: error.message });}      // Capturar el error de validación con más detall
+        if (error.message === 'Docente no encontrado.' || error.message === 'Usuario no encontrado.') {
+            return res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: error.message }); 
+        }
     }
 };
 
+const deleteDocente = async (req, res) => {
+    try {
+        const id = req.params.id;
 
+        const result = await deleteDocenteService(id);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error al eliminar el docente:', error);
+
+        if (error.message === 'Docente no encontrado') {
+            return res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Error al eliminar el docente: ' + error.message });
+        }
+    }
+};
 
 module.exports = {
     createDocente,
     getAllDocentes,
     getDocenteById,
-    getAllDocentesInfo, // Exportar la nueva función
+    getAllDocentesInfo, 
     getDocentePerfilById,
     getinfoDocenteById,
     getUsuariRolById,
-    editDocente
+    editDocente,
+    deleteDocente
 };

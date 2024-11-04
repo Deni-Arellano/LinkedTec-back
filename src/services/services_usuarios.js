@@ -1,5 +1,10 @@
 const Usuario = require('../models/usuarios');
 const sequelize = require('../config/database'); // Asegúrate de importar sequelize desde tus modelos
+const Docente = require('../models/docentes');
+const Estudiante = require('../models/estudiantes');
+const Egresado = require('../models/egresados');
+const Reclutador = require('../models/reclutadores');
+
 /**
  * Crea un nuevo usuario en la base de datos.
  * @param {Object} usuarioData - Objeto que contiene los datos del usuario a crear.
@@ -104,9 +109,34 @@ const obtenerTodosLosUsuarios = async () => {
   }
 };
 
+const deleteUsuario = async (id) => {
+  const usuario = await Usuario.findByPk(id);
+  if (!usuario) {
+      throw new Error('Usuario no encontrado');
+  }
+
+  if (usuario.role === 'Docentes') {
+      await Docente.destroy({ where: { id: usuario.id } });
+  } else if (usuario.role === 'Estudiantes') {
+      await Estudiante.destroy({ where: { id: usuario.id } });
+  } else if (usuario.role === 'Egresados') {
+      await Egresado.destroy({ where: { id: usuario.id } });
+  } else if (usuario.role === 'Reclutadores') {
+      await Reclutador.destroy({ where: { id: usuario.id } });
+  } else {
+      throw new Error('Rol no válido');
+  }
+
+  await Usuario.destroy({ where: { id: usuario.id } });
+
+  return { message: `Usuario con ID ${id} y rol ${usuario.role} eliminado con éxito` };
+};
+
+
 // Exporta las funciones para usarlas en otras partes de la aplicación
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
-  obtenerTodosLosUsuarios
+  obtenerTodosLosUsuarios,
+  deleteUsuario
 };
