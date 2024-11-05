@@ -1,12 +1,11 @@
 const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Conexión a la base de datos
+const sequelize = require('../config/database'); 
 const Usuario = require('../models/usuarios');
-
 
 class Mensaje extends Model {}
 
 Mensaje.init({
-  id: { // Cambia el nombre del campo a 'id' para coincidir con la tabla
+  id: { 
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
@@ -34,19 +33,18 @@ Mensaje.init({
     allowNull: false,
   },
   fecha_envio: {
-    type: DataTypes.DATE, // Cambia de TIMESTAMP a DATE
-    defaultValue: DataTypes.NOW, // La fecha y hora se autogeneran al guardar
-    allowNull: false,
-  },
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  }
 }, {
   sequelize,
-  modelName: 'mensaje',
-  tableName: 'mensajes', 
-  timestamps: false, 
+  modelName: 'Mensaje',
+  tableName: 'mensajes',
+  timestamps: false
 });
 
-// Relacionar el mensaje con el remitente y destinatario
-Mensaje.belongsTo(Usuario, { as: 'remitente', foreignKey: 'id_remitente' });
-Mensaje.belongsTo(Usuario, { as: 'destinatario', foreignKey: 'id_destinatario' });
+// Ajuste de las asociaciones para que sean correctas
+Mensaje.belongsTo(Usuario, { foreignKey: 'id_remitente', as: 'remitente' });
+Mensaje.belongsTo(Usuario, { foreignKey: 'id_destinatario', as: 'destinatario' });
 
 module.exports = Mensaje;

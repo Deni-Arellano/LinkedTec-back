@@ -8,15 +8,11 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-        }
-        #chat-list {
-            width: 30%;
-            border-right: 1px solid #ccc;
-            padding: 10px;
+            flex-direction: column;
         }
         #chat-container {
-            width: 70%;
-            display: none; /* Ocultar inicialmente */
+            width: 100%;
+            display: flex;
             flex-direction: column;
         }
         #chat-header {
@@ -29,6 +25,8 @@
             overflow-y: scroll;
             padding: 10px;
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         #message {
             width: calc(100% - 100px);
@@ -36,28 +34,33 @@
         #send {
             width: 80px;
         }
-        .chat-button {
-            display: block;
-            width: 100%;
+        .message {
+            max-width: 60%;
             margin-bottom: 10px;
             padding: 10px;
-            text-align: left;
-            background-color: #f1f1f1;
-            border: 1px solid #ccc;
-            cursor: pointer;
+            border-radius: 10px;
+            word-wrap: break-word;
+            position: relative;
         }
-        .chat-button:hover {
-            background-color: #ddd;
+        .message.sent {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+        }
+        .message.received {
+            align-self: flex-start;
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #888;
+            text-align: right;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="chat-list">
-        <h2>Chats</h2>
-        <button class="chat-button" onclick="openChat(2, 'Chat 2')">Chat 2</button>
-        <button class="chat-button" onclick="openChat(3, 'Chat 3')">Chat 3</button>
-        <button class="chat-button" onclick="openChat(100, 'Chat 4')">Chat 4</button>
-    </div>
+    <button onclick="window.location.href='datos_usarios.html'">Regresar</button>
     <div id="chat-container">
         <div id="chat-header"></div>
         <div id="chat"></div>
@@ -66,50 +69,89 @@
     </div>
 
     <script>
-        let currentChatId = null;
-        let userId = 1; // Establecer el ID del usuario directamente
-        let socket;
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentChatId = null;
+            let userId = 1; // Establecer el ID del usuario directamente
+            let socket;
 
-        function openChat(chatId, chatName) {
-            currentChatId = chatId;
-            console.log(`Chat ${chatId} seleccionado. Usuario ID: ${userId}`);
-            document.getElementById('chat-header').textContent = `Estás en ${chatName}`;
-            document.getElementById('chat').innerHTML = ''; // Limpiar el chat actual
-            document.getElementById('chat-container').style.display = 'flex'; // Mostrar el contenedor del chat
+            // Obtener parámetros de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get('chatId');
+            const chatName = urlParams.get('chatName');
 
-            // Cerrar la conexión WebSocket anterior si existe
-            if (socket) {
-                socket.close();
+            if (chatId && chatName) {
+                openChat(chatId, chatName);
             }
 
-            // Crear una nueva conexión WebSocket con el userId en la URL
-            socket = new WebSocket(`ws://localhost:8080/chat/${chatId}?userId=${userId}`);
+            function openChat(chatId, chatName) {
+                currentChatId = chatId;
+                console.log(`Chat ${chatId} seleccionado. Usuario ID: ${userId}`);
+                document.getElementById('chat-header').textContent = `Estás en ${chatName}`;
+                document.getElementById('chat').innerHTML = ''; // Limpiar el chat actual
+                document.getElementById('chat-container').style.display = 'flex'; // Mostrar el contenedor del chat
 
-            socket.addEventListener('open', function (event) {
-                console.log('Conectado al servidor WebSocket');
+                // Cerrar la conexión WebSocket anterior si existe
+                if (socket) {
+                    socket.close();
+                }
+
+                // Crear una nueva conexión WebSocket con el userId en la URL
+                socket = new WebSocket(`ws://localhost:8080/chat/${chatId}?userId=${userId}`);
+
+                socket.addEventListener('open', function (event) {
+                    console.log('Conectado al servidor WebSocket');
+                });
+
+                socket.addEventListener('message', function (event) {
+                    const data = JSON.parse(event.data);
+                    if (data.messages) {
+                        data.messages.forEach(msg => {
+                            displayMessage(msg.mensaje, msg.id_remitente === userId ? 'sent' : 'received', new Date(msg.fecha_envio));
+                        });
+                    } else {
+                        displayMessage(data.message, data.from === 'server' ? 'received' : 'sent', new Date());
+                    }
+                });
+
+                socket.addEventListener('close', function (event) {
+                    console.log('Desconectado del servidor WebSocket');
+                });
+            }
+
+            document.getElementById('send').addEventListener('click', function () {
+                const input = document.getElementById('message');
+                const message = input.value;
+                if (message && currentChatId !== null) {
+                    console.log(`Enviando mensaje desde el usuario ${userId} en el chat ${currentChatId}`);
+                    const timestamp = new Date();
+                    socket.send(JSON.stringify({ clientId: userId, chatId: currentChatId, message }));
+
+                    displayMessage(message, 'sent', timestamp);
+                    input.value = '';
+                }
             });
 
-            socket.addEventListener('message', function (event) {
+            function displayMessage(message, type, timestamp) {
                 const chat = document.getElementById('chat');
-                const message = document.createElement('div');
-                message.textContent = event.data;
-                chat.appendChild(message);
+                const messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                messageElement.classList.add('message', type);
+
+                const timestampElement = document.createElement('div');
+                timestampElement.textContent = timestamp.toLocaleString();
+                timestampElement.classList.add('timestamp');
+
+                messageElement.appendChild(timestampElement);
+                chat.appendChild(messageElement);
                 chat.scrollTop = chat.scrollHeight;
-            });
-
-            socket.addEventListener('close', function (event) {
-                console.log('Desconectado del servidor WebSocket');
-            });
-        }
-
-        document.getElementById('send').addEventListener('click', function () {
-            const input = document.getElementById('message');
-            const message = input.value;
-            if (message && currentChatId !== null) {
-                console.log(`Enviando mensaje desde el usuario ${userId} en el chat ${currentChatId}`);
-                socket.send(JSON.stringify({ clientId: userId, chatId: currentChatId, message }));
-                input.value = '';
             }
+
+            // Cerrar la conexión WebSocket cuando se navega fuera de la página
+            window.addEventListener('beforeunload', function() {
+                if (socket) {
+                    socket.close();
+                }
+            });
         });
     </script>
 </body>
