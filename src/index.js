@@ -3,6 +3,14 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const ftpClient = require('./config/ftp');
 require('dotenv').config();
+const WebSocket = require('ws');
+
+
+
+
+
+
+
 
 // Rutas
 const comentariosRoutes = require('./routes/routes_comentarios');
@@ -18,9 +26,8 @@ const noticiasRoutes = require('./routes/routes_noticias');
 const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
-const loginRoutes = require('./routes/routes_login');
 const routerImagenes = require('./routes/subidas_cloudinary');
-const server = require('./websokect/server');
+
 
 const app = express();
 const port = 3000;
@@ -45,7 +52,6 @@ app.use('/noticias', noticiasRoutes);
 app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
-app.use('/acceso', loginRoutes); 
 app.use('/subidas', routerImagenes);
 
 // Ruta de prueba
@@ -64,6 +70,39 @@ async function testFTPConnection() {
     await ftpClient.disconnect();
   }
 }
+
+
+const wss = new WebSocket.Server({ port: 8080 });
+console.log('Servidor WebSocket en funcionamiento en ws://localhost:8080');
+
+
+wss.on('connection', (ws) => {
+    console.log('Nuevo cliente conectado');
+
+ 
+    ws.on('message', (message) => {
+        try {
+    
+
+            
+        } catch (error) {
+            console.error('Error al manejar el mensaje:', error);
+            ws.send(JSON.stringify({ error: 'Error interno del servidor' }));
+            ws.close();
+        }
+    });
+
+    
+    ws.on('close', () => {
+        console.log('Cliente desconectado');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en la conexión con el cliente:', error);
+    });
+});
+
+
 
 // Sincronización de la base de datos, prueba FTP y servidor
 sequelize.sync()
