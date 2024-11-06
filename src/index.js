@@ -91,8 +91,6 @@ wss.on('connection', (ws) => {
             ws.close();
         }
     });
-
-    
     ws.on('close', () => {
         console.log('Cliente desconectado');
     });
@@ -101,6 +99,85 @@ wss.on('connection', (ws) => {
         console.error('Error en la conexión con el cliente:', error);
     });
 });
+
+
+
+
+const wssNotificaciones = new WebSocket.Server({ port: 8081 });
+console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
+
+wssNotificaciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de notificaciones');
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+
+            // Manejo de eventos específicos para notificaciones
+            if (data.type === 'nueva_notificacion') {
+                enviarNotificacion(ws, data); // Función para enviar notificación específica
+            }
+
+        } catch (error) {
+            console.error('Error al manejar notificación:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en notificaciones' }));
+            ws.close();
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Cliente desconectado del servidor de notificaciones');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en conexión de notificaciones:', error);
+    });
+});
+
+function enviarNotificacion(ws, data) {
+    // Aquí envías notificaciones personalizadas al cliente
+    ws.send(JSON.stringify({ tipo: 'notificacion', contenido: data.contenido }));
+}
+
+
+
+const wssReacciones = new WebSocket.Server({ port: 8082 });
+console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
+
+wssReacciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de reacciones');
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+
+            // Manejo de eventos específicos para reacciones
+            if (data.type === 'nueva_reaccion') {
+                notificarReaccion(ws, data); // Función para gestionar reacciones
+            }
+
+        } catch (error) {
+            console.error('Error al manejar reacción:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en reacciones' }));
+            ws.close();
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Cliente desconectado del servidor de reacciones');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en conexión de reacciones:', error);
+    });
+});
+
+function notificarReaccion(ws, data) {
+    // Aquí notificas a los usuarios sobre la nueva reacción
+    ws.send(JSON.stringify({ tipo: 'reaccion', contenido: data.contenido }));
+}
+
+
 
 
 
