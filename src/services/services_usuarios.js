@@ -1,5 +1,5 @@
 const Usuario = require('../models/usuarios');
-const sequelize = require('../config/database'); // Asegúrate de importar sequelize desde tus modelos
+const sequelize = require('../config/database'); 
 /**
  * Crea un nuevo usuario en la base de datos.
  * @param {Object} usuarioData - Objeto que contiene los datos del usuario a crear.
@@ -8,10 +8,9 @@ const sequelize = require('../config/database'); // Asegúrate de importar seque
  */
 const crearUsuario = async (usuarioData) => {
   try {
-    const usuario = await Usuario.create(usuarioData); // Crea el usuario en la base de datos
-    return usuario; // Retorna el usuario creado
+    const usuario = await Usuario.create(usuarioData);
+    return usuario; 
   } catch (error) {
-    // Manejo de errores
     throw new Error('Error al crear el usuario: ' + error.message);
   }
 };
@@ -25,7 +24,6 @@ const crearUsuario = async (usuarioData) => {
  */
 const obtenerUsuarioPorId = async (id) => {
   try {
-    // Primero, obtenemos la información básica del usuario
     const [usuario] = await sequelize.query(
       `SELECT * FROM usuarios WHERE id = :id`, {
       replacements: { id },
@@ -36,7 +34,6 @@ const obtenerUsuarioPorId = async (id) => {
       throw new Error('Usuario no encontrado');
     }
 
-    // Dependiendo del rol, hacemos una consulta adicional
     let infoAdicional = {};
     switch (usuario.role) {
       case 'Egresados':
@@ -68,7 +65,6 @@ const obtenerUsuarioPorId = async (id) => {
         });
         break;
       default:
-        // Si es un egresado o cualquier otro rol no especificado
         infoAdicional = await sequelize.query(
           `SELECT * FROM egresados WHERE id = :id`, {
           replacements: { id },
@@ -76,13 +72,12 @@ const obtenerUsuarioPorId = async (id) => {
         });
     }
 
-    // Combinamos la información del usuario con la información adicional
     const resultadoFinal = {
       ...usuario,
-      ...infoAdicional[0] // Asegúrate de obtener el primer elemento del array si es necesario
+      ...infoAdicional[0] 
     };
 
-    return resultadoFinal; // Retorna el objeto combinado
+    return resultadoFinal; 
   } catch (error) {
     throw new Error('Error al obtener el usuario: ' + error.message);
   }
@@ -96,17 +91,38 @@ const obtenerUsuarioPorId = async (id) => {
  */
 const obtenerTodosLosUsuarios = async () => {
   try {
-    const usuarios = await Usuario.findAll(); // Obtiene todos los usuarios de la base de datos
-    return usuarios; // Retorna la lista de usuarios
+    const usuarios = await Usuario.findAll(); 
+    return usuarios; 
   } catch (error) {
-    // Manejo de errores
     throw new Error('Error al obtener los usuarios: ' + error.message);
   }
 };
 
-// Exporta las funciones para usarlas en otras partes de la aplicación
+
+
+const obtenerImagenUsuario = async (id) => {
+
+
+  try {
+
+    const imagen = await sequelize.query(
+      `SELECT imagen_usuario FROM usuarios WHERE id = :id`, {
+      replacements: { id },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    return imagen;
+
+
+  }catch (error) {
+    throw new Error('Error al obtener la imagen del usuario: ' + error.message);
+  }
+
+};
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
-  obtenerTodosLosUsuarios
+  obtenerTodosLosUsuarios,
+  obtenerImagenUsuario
 };
