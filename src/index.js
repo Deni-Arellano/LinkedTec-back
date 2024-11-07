@@ -20,6 +20,7 @@ const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const routerImagenes = require('./routes/subidas_cloudinary');
+const routesLogin = require('./routes/routes_login');
 
 const app = express();
 const port = 3000;
@@ -47,7 +48,7 @@ app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
 app.use('/subidas', routerImagenes);
-
+app.use('/acceso', routesLogin);
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
