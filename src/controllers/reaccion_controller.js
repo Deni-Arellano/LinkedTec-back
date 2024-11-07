@@ -20,8 +20,7 @@ const reaccionar = async (req, res, wssReacciones) => {
 
         return res.status(200).json({ message: "Reacción procesada correctamente", publicacion: resultado });
     } catch (error) {
-        console.error("Error al procesar la reacción:", error);
-        return res.status(500).json({ error: error.message }); 
+        return res.status(400).json({ error: error.message }); 
     }
 };
 

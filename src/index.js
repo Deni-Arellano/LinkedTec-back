@@ -96,11 +96,8 @@ wssReacciones.on('connection', (ws) => {
         try {
             const data = JSON.parse(message);
 
-            // Verificar si el mensaje es una nueva reacción
             if (data.type === 'nueva_reaccion') {
-                // Asegurarse de que la reacción sea 'me_gusta' o 'disgusta'
                 if (data.reaccion === 'me_gusta' || data.reaccion === 'disgusta') {
-                    // Llamamos a la función que notifica la nueva reacción
                     notificarReaccion(data.reaccion);
                 } else {
                     ws.send(JSON.stringify({ error: 'Reacción no válida' }));

@@ -38,7 +38,6 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
 
         return publicacion; 
     } catch (error) {
-        console.error("Error al actualizar la reacción:", error);
         throw error; 
     }
 };
