@@ -59,14 +59,12 @@ const validarRegistroUsuario = async (data) => {
     contraseña: Joi.string()
       .min(8)
       .max(20)
-      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
       .required()
       .messages({
         'string.base': 'La contraseña debe ser una cadena de texto.',
         'string.empty': 'La contraseña no puede estar vacía.',
         'string.min': 'La contraseña debe tener al menos 8 caracteres.',
         'string.max': 'La contraseña debe tener menos de 20 caracteres.',
-        'string.pattern.base': 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial.',
         'any.required': 'La contraseña es requerida.'
       }),
     role: Joi.string()
