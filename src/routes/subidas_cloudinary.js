@@ -1,9 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const SubirArchivoCloudinary = require('../util/SubirArchivosCloudinary'); // Asegúrate de proporcionar la ruta correcta
+const SubirArchivoCloudinary = require('../util/SubirArchivosCloudinary'); 
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' }); // Directorio temporal para almacenar archivos
+const upload = multer({ dest: 'uploads/' }); 
 
 const subirArchivoCloudinary = new SubirArchivoCloudinary();
 
@@ -29,5 +29,4 @@ router.post('/subir-archivo', upload.single('archivo'), async (req, res) => {
 });
 
 
-// Exportar el router
 module.exports = router;
