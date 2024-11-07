@@ -4,7 +4,9 @@ const sequelize = require('./config/database');
 const ftpClient = require('./config/ftp');
 require('dotenv').config();
 const WebSocket = require('ws');
-const { handleWebSocketMessage, setupWebSocketServer} = require('./controllers/mensajes_controller2');
+const MensajesController = require('./controllers/mensajes_controller2');
+const url = require('url');
+
 
 
 
@@ -71,37 +73,111 @@ async function testFTPConnection() {
   }
 }
 
-
 const wss = new WebSocket.Server({ port: 8080 });
 console.log('Servidor WebSocket en funcionamiento en ws://localhost:8080');
 
+wss.on('connection', (ws, req) => {
+    try {
+        console.log('Nuevo cliente conectado');
+        
+        // Obtener parámetros de la URL
+        const parameters = url.parse(req.url, true).query;
+        const { idUsuario, idChat } = parameters;
 
-wss.on('connection', (ws) => {
-    console.log('Nuevo cliente conectado');
+        if (!idUsuario || !idChat) {
+            console.error('Faltan parámetros necesarios');
+            ws.close();
+            return;
+        }
 
- 
+        // Establecer conexión usando el controlador
+        MensajesController.establecerConexionWS(ws, req, wss);
+
+    } catch (error) {
+        console.error('Error en la conexión:', error);
+        ws.close();
+    }
+});
+
+
+
+
+const wssNotificaciones = new WebSocket.Server({ port: 8081 });
+console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
+
+wssNotificaciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de notificaciones');
+
     ws.on('message', (message) => {
         try {
-    
-            handleWebSocketMessage(ws, message);
-            setupWebSocketServer(wss);
-            
+            const data = JSON.parse(message);
+
+            // Manejo de eventos específicos para notificaciones
+            if (data.type === 'nueva_notificacion') {
+                enviarNotificacion(ws, data); // Función para enviar notificación específica
+            }
+
         } catch (error) {
-            console.error('Error al manejar el mensaje:', error);
-            ws.send(JSON.stringify({ error: 'Error interno del servidor' }));
+            console.error('Error al manejar notificación:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en notificaciones' }));
             ws.close();
         }
     });
 
-    
     ws.on('close', () => {
-        console.log('Cliente desconectado');
+        console.log('Cliente desconectado del servidor de notificaciones');
     });
 
     ws.on('error', (error) => {
-        console.error('Error en la conexión con el cliente:', error);
+        console.error('Error en conexión de notificaciones:', error);
     });
 });
+
+function enviarNotificacion(ws, data) {
+    // Aquí envías notificaciones personalizadas al cliente
+    ws.send(JSON.stringify({ tipo: 'notificacion', contenido: data.contenido }));
+}
+
+
+
+const wssReacciones = new WebSocket.Server({ port: 8082 });
+console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
+
+wssReacciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de reacciones');
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+
+            // Manejo de eventos específicos para reacciones
+            if (data.type === 'nueva_reaccion') {
+                notificarReaccion(ws, data); // Función para gestionar reacciones
+            }
+
+        } catch (error) {
+            console.error('Error al manejar reacción:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en reacciones' }));
+            ws.close();
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Cliente desconectado del servidor de reacciones');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en conexión de reacciones:', error);
+    });
+});
+
+function notificarReaccion(ws, data) {
+    // Aquí notificas a los usuarios sobre la nueva reacción
+    ws.send(JSON.stringify({ tipo: 'reaccion', contenido: data.contenido }));
+}
+
+
+
 
 
 

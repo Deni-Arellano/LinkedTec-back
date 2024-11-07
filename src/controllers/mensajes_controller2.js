@@ -1,79 +1,94 @@
-const WebSocket = require('ws');
-const Usuario = require('../models/usuarios');
-const { findChatsByUserId } = require('../services/services_mensajes2');
-const { handleConnection, getMessages } = require('../services/services_mensajes');
 
-async function handleWebSocketMessage(ws, data) {
-    try {
-        const { userId } = JSON.parse(data);
+const mensajesService = require('../services/services_mensajes');
+const url = require('url');
 
-        // Validación inicial: Revisar si el ID de usuario está presente
-        if (!userId) {
-            ws.send(JSON.stringify({ error: 'Usuario null o chat no encontrado' }));
-            ws.close();
-            return;
+class MensajesController {
+    async enviarMensaje(req, res) {
+        try {
+            const datosMensaje = {
+                idCliente: req.body.idCliente,
+                idChat: req.body.idChat,
+                mensaje: req.body.mensaje
+            };
+
+            const mensaje = await mensajesService.enviarMensaje(datosMensaje);
+            res.status(201).json(mensaje);
+        } catch (error) {
+            console.error('Error en controlador - enviarMensaje:', error);
+            res.status(400).json({ 
+                error: error.message || 'Error al enviar mensaje' 
+            });
         }
+    }
 
-        // Consultar la base de datos para verificar si el usuario existe
-        const userExists = await Usuario.findOne({ where: { id: userId } });
+    async obtenerMensajes(req, res) {
+        try {
+            const { idUsuario, idChat } = req.params;
 
-        if (userExists) {
-            const result = await findChatsByUserId(userId);
-
-            if (result.success) {
-                console.log(`Usuario ${userId} tiene chats asociados`);
-                ws.send(JSON.stringify({ message: 'Usuario tiene chats asociados', destinatarios: result.destinatarios }));
-            } else {
-                console.log(`Usuario ${userId} no tiene chats asociados`);
-                ws.send(JSON.stringify({ message: 'Usuario no tiene chats asociados' }));
+            if (!idUsuario || !idChat) {
+                return res.status(400).json({ 
+                    error: 'Se requieren idUsuario e idChat' 
+                });
             }
-        } else {
-            ws.send(JSON.stringify({ error: 'Usuario no encontrado' }));
+
+            const mensajes = await mensajesService.obtenerMensajes(
+                parseInt(idUsuario), 
+                parseInt(idChat)
+            );
+            res.json(mensajes);
+        } catch (error) {
+            console.error('Error en controlador - obtenerMensajes:', error);
+            res.status(500).json({ 
+                error: 'Error al obtener mensajes' 
+            });
+        }
+    }
+
+    async guardarMensaje(req, res) {
+        try {
+            const datosMensaje = {
+                idCliente: req.body.idCliente,
+                idChat: req.body.idChat,
+                mensaje: req.body.mensaje
+            };
+
+            const mensajeGuardado = await mensajesService.guardarMensaje(datosMensaje);
+            res.status(201).json(mensajeGuardado);
+        } catch (error) {
+            console.error('Error en controlador - guardarMensaje:', error);
+            res.status(400).json({ 
+                error: error.message || 'Error al guardar mensaje' 
+            });
+        }
+    }
+
+    // mensajes_controller2.js
+    // Modificar el método establecerConexionWS
+    async establecerConexionWS(ws, req, wss) {
+        try {
+            // Obtener parámetros de la URL query en lugar de params
+            const parameters = url.parse(req.url, true).query;
+            const idUsuario = parseInt(parameters.idUsuario);
+            const idChat = parseInt(parameters.idChat);
+    
+            if (!idUsuario || !idChat) {
+                console.error('Parámetros inválidos');
+                ws.close();
+                return;
+            }
+    
+            await mensajesService.manejarConexion(
+                ws, 
+                req, 
+                wss, 
+                idUsuario, 
+                idChat
+            );
+        } catch (error) {
+            console.error('Error en controlador - establecerConexionWS:', error);
             ws.close();
         }
-    } catch (error) {
-        console.error('Error al manejar el mensaje:', error);
-        ws.send(JSON.stringify({ error: 'Error interno del servidor' }));
-        ws.close();
     }
 }
 
-function setupWebSocketServer(wss) {
-    wss.on('connection', async (ws, req) => {
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const userId = url.searchParams.get('userId');
-        const pathParts = url.pathname.split('/');
-        const chatId = pathParts[pathParts.length - 1];
-
-        console.log(`Usuario ${userId} conectado al chat ${chatId}`);
-
-        const userExists = await handleConnection(ws, req, wss, userId, chatId);
-
-        if (!userExists) {
-            ws.send(JSON.stringify({
-                from: 'server',
-                to: userId,
-                message: `Error: Usuario o chat no encontrado`
-            }));
-            ws.close();
-            return;
-        }
-
-        // Obtener mensajes históricos
-        const messages = await getMessages(userId, chatId);
-        ws.send(JSON.stringify({
-            from: 'server',
-            to: userId,
-            messages: messages
-        }));
-
-        // Enviar un mensaje de bienvenida al usuario
-        ws.send(JSON.stringify({
-            from: 'server',
-            to: userId,
-            message: `Bienvenido al chat ${chatId}`
-        }));
-    });
-}
-
-module.exports = { setupWebSocketServer, handleWebSocketMessage };
+module.exports = new MensajesController();
