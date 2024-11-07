@@ -1,15 +1,13 @@
 const { Model, DataTypes } = require('sequelize'); 
 const sequelize = require('../config/database'); 
 
-// Define la clase Usuario que extiende Model de Sequelize
 class Usuario extends Model {}
 
-// Inicializa el modelo Usuario
 Usuario.init({
   id: {
     type: DataTypes.INTEGER,
-    autoIncrement: true, // Se incrementa automáticamente
-    primaryKey: true, // Este campo es la clave primaria
+    autoIncrement: true, 
+    primaryKey: true, 
   },
   nombre: {
     type: DataTypes.STRING, 
@@ -25,7 +23,7 @@ Usuario.init({
   correo: {
     type: DataTypes.STRING, 
     allowNull: false, 
-    unique: true, // Debe ser único en la base de datos
+    unique: true, 
   },
   contraseña: {
     type: DataTypes.STRING, 
@@ -51,11 +49,10 @@ Usuario.init({
     type: DataTypes.STRING, // Tipo de dato para la imagen de usuario
   },
 }, {
-  sequelize, // Pasar la instancia de Sequelize
-  modelName: 'Usuario', // Nombre del modelo
-  tableName: 'usuarios', // Nombre de la tabla en la base de datos
-  timestamps: false, // Desactiva los campos de timestamps (createdAt, updatedAt)
+  sequelize, 
+  modelName: 'Usuario', 
+  tableName: 'usuarios', 
+  timestamps: false, 
 });
 
-// Exporta el modelo para su uso en otras partes de la aplicación
 module.exports = Usuario;
