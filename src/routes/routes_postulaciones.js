@@ -1,5 +1,5 @@
 const express = require('express');
-const {crearPostulacion,obtenerPostulacionesDeUsuario,obtenerPostulacionCompleta, obtenerPostulantesPorEmpleoController, obtenerDetallesPostulanteController} = require('../controllers/postulaciones_controller');
+const {crearPostulacion,cambiarEstadoPostulacion, obtenerPostulacionesDeUsuario,obtenerPostulacionCompleta, obtenerPostulantesPorEmpleoController, obtenerDetallesPostulanteController} = require('../controllers/postulaciones_controller');
 const router = express.Router();
 
 
@@ -17,7 +17,7 @@ router.get('/postulante/:id_empleo/:id_usuario', obtenerDetallesPostulanteContro
 
 router.post('/', crearPostulacion)
 
-
+router.patch('/:id_postulacion', cambiarEstadoPostulacion);
 
 
 
