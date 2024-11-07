@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
-const ftpClient = require('./config/ftp');
 const WebSocket = require('ws');
 require('dotenv').config();
+
+const { reaccionar } = require('./controllers/reaccion_controller'); 
 
 const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores');
@@ -18,20 +19,20 @@ const noticiasRoutes = require('./routes/routes_noticias');
 const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
-const loginRoutes = require('./routes/routes_login');
 const routerImagenes = require('./routes/subidas_cloudinary');
-const reaccionesRoutes = require('./routes/routes_reaccion');
 
 const app = express();
-const server = require('http').createServer(app);
-const wss = new WebSocket.Server({ server });
 const port = 3000;
 
+// Configuración de CORS
 app.use(cors({
     origin: 'http://localhost:3001'
 }));
 
+// Middleware para parsear JSON
 app.use(express.json());
+
+// Rutas de la API
 app.use('/publicaciones', publicacionesRoutes);
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
@@ -45,59 +46,116 @@ app.use('/noticias', noticiasRoutes);
 app.use('/eventos', routesEventos);
 app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
-app.use('/acceso', loginRoutes); 
 app.use('/subidas', routerImagenes);
-app.use('/reacciones', reaccionesRoutes);
 
+
+// Ruta de bienvenida
 app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
-// Prueba de conexión FTP
-async function testFTPConnection() {
-    try {
-        await ftpClient.connect();
-        return true;
-    } catch (err) {
-        console.error('Error al probar la conexión FTP:', err.message);
-        return false;
-    } finally {
-        await ftpClient.disconnect();
-    }
-}
+// Configuración de WebSocket para notificaciones
+const wssNotificaciones = new WebSocket.Server({ port: 8081 });
+console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
 
-// Configuración del servidor WebSocket
-wss.on('connection', (ws) => {
-    console.log('Nuevo cliente conectado');
+wssNotificaciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de notificaciones');
 
-    // Escucha por mensajes desde el cliente
     ws.on('message', (message) => {
-        console.log('Mensaje recibido:', message);
-        // Aquí puedes procesar el mensaje recibido o reenviarlo a otros clientes
+        try {
+            const data = JSON.parse(message);
+
+            // Manejo de eventos específicos para notificaciones
+            if (data.type === 'nueva_notificacion') {
+                enviarNotificacion(ws, data); // Función para enviar notificación específica
+            }
+        } catch (error) {
+            console.error('Error al manejar notificación:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en notificaciones' }));
+            ws.close();
+        }
     });
 
-    // Maneja la desconexión del cliente
     ws.on('close', () => {
-        console.log('Cliente desconectado');
+        console.log('Cliente desconectado del servidor de notificaciones');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en conexión de notificaciones:', error);
     });
 });
 
-app.set('wss', wss); // Configura WebSocket para ser usado en otras partes de la aplicación
+const wssReacciones = new WebSocket.Server({ port: 8082 });
 
-// Sincronización de la base de datos, prueba FTP y servidor
+console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
+
+wssReacciones.on('connection', (ws) => {
+    console.log('Cliente conectado al servidor de reacciones');
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+
+            // Verificar si el mensaje es una nueva reacción
+            if (data.type === 'nueva_reaccion') {
+                // Asegurarse de que la reacción sea 'me_gusta' o 'disgusta'
+                if (data.reaccion === 'me_gusta' || data.reaccion === 'disgusta') {
+                    // Llamamos a la función que notifica la nueva reacción
+                    notificarReaccion(data.reaccion);
+                } else {
+                    ws.send(JSON.stringify({ error: 'Reacción no válida' }));
+                }
+            } else {
+                ws.send(JSON.stringify({ error: 'Tipo de mensaje no reconocido' }));
+            }
+        } catch (error) {
+            console.error('Error al manejar reacción:', error);
+            ws.send(JSON.stringify({ error: 'Error interno en reacciones' }));
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Cliente desconectado del servidor de reacciones');
+    });
+
+    ws.on('error', (error) => {
+        console.error('Error en conexión de reacciones:', error);
+    });
+});
+
+// Función para notificar reacciones
+const notificarReaccion = (reaccion) => {
+    const tipo_reaccion = reaccion; 
+
+    const mensaje = `Reacción: "${tipo_reaccion === 'me_gusta' ? 'Me gusta' : 'Disgusta'}" agregada.`;
+
+    const conteo = tipo_reaccion === 'me_gusta' ? 28 : 12; 
+
+    wssReacciones.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            const actualizacion = JSON.stringify({
+                type: 'actualizacion_reaccion',
+                mensaje: mensaje,
+                conteo: conteo
+            });
+            client.send(actualizacion);
+        }
+    });
+};
+
+// Ruta de la API para reaccionar a una publicación
+app.post('/reaccionar', (req, res) => {
+    reaccionar(req, res, wssReacciones);
+});
+
+
+// Sincronización de la base de datos y servidor
 sequelize.sync()
     .then(() => sequelize.authenticate())
-    .then(() => testFTPConnection())
-    .then((ftpSuccess) => {
-        console.log('Conexión a la base de datos exitosa y modelos sincronizados.');
-        if (ftpSuccess) {
-            server.listen(port, () => {
-                console.log(`Servidor escuchando en http://localhost:${port}`);
-            });
-        } else {
-            console.error('No se pudo iniciar el servidor debido a un error en la conexión FTP.');
-            process.exit(1);
-        }
+    .then(() => {
+        app.listen(port, () => {
+            console.log(`Servidor escuchando en http://localhost:${port}`);
+        });
     })
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
