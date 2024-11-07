@@ -18,7 +18,6 @@ const sequelize = new Sequelize(
 module.exports = sequelize;
 
 
-// Probar la conexión
 sequelize.authenticate()
   .then(() => {
     console.log('Connection has been established successfully.');

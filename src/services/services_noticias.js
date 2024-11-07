@@ -98,7 +98,7 @@ exports.eliminarNoticia = async (id_noticia) => {
  * @throws {Error} - Lanza un error si ocurre algún problema durante la actualización de la noticia.
  */
 exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
-  const sequelize = require('sequelize');
+  
   
   // Iniciar una transacción
   const t = await sequelize.transaction();

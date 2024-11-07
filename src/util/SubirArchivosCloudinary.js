@@ -15,7 +15,6 @@ class SubirArchivoCloudinary {
 
 
 
-    //Metodos para la gestion de imagenes
     async subirImagen(ruta_archivo) {
         try {
           const result = await cloudinary.uploader.upload(ruta_archivo, {
@@ -65,7 +64,7 @@ class SubirArchivoCloudinary {
       try {
           const result = await cloudinary.uploader.upload(ruta_archivo, {
               folder: 'files', 
-              resource_type: 'auto', // Usa 'auto' para que Cloudinary detecte el tipo de archivo
+              resource_type: 'auto', 
           });
   
           return {

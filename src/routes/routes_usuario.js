@@ -1,7 +1,6 @@
-// routes/usuarioRoutes.js
-const express = require('express'); // Importa el módulo Express
-const router = express.Router(); // Crea un router para manejar las rutas
-const usuarioController = require('../controllers/controller_usuario'); // Importa el controlador de usuarios
+const express = require('express'); 
+const router = express.Router(); 
+const usuarioController = require('../controllers/controller_usuario'); 
 
 
 // Ruta para crear un nuevo usuario
@@ -17,6 +16,8 @@ router.get('/:id', usuarioController.obtenerUsuarioPorId);
 router.get('/', usuarioController.obtenerTodosLosUsuarios);
 
 router.delete('/:id', usuarioController.eliminarUsuario);
+
+router.get("/imagen/:id", usuarioController.obtenerImagenUsuario);
 
 // Exporta el router para que pueda ser utilizado en la aplicación principal
 module.exports = router;

@@ -134,7 +134,8 @@ const obtenerTodasLasPublicaciones = async (req, res) => {
   try {
     const pagina = req.query.pagina || 1;
     const limite = req.query.limite || 10;
-    const publicaciones = await obtenerTodasLasPublicacionesService(pagina, limite); 
+    const informacionCompleta = req.query.informacionCompleta || false;
+    const publicaciones = await obtenerTodasLasPublicacionesService(pagina, limite, informacionCompleta); 
 
     await validarPublicacionesExistentes(publicaciones);
 
@@ -146,6 +147,7 @@ const obtenerTodasLasPublicaciones = async (req, res) => {
       return res.status(404).json({ error: error.message });
 
     } else {
+      console.error(error);
       res.status(500).json({ mensaje: 'Error al obtener las publicaciones' }); 
 
     }
