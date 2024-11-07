@@ -25,5 +25,6 @@ router.get('/:id/', DocenteController.getUsuariRolById); // Nueva ruta
 
 router.patch('/:id', DocenteController.editDocente);
 
+router.delete('/:id', DocenteController.deleteDocente);
 
 module.exports = router;

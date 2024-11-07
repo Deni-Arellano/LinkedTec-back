@@ -1,6 +1,7 @@
 const usuarioService = require('../services/services_usuarios');
 const { validarRegistroUsuario, validarUsuarioExistente, validarCorreoExistente, validarUsuariosExistentes } = require('../middlewares/validations/validaciones_usuarios');
 const {validarImagenExistente} = require('../middlewares/validations/validaciones_imagenes');
+const { deleteUsuario } = require('../services/services_usuarios');
 
 
 /**
@@ -121,6 +122,16 @@ const obtenerTodosLosUsuarios = async (req, res) => {
 
 
 
+const eliminarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      const resultado = await deleteUsuario(id);
+      res.status(200).json(resultado);
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+};
 const obtenerImagenUsuario = async (req, res) => {
 
 
@@ -143,6 +154,5 @@ const obtenerImagenUsuario = async (req, res) => {
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
-  obtenerTodosLosUsuarios,
-  obtenerImagenUsuario
+  obtenerTodosLosUsuarios
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router(); 
 const usuarioController = require('../controllers/controller_usuario'); 
 
+
 // Ruta para crear un nuevo usuario
 // Método: POST
 router.post('/', usuarioController.crearUsuario);
@@ -13,6 +14,8 @@ router.get('/:id', usuarioController.obtenerUsuarioPorId);
 // Ruta para obtener todos los usuarios
 // Método: GET
 router.get('/', usuarioController.obtenerTodosLosUsuarios);
+
+router.delete('/:id', usuarioController.eliminarUsuario);
 
 router.get("/imagen/:id", usuarioController.obtenerImagenUsuario);
 
