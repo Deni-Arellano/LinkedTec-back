@@ -17,7 +17,8 @@ Notificaciones.init({
       'noticia', 
       'postulacion_aceptada', 
       'postulacion_rechazada', 
-      'like_publicacion', 
+      'me_gusta',
+      'disgusta', 
       'reporte_publicacion', 
       'reporte_noticia'
     ),
