@@ -24,7 +24,6 @@ const crearUsuario = async (req, res) => {
     
 
 
-    //Si no hay errores, se crea el usuario
     const nuevoUsuario = await usuarioService.crearUsuario({
       nombre,
       apellido_paterno,
@@ -39,7 +38,6 @@ const crearUsuario = async (req, res) => {
       imagen_usuario
     });
 
-    // Retorna el usuario creado
     res.status(201).json(nuevoUsuario);
 
   } catch (error) {
@@ -61,10 +59,6 @@ const crearUsuario = async (req, res) => {
 
 
 
-
-
-
-
 /**
  * Obtiene un usuario por su ID.
  * @param {Object} req - Objeto de solicitud que contiene el ID del usuario.
@@ -80,8 +74,8 @@ const obtenerUsuarioPorId = async (req, res) => {
 
     await validarUsuarioExistente(id);
 
-    const usuario = await usuarioService.obtenerUsuarioPorId(id); // Llama al servicio para obtener el usuario
-    res.status(200).json(usuario); // Responde con la información del usuario
+    const usuario = await usuarioService.obtenerUsuarioPorId(id); 
+    res.status(200).json(usuario); 
 
   } catch (error) {
 
@@ -127,12 +121,28 @@ const obtenerTodosLosUsuarios = async (req, res) => {
 
 
 
+const obtenerImagenUsuario = async (req, res) => {
 
 
+  try{
+      
+      const { id } = req.params;
+  
+      await validarUsuarioExistente(id);
+  
+      const imagen = await usuarioService.obtenerImagenUsuario(id);
+      res.status(200).json(imagen);
+
+  }catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
+}
 
 
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
-  obtenerTodosLosUsuarios
+  obtenerTodosLosUsuarios,
+  obtenerImagenUsuario
 };
