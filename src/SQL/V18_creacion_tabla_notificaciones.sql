@@ -1,6 +1,6 @@
 CREATE TABLE notificaciones (
     id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
-    tipo ENUM('empleo', 'noticia', 'postulacion_aceptada', 'postulacion_rechazada', 'me_gusta','disgusta', 'reporte_publicacion', 'reporte_noticia') NOT NULL,
+    tipo ENUM('empleo', 'noticia','postulacion', 'me_gusta') NOT NULL,
     id_referencia_tipo INT NOT NULL,
     mensaje TEXT NOT NULL,
     id_creador INT NOT NULL,

@@ -15,12 +15,8 @@ Notificaciones.init({
     type: DataTypes.ENUM(
       'empleo', 
       'noticia', 
-      'postulacion_aceptada', 
-      'postulacion_rechazada', 
-      'me_gusta',
-      'disgusta', 
-      'reporte_publicacion', 
-      'reporte_noticia'
+      'postulacion', 
+      'me_gusta'
     ),
     allowNull: false
   },
