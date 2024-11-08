@@ -30,6 +30,7 @@ const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const routerImagenes = require('./routes/subidas_cloudinary');
+const { manejarConexion } = require('./services/services_mensajes');
 
 
 const app = express();
@@ -181,12 +182,20 @@ function notificarReaccion(ws, data) {
 const wssCartas = new WebSocket.Server({ port: 8083 });
 console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:8083');
 
-wssCartas.on('connection', (ws, req) => { // Cambio realizado aquí
+wssCartas.on('connection', (ws, req) => {
     try {
         console.log('Nuevo cliente conectado al servidor de Cartas Mensajes');
-        
-        // Establecer la conexión usando el controlador
-        CartasMensajesController.establecerConexionWS(ws, req, wssCartas);
+
+        // Extraer idUsuario de la solicitud (req) o del mensaje inicial
+        const urlParams = new URLSearchParams(req.url.replace('/?', ''));
+        const idUsuario = urlParams.get('idUsuario');
+
+        if (!idUsuario) {
+            console.error('Falta el parámetro idUsuario en la conexión WebSocket');
+            ws.close();
+            return;
+        }
+        CartasMensajesController.manejarConexion(ws, req, wssCartas, idUsuario);
 
     } catch (error) {
         console.error('Error en la conexión de wssCartas:', error);

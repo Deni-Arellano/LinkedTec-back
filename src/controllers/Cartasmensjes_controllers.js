@@ -1,4 +1,4 @@
-const { obtenerDatosChat } = require('../services/services_Cartasmensajes');
+const { obtenerDatosChat, manejarConexion } = require('../services/services_Cartasmensajes');
 
 class CartasMensajesController {
     async obtenerDatosChatHTTP(req, res) {
@@ -40,6 +40,10 @@ class CartasMensajesController {
         ws.on('error', (error) => {
             console.error('Error en conexión de Cartas Mensajes:', error);
         });
+    }
+
+    async manejarConexion(ws, req, wss, idUsuario) {
+        await manejarConexion(ws, req, wss, idUsuario);
     }
 }
 

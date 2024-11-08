@@ -2,93 +2,148 @@ const Mensaje = require('../models/mensaje');
 const Usuario = require('../models/usuarios');
 const { Op, Sequelize } = require('sequelize');
 
+const conexionesActivas = new Map();
+
 async function obtenerDatosChat(idUsuario) {
     try {
-        console.log(`Obteniendo chats para el usuario ID: ${idUsuario}`);
-
-        // Obtener todos los últimos mensajes para cada chat del usuario
-        const chats = await Mensaje.findAll({
+        const mensajes = await Mensaje.findAll({
             where: {
                 [Op.or]: [
                     { id_remitente: idUsuario },
                     { id_destinatario: idUsuario }
                 ]
             },
-            attributes: [
-                'id_remitente',
-                'id_destinatario',
-                [Sequelize.fn('MAX', Sequelize.col('fecha_envio')), 'fecha_envio']
-            ],
-            group: ['id_remitente', 'id_destinatario'],
-            order: [[Sequelize.literal('fecha_envio'), 'DESC']]
+            order: [['fecha_envio', 'DESC']],
+            include: [
+                { model: Usuario, as: 'remitente', attributes: ['id', 'nombre'] },
+                { model: Usuario, as: 'destinatario', attributes: ['id', 'nombre'] }
+            ]
         });
 
-        console.log(`Chats encontrados: ${chats.length}`);
+        const mensajesUnicos = new Map();
 
-        if (!chats.length) {
-            console.log('No se encontraron chats para el usuario:', idUsuario);
-            return [];
-        }
+        mensajes.forEach((mensaje) => {
+            const key = `${Math.min(mensaje.id_remitente, mensaje.id_destinatario)}-${Math.max(mensaje.id_remitente, mensaje.id_destinatario)}`;
 
-        // Mapear cada chat para obtener los datos necesarios
-        const datosChats = await Promise.all(chats.map(async (chat, index) => {
-            console.log(`\nProcesando chat ${index + 1}/${chats.length}: Remitente ID ${chat.id_remitente}, Destinatario ID ${chat.id_destinatario}`);
+            if (!mensajesUnicos.has(key)) {
+                const remitenteData = mensaje.remitente ?? { id: null, nombre: 'Remitente desconocido' };
+                const destinatarioData = mensaje.destinatario ?? { id: null, nombre: 'Destinatario desconocido' };
 
-            const ultimoMensaje = await Mensaje.findOne({
-                where: {
-                    [Op.or]: [
-                        { id_remitente: idUsuario, id_destinatario: chat.id_remitente },
-                        { id_remitente: chat.id_remitente, id_destinatario: idUsuario }
-                    ]
-                },
-                order: [['fecha_envio', 'DESC']],
-                attributes: ['mensaje', 'fecha_envio', 'id_remitente', 'id_destinatario']
-            });
-
-            console.log(`Ultimo mensaje encontrado: ${ultimoMensaje ? JSON.stringify(ultimoMensaje) : 'No se encontró mensaje'}`);
-
-            if (!ultimoMensaje) {
-                console.warn(`No se encontró el último mensaje para el chat entre usuario ID ${idUsuario} y usuario ID ${chat.id_remitente}`);
-                return null; // O puedes elegir omitir este chat
-            }
-
-            // Determinar quién es el otro usuario en el chat
-            const otroUsuarioId = (ultimoMensaje.id_remitente === idUsuario) ? ultimoMensaje.id_destinatario : ultimoMensaje.id_remitente;
-            console.log(`Otro usuario ID en el chat: ${otroUsuarioId}`);
-
-            const usuario = await Usuario.findOne({
-                where: { id: otroUsuarioId },
-                attributes: ['id', 'nombre'] // Eliminado 'foto_perfil'
-            });
-
-            if (!usuario) {
-                console.warn(`No se encontró el usuario con ID ${otroUsuarioId}`);
-                return null; // O puedes elegir omitir este chat
-            }
-
-            return {
-                usuario: {
-                    id: usuario.id,
-                    nombre: usuario.nombre
-                    // Eliminado 'foto_perfil'
-                },
-                ultimoMensaje: {
-                    texto: ultimoMensaje.mensaje,
-                    fecha: ultimoMensaje.fecha_envio
+                if (!remitenteData.id || !destinatarioData.id) {
+                    console.error('Datos del chat incompletos:', { mensajeId: mensaje.id });
+                    return;
                 }
-            };
-        }));
 
-        // Filtrar los chats que no son nulos
-        const chatsFiltrados = datosChats.filter(chat => chat !== null);
-        console.log(`Chats finales a retornar: ${chatsFiltrados.length}`);
+                const chatData = {
+                    id: mensaje.id,
+                    id_remitente: mensaje.id_remitente,
+                    id_destinatario: mensaje.id_destinatario,
+                    mensaje: mensaje.mensaje,
+                    fecha_envio: mensaje.fecha_envio,
+                    usuario: {
+                        // Invertir la lógica: Si soy remitente (1), mostrar destinatario (3)
+                        id: parseInt(idUsuario) === mensaje.id_remitente ? 
+                            mensaje.destinatario.dataValues.id : 
+                            mensaje.remitente.dataValues.id,
+                        nombre: parseInt(idUsuario) === mensaje.id_remitente ? 
+                            mensaje.destinatario.dataValues.nombre : 
+                            mensaje.remitente.dataValues.nombre
+                    }
+                };
+                
+                // Debug mejorado
+                console.table({
+                    ...chatData,
+                    usuario_actual: idUsuario,
+                    usuario_mostrado: `${chatData.usuario.id} (${chatData.usuario.nombre})`,
+                    tipo_usuario: parseInt(idUsuario) === mensaje.id_remitente ? 'Remitente' : 'Destinatario'
+                });
 
-        return chatsFiltrados;
+                mensajesUnicos.set(key, chatData);
+            }
+        });
 
+        return Array.from(mensajesUnicos.values());
     } catch (error) {
-        console.error('Error al obtener datos del chat:', error);
+        console.error('Error al obtener datos del chat:', error.message);
         throw error;
     }
 }
+   
 
-module.exports = { obtenerDatosChat };
+async function manejarConexion(ws, req, wss, idUsuario) {
+    try {
+        const chatKey = `${idUsuario}`;
+        conexionesActivas.set(chatKey, ws);
+        console.log('Usuario conectado:', idUsuario);
+        console.log('Conexiones activas:', Array.from(conexionesActivas.keys()));
+
+        ws.on('message', async (mensaje) => {
+            try {
+                const datosMensaje = JSON.parse(mensaje);
+                console.log('Mensaje recibido:', datosMensaje);
+
+                if (datosMensaje.tipo === 'obtenerDatosChat') {
+                    const datosChat = await obtenerDatosChat(datosMensaje.idUsuario);
+                    ws.send(JSON.stringify({ tipo: 'datosChat', datos: datosChat }));
+                    return;
+                }
+
+                // Guardar el mensaje en la base de datos
+                const nuevoMensaje = await Mensaje.create({
+                    id_remitente: datosMensaje.id_remitente,
+                    id_destinatario: datosMensaje.id_destinatario,
+                    mensaje: datosMensaje.mensaje,
+                    fecha_envio: new Date()
+                });
+
+                // Notificar al remitente que el mensaje fue enviado
+                ws.send(JSON.stringify({
+                    tipo: 'mensajeEnviado',
+                    mensaje: nuevoMensaje
+                }));
+
+                // Notificar al destinatario si está conectado
+                const destinatarioKey = `${datosMensaje.id_destinatario}`;
+                const wsDestinatario = conexionesActivas.get(destinatarioKey);
+
+                console.log('Buscando destinatario:', destinatarioKey);
+                console.log('Destinatario encontrado:', !!wsDestinatario);
+
+                if (wsDestinatario && wsDestinatario.readyState === ws.OPEN) {
+                    console.log('Enviando mensaje al destinatario');
+                    wsDestinatario.send(JSON.stringify({
+                        tipo: 'nuevoMensaje',
+                        mensaje: nuevoMensaje
+                    }));
+                } else {
+                    console.log('Destinatario no conectado o websocket cerrado');
+                }
+            } catch (error) {
+                console.error('Error procesando mensaje:', error);
+                ws.send(JSON.stringify({ 
+                    error: 'Error al procesar mensaje',
+                    detalle: error.message 
+                }));
+            }
+        });
+
+        ws.on('error', (error) => {
+            console.error('Error en WebSocket:', error);
+        });
+
+        ws.on('close', () => {
+            conexionesActivas.delete(chatKey);
+            console.log(`Usuario ${idUsuario} desconectado`);
+            console.log('Conexiones activas restantes:', Array.from(conexionesActivas.keys()));
+        });
+
+    } catch (error) {
+        console.error('Error en manejo de conexión:', error);
+        ws.close();
+    }
+}
+
+
+
+module.exports = { obtenerDatosChat, manejarConexion };

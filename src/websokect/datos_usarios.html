@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Chats Dinámicos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Chats</title>
     <style>
         .chat-card {
             border: 1px solid #ccc;
@@ -23,25 +24,21 @@
     <div id="chats-container"></div>
 
     <script>
-        let socket;
-
         document.getElementById('conectarBtn').addEventListener('click', () => {
             const idUsuario = document.getElementById('idUsuario').value;
             if (!idUsuario) {
-                alert('Por favor, ingrese un ID de usuario.');
+                alert('Por favor, ingrese su ID de usuario.');
                 return;
             }
 
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.close();
-            }
+            const socket = new WebSocket(`ws://localhost:8083/?idUsuario=${idUsuario}`);
 
-            socket = new WebSocket('ws://localhost:8083');
-
-            socket.addEventListener('open', () => {
+            socket.addEventListener('open', (event) => {
                 console.log('Conectado al servidor WebSocket');
-                document.getElementById('estadoConexion').textContent = `Conectado como ID Usuario: ${idUsuario}`;
-                socket.send(JSON.stringify({ tipo: 'obtenerDatosChat', idUsuario: parseInt(idUsuario) }));
+                document.getElementById('estadoConexion').textContent = 'Conectado.';
+
+                // Solicitar datos de chat iniciales
+                socket.send(JSON.stringify({ tipo: 'obtenerDatosChat', idUsuario }));
             });
 
             socket.addEventListener('message', (event) => {
@@ -50,6 +47,10 @@
 
                     if (data.tipo === 'datosChat') {
                         renderChats(data.datos);
+                    } else if (data.tipo === 'nuevoMensaje') {
+                        actualizarChat(data.mensaje);
+                    } else if (data.tipo === 'mensajeEnviado') {
+                        actualizarChat(data.mensaje);
                     } else if (data.tipo === 'error') {
                         console.error('Error del servidor:', data.mensaje);
                     }
@@ -66,28 +67,62 @@
                 console.log('Desconectado del servidor WebSocket');
                 document.getElementById('estadoConexion').textContent = 'Desconectado.';
             });
-        });
 
-        function renderChats(datosChat) {
-            const contenedor = document.getElementById('chats-container');
-            contenedor.innerHTML = ''; // Limpiar contenido previo
+            function renderChats(datosChat) {
+                const contenedor = document.getElementById('chats-container');
+                contenedor.innerHTML = ''; // Limpiar contenido previo
 
-            if (!Array.isArray(datosChat)) {
-                console.error('Datos del chat no son un array:', datosChat);
-                return;
+                if (!Array.isArray(datosChat)) {
+                    console.error('Datos del chat no son un array:', datosChat);
+                    return;
+                }
+
+                const usuariosProcesados = new Set();
+
+                datosChat.forEach(chat => {
+                    if (!chat.usuario || !chat.usuario.id || !chat.usuario.nombre) {
+                        console.error('Datos del chat incompletos:', chat);
+                        return;
+                    }
+
+                    const usuario = chat.usuario;
+                    if (!usuariosProcesados.has(usuario.id)) {
+                        const carta = document.createElement('div');
+                        carta.className = 'chat-card';
+                        carta.innerHTML = `
+                            <p>${usuario.nombre}</p>
+                            <p>${chat.mensaje}</p>
+                            <p>${new Date(chat.fecha_envio).toLocaleString()}</p>
+                        `;
+                        contenedor.appendChild(carta);
+                        usuariosProcesados.add(usuario.id);
+                    }
+                });
             }
 
-            datosChat.forEach(chat => {
+            function actualizarChat(mensaje) {
+                const contenedor = document.getElementById('chats-container');
+                const chatCards = contenedor.getElementsByClassName('chat-card');
+
+                for (let card of chatCards) {
+                    if (card.querySelector('p').textContent === mensaje.id_remitente) {
+                        card.querySelector('p:nth-child(2)').textContent = mensaje.mensaje;
+                        card.querySelector('p:nth-child(3)').textContent = new Date(mensaje.fecha_envio).toLocaleString();
+                        return;
+                    }
+                }
+
+                // Si no se encuentra la tarjeta, agregar una nueva
                 const carta = document.createElement('div');
                 carta.className = 'chat-card';
                 carta.innerHTML = `
-                    <h2>${chat.usuario.nombre}</h2>
-                    <p>${chat.ultimoMensaje ? chat.ultimoMensaje.texto : 'No hay mensajes'}</p>
-                    <small>${chat.ultimoMensaje ? new Date(chat.ultimoMensaje.fecha).toLocaleString() : ''}</small>
+                    <p>${mensaje.id_remitente}</p>
+                    <p>${mensaje.mensaje}</p>
+                    <p>${new Date(mensaje.fecha_envio).toLocaleString()}</p>
                 `;
                 contenedor.appendChild(carta);
-            });
-        }
+            }
+        });
     </script>
 </body>
 </html>
