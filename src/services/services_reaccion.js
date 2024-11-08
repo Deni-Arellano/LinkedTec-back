@@ -1,5 +1,3 @@
-// services/services_reaccion.js
-
 const Publicacion = require('../models/publicaciones');
 const ReaccionesUsuarios = require('../models/reaccionrelacion');
 const WebSocket = require('ws');
@@ -16,10 +14,14 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
       where: { id_publicacion, id_usuario }
     });
 
+    // Bandera para indicar si el usuario ya ha reaccionado
+    let haReaccionado = !!reaccionExistente; // True si hay una reacción existente, false si no
+
     if (cancelar) {
       // Si es una cancelación, eliminar la reacción existente si hay una
       if (reaccionExistente) {
         await reaccionExistente.destroy();
+        haReaccionado = false; // Ahora el usuario no ha reaccionado
         if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
           publicacion.me_gusta -= 1;
         } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
@@ -34,6 +36,7 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
           id_usuario,
           tipo_reaccion
         });
+        haReaccionado = true; // Ahora el usuario ha reaccionado
         if (tipo_reaccion === 'me_gusta') {
           publicacion.me_gusta += 1;
         } else if (tipo_reaccion === 'disgusta') {
@@ -58,7 +61,8 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
       });
     }
 
-    return publicacion;
+    // Devolver la publicación junto con la bandera haReaccionado
+    return { publicacion, haReaccionado };
   } catch (error) {
     throw error;
   }
