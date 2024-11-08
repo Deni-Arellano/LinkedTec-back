@@ -124,7 +124,7 @@ const obtenerTodosLosUsuarios = async (req, res) => {
 
 const eliminarUsuario = async (req, res) => {
   const { id } = req.params;
-  const contraseña = req.params.contraseña;
+  const { contraseña } = req.query; 
 
 
   try {
