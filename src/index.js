@@ -4,8 +4,11 @@ const sequelize = require('./config/database');
 const WebSocket = require('ws');
 require('dotenv').config();
 
-const { reaccionar } = require('./controllers/reaccion_controller'); 
+
 const { manejodeconexion_notificaciones } = require('./controllers/notificaciones_controller');
+
+const { actualizarReaccion } = require('./services/services_reaccion'); // Asegúrate de que la ruta esté correcta
+
 
 const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores');
@@ -86,6 +89,8 @@ wssNotificaciones.on('connection', (ws) => {
     });
 });
 
+
+
 const wssReacciones = new WebSocket.Server({ port: 8082 });
 
 console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
@@ -93,21 +98,27 @@ console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhos
 wssReacciones.on('connection', (ws) => {
     console.log('Cliente conectado al servidor de reacciones');
 
-    ws.on('message', (message) => {
+    ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
 
             if (data.type === 'nueva_reaccion') {
-                if (data.reaccion === 'me_gusta' || data.reaccion === 'disgusta') {
-                    notificarReaccion(data.reaccion);
-                } else {
-                    ws.send(JSON.stringify({ error: 'Reacción no válida' }));
-                }
+                const { id_publicacion, tipo_reaccion, id_usuario } = data;
+                
+                // Llamar a la función que maneja la reacción
+                const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wssReacciones, id_usuario);
+                
+                // Opcional: Responder al cliente sobre la reacción procesada (si es necesario)
+                ws.send(JSON.stringify({
+                    type: 'respuesta_reaccion',
+                    publicacion,
+                    haReaccionado
+                }));
             } else {
                 ws.send(JSON.stringify({ error: 'Tipo de mensaje no reconocido' }));
             }
         } catch (error) {
-            console.error('Error al manejar reacción:', error);
+            console.error('Error al manejar la reacción:', error);
             ws.send(JSON.stringify({ error: 'Error interno en reacciones' }));
         }
     });
@@ -121,32 +132,19 @@ wssReacciones.on('connection', (ws) => {
     });
 });
 
-// Función para notificar reacciones
-const notificarReaccion = (reaccion) => {
-    const tipo_reaccion = reaccion; 
 
-    const mensaje = `Reacción: "${tipo_reaccion === 'me_gusta' ? 'Me gusta' : 'Disgusta'}" agregada.`;
-
-    const conteo = tipo_reaccion === 'me_gusta' ? 28 : 12; 
-
-    wssReacciones.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            const actualizacion = JSON.stringify({
-                type: 'actualizacion_reaccion',
-                mensaje: mensaje,
-                conteo: conteo
-            });
-            client.send(actualizacion);
-        }
-    });
-};
 
 // Ruta de la API para reaccionar a una publicación
-app.post('/reaccionar', (req, res) => {
-    reaccionar(req, res, wssReacciones);
-});
-
-
+app.post('/reaccionar', async (req, res) => {
+    try {
+      const { id_publicacion, tipo_reaccion, id_usuario } = req.body;
+      const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wssReacciones, id_usuario);
+      res.json({ publicacion, haReaccionado });
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  });
+  
 // Sincronización de la base de datos y servidor
 sequelize.sync()
     .then(() => sequelize.authenticate())
