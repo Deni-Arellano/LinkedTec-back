@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
-// Configuración de WebSocket para notificaciones
+
 const wssNotificaciones = new WebSocket.Server({ port: 8081 });
 console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
 

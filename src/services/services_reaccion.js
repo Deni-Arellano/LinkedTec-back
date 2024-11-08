@@ -17,7 +17,6 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
       throw new Error("Usuario no encontrado");
     }
 
-    // Consultar si el usuario ya ha reaccionado a la publicación
     let reaccionExistente = await ReaccionesUsuarios.findOne({
       where: { id_publicacion, id_usuario }
     });
@@ -25,30 +24,26 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
     let haReaccionado = false;
 
     if (reaccionExistente) {
-      // Si ya hay una reacción existente, la eliminamos (es como quitar el like o dislike)
       await reaccionExistente.destroy();
+      haReaccionado = false;
 
-      haReaccionado = false; // Ahora el usuario ya no tiene reacción
-
-      // Actualizamos el conteo de reacciones en la publicación
       if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
         publicacion.me_gusta -= 1;
       } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
         publicacion.disgusta -= 1;
       }
     } else {
-      // Si no hay reacción existente, se crea una nueva
       await ReaccionesUsuarios.create({
         id_publicacion,
         id_usuario,
         tipo_reaccion
       });
 
-      haReaccionado = true; // El usuario ahora tiene una reacción
+      haReaccionado = true;
 
-      // Actualizamos el conteo de reacciones en la publicación
       if (tipo_reaccion === 'me_gusta') {
         publicacion.me_gusta += 1;
+        await crearNotificacion(publicacion, usuario);
       } else if (tipo_reaccion === 'disgusta') {
         publicacion.disgusta += 1;
       }
@@ -69,7 +64,6 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
       });
     }
 
-    // Devolver la publicación junto con la bandera haReaccionado
     return { publicacion, haReaccionado };
   } catch (error) {
     throw error;
@@ -89,8 +83,8 @@ async function crearNotificacion(publicacion, usuario) {
     });
 
     await asociarNotificacionConUsuario(notificacion.id_notificacion, publicacion.id_usuario);
-  } catch (error) {
-    console.error('Error al crear la notificación:', error);
+
+  } catch{
   }
 }
 
