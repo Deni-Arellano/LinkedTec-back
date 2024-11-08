@@ -1,8 +1,9 @@
-// services/services_reaccion.js
-
 const Publicacion = require('../models/publicaciones');
 const ReaccionesUsuarios = require('../models/reaccionrelacion');
+const Usuario = require('../models/usuarios');
+const Notificaciones = require('../models/notificaciones');
 const WebSocket = require('ws');
+const { asociarNotificacionConUsuario } = require('./services_notificaciones');
 
 const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssReacciones, id_usuario) => {
   try {
@@ -11,13 +12,16 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
       throw new Error("Publicación no encontrada");
     }
 
-    // Buscar si el usuario ya ha reaccionado a la publicación
+    const usuario = await Usuario.findByPk(id_usuario);
+    if (!usuario) {
+      throw new Error("Usuario no encontrado");
+    }
+
     let reaccionExistente = await ReaccionesUsuarios.findOne({
       where: { id_publicacion, id_usuario }
     });
 
     if (cancelar) {
-      // Si es una cancelación, eliminar la reacción existente si hay una
       if (reaccionExistente) {
         await reaccionExistente.destroy();
         if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
@@ -27,15 +31,16 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
         }
       }
     } else {
-      // Si no hay una reacción existente, crear una nueva
       if (!reaccionExistente) {
         await ReaccionesUsuarios.create({
           id_publicacion,
           id_usuario,
           tipo_reaccion
         });
+
         if (tipo_reaccion === 'me_gusta') {
           publicacion.me_gusta += 1;
+          await crearNotificacion(publicacion, usuario);
         } else if (tipo_reaccion === 'disgusta') {
           publicacion.disgusta += 1;
         }
@@ -44,7 +49,6 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
 
     await publicacion.save();
 
-    // Enviar actualización a los clientes WebSocket
     if (wssReacciones && wssReacciones.clients) {
       wssReacciones.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -65,24 +69,21 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssRe
 };
 
 async function crearNotificacion(publicacion, usuario) {
-    try {
+  try {
+    const mensaje = `Tu publicación ha recibido un "Me gusta" de ${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`;
 
-        const mensaje = 'Tu publicación ha recibido un "Me gusta" de ' + usuario.nombre + ' ' + usuario.apellido_paterno + ' ' + usuario.apellido_materno + '';
+    const notificacion = await Notificaciones.create({
+      tipo: 'me_gusta',
+      mensaje: mensaje,
+      id_creador: usuario.id,
+      id_referencia_tipo: publicacion.id_publicacion,
+      fecha_creacion: new Date(),
+    });
 
-        const notificacion = await Notificaciones.create({
-            tipo: 'me_gusta', 
-            mensaje: mensaje, 
-            id_creador: usuario.id, 
-            id_referencia_tipo: publicacion.id_publicacion,
-            fecha_creacion: new Date(),
-        });
-
-        
-        await asociarNotificacionConUsuario(notificacion.id_notificacion, publicacion.id_usuario);
-
-    } catch (error) {
-        console.error('Error al crear la notificación:', error);
-    }
+    await asociarNotificacionConUsuario(notificacion.id_notificacion, publicacion.id_usuario);
+  } catch (error) {
+    console.error('Error al crear la notificación:', error);
+  }
 }
 
 module.exports = {
