@@ -132,6 +132,7 @@ const eliminarUsuario = async (req, res) => {
       res.status(400).json({ error: error.message });
   }
 };
+
 const obtenerImagenUsuario = async (req, res) => {
 
 
@@ -142,7 +143,7 @@ const obtenerImagenUsuario = async (req, res) => {
       await validarUsuarioExistente(id);
   
       const imagen = await usuarioService.obtenerImagenUsuario(id);
-      res.status(200).json(imagen);
+      res.status(200).json(imagen[0].imagen_usuario);
 
   }catch (error) {
     res.status(500).json({ error: error.message });

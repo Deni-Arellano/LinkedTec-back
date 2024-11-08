@@ -139,8 +139,7 @@ const obtenerImagenUsuario = async (id) => {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT
     });
-
-    return imagen.imagen_usuario;
+    return imagen;
 
 
   }catch (error) {
