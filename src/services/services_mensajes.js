@@ -235,10 +235,11 @@ async function enviarMensaje(datosMensaje) {
     }
 }
 
-
+// Agregar al module.exports
 module.exports = {
     guardarMensaje,
     obtenerMensajes,
     manejarConexion,
-    enviarMensaje
+    enviarMensaje,
+
 };

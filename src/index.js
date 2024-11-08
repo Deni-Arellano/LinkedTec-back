@@ -4,7 +4,8 @@ const sequelize = require('./config/database');
 const ftpClient = require('./config/ftp');
 require('dotenv').config();
 const WebSocket = require('ws');
-const MensajesController = require('./controllers/mensajes_controller2');
+const MensajesController = require('./controllers/mensajes_controller');
+const CartasMensajesController = require('./controllers/Cartasmensjes_controllers');
 const url = require('url');
 
 
@@ -175,6 +176,23 @@ function notificarReaccion(ws, data) {
     // Aquí notificas a los usuarios sobre la nueva reacción
     ws.send(JSON.stringify({ tipo: 'reaccion', contenido: data.contenido }));
 }
+
+
+const wssCartas = new WebSocket.Server({ port: 8083 });
+console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:8083');
+
+wssCartas.on('connection', (ws, req) => { // Cambio realizado aquí
+    try {
+        console.log('Nuevo cliente conectado al servidor de Cartas Mensajes');
+        
+        // Establecer la conexión usando el controlador
+        CartasMensajesController.establecerConexionWS(ws, req, wssCartas);
+
+    } catch (error) {
+        console.error('Error en la conexión de wssCartas:', error);
+        ws.close();
+    }
+});
 
 
 
