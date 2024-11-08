@@ -3,7 +3,9 @@ const EmpleoNotFoundError = require('../middlewares/exceptions/EmpleoNotFoundErr
 const UserNotFoundError = require('../middlewares/exceptions/UserNotFoundError');
 const UpdateConflictError = require('../middlewares/exceptions/UpdateConflictError');
 const Usuario = require('../models/usuarios');
-
+const { obtenerIdsUsuariosEmpleo } = require('../services/services_notificaciones');
+const Notificaciones = require('../models/notificaciones');
+const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 
 /**
  * @async
@@ -13,10 +15,30 @@ const Usuario = require('../models/usuarios');
  */
 exports.crearEmpleo = async (datosEmpleo) => {
   try {
-    const empleo = await Empleo.create(datosEmpleo);
-    return { success: true, data: empleo };
+      const empleo = await Empleo.create(datosEmpleo);
+
+      const mensajeNotificacion = `Se ha publicado una nueva oferta de empleo: "${empleo.titulo}"`;
+
+      const notificacionCreada = await Notificaciones.create({
+          tipo: 'empleo',
+          mensaje: mensajeNotificacion,
+          id_creador: datosEmpleo.id_usuario,
+          id_referencia_tipo: empleo.id_empleo,
+          fecha_creacion: new Date(),
+      });
+
+      const idsUsuarios = await obtenerIdsUsuariosEmpleo();
+
+      await Promise.all(idsUsuarios.map(id_usuario => 
+          NotificacionesUsuarios.create({
+              id_notificacion: notificacionCreada.id_notificacion,
+              id_usuario: id_usuario
+          })
+      ));
+
+      return { success: true, data: empleo };
   } catch (error) {
-    return { success: false, error: error.message };
+      return { success: false, error: error.message };
   }
 };
 
