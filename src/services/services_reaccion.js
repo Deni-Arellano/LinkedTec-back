@@ -1,56 +1,67 @@
-const Publicacion = require('../models/publicaciones'); 
-const Usuario = require('../models/usuarios');
-const Notificaciones = require('../models/notificaciones');
-const WebSocket = require('ws'); 
-const { asociarNotificacionConUsuario } = require('./services_notificaciones');
+// services/services_reaccion.js
 
-const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssReacciones, id_usuario) => { 
-    try {
-        const publicacion = await Publicacion.findByPk(id_publicacion);
-        if (!publicacion) {
-            throw new Error("Publicación no encontrada");
-        }
+const Publicacion = require('../models/publicaciones');
+const ReaccionesUsuarios = require('../models/reaccionrelacion');
+const WebSocket = require('ws');
 
-        const usuario = await Usuario.findByPk(id_usuario);
-        if (!usuario) {
-            throw new Error("Usuario no encontrado");
-        }
-
-        if (cancelar === true) { 
-            if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
-                publicacion.me_gusta -= 1; 
-            } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
-                publicacion.disgusta -= 1; 
-            }
-        } else {
-            if (tipo_reaccion === 'me_gusta') {
-                publicacion.me_gusta += 1; 
-                await crearNotificacion(publicacion, usuario);
-            } else if (tipo_reaccion === 'disgusta') {
-                publicacion.disgusta += 1; 
-            }
-        }
-
-        await publicacion.save();
-
-        
-        if (wssReacciones && wssReacciones.clients) {
-            wssReacciones.clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({
-                        type: 'actualizacion_reaccion',
-                        reaccion: tipo_reaccion,  
-                        conteo: tipo_reaccion === 'me_gusta' ? publicacion.me_gusta : publicacion.disgusta,
-                        id_usuario: id_usuario 
-                    }));
-                }
-            });
-        }
-
-        return publicacion; 
-    } catch (error) {
-        throw error; 
+const actualizarReaccion = async (id_publicacion, tipo_reaccion, cancelar, wssReacciones, id_usuario) => {
+  try {
+    const publicacion = await Publicacion.findByPk(id_publicacion);
+    if (!publicacion) {
+      throw new Error("Publicación no encontrada");
     }
+
+    // Buscar si el usuario ya ha reaccionado a la publicación
+    let reaccionExistente = await ReaccionesUsuarios.findOne({
+      where: { id_publicacion, id_usuario }
+    });
+
+    if (cancelar) {
+      // Si es una cancelación, eliminar la reacción existente si hay una
+      if (reaccionExistente) {
+        await reaccionExistente.destroy();
+        if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
+          publicacion.me_gusta -= 1;
+        } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
+          publicacion.disgusta -= 1;
+        }
+      }
+    } else {
+      // Si no hay una reacción existente, crear una nueva
+      if (!reaccionExistente) {
+        await ReaccionesUsuarios.create({
+          id_publicacion,
+          id_usuario,
+          tipo_reaccion
+        });
+        if (tipo_reaccion === 'me_gusta') {
+          publicacion.me_gusta += 1;
+        } else if (tipo_reaccion === 'disgusta') {
+          publicacion.disgusta += 1;
+        }
+      }
+    }
+
+    await publicacion.save();
+
+    // Enviar actualización a los clientes WebSocket
+    if (wssReacciones && wssReacciones.clients) {
+      wssReacciones.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'actualizacion_reaccion',
+            reaccion: tipo_reaccion,
+            conteo: tipo_reaccion === 'me_gusta' ? publicacion.me_gusta : publicacion.disgusta,
+            id_usuario: id_usuario
+          }));
+        }
+      });
+    }
+
+    return publicacion;
+  } catch (error) {
+    throw error;
+  }
 };
 
 async function crearNotificacion(publicacion, usuario) {
@@ -75,5 +86,5 @@ async function crearNotificacion(publicacion, usuario) {
 }
 
 module.exports = {
-    actualizarReaccion
+  actualizarReaccion
 };
