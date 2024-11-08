@@ -15,8 +15,8 @@ async function obtenerDatosChat(idUsuario) {
             },
             order: [['fecha_envio', 'DESC']],
             include: [
-                { model: Usuario, as: 'remitente', attributes: ['id', 'nombre'] },
-                { model: Usuario, as: 'destinatario', attributes: ['id', 'nombre'] }
+                { model: Usuario, as: 'remitente', attributes: ['id', 'nombre', 'imagen_usuario'] },
+                { model: Usuario, as: 'destinatario', attributes: ['id', 'nombre', 'imagen_usuario'] }
             ]
         });
 
@@ -26,8 +26,8 @@ async function obtenerDatosChat(idUsuario) {
             const key = `${Math.min(mensaje.id_remitente, mensaje.id_destinatario)}-${Math.max(mensaje.id_remitente, mensaje.id_destinatario)}`;
 
             if (!mensajesUnicos.has(key)) {
-                const remitenteData = mensaje.remitente ?? { id: null, nombre: 'Remitente desconocido' };
-                const destinatarioData = mensaje.destinatario ?? { id: null, nombre: 'Destinatario desconocido' };
+                const remitenteData = mensaje.remitente ?? { id: null, nombre: 'Remitente desconocido', imagen_usuario: null };
+                const destinatarioData = mensaje.destinatario ?? { id: null, nombre: 'Destinatario desconocido', imagen_usuario: null };
 
                 if (!remitenteData.id || !destinatarioData.id) {
                     console.error('Datos del chat incompletos:', { mensajeId: mensaje.id });
@@ -41,42 +41,49 @@ async function obtenerDatosChat(idUsuario) {
                     mensaje: mensaje.mensaje,
                     fecha_envio: mensaje.fecha_envio,
                     usuario: {
-                        // Invertir la lógica: Si soy remitente (1), mostrar destinatario (3)
                         id: parseInt(idUsuario) === mensaje.id_remitente ? 
-                            mensaje.destinatario.dataValues.id : 
-                            mensaje.remitente.dataValues.id,
+                            mensaje.destinatario.dataValues.id : mensaje.remitente.dataValues.id,
                         nombre: parseInt(idUsuario) === mensaje.id_remitente ? 
-                            mensaje.destinatario.dataValues.nombre : 
-                            mensaje.remitente.dataValues.nombre
+                            mensaje.destinatario.dataValues.nombre : mensaje.remitente.dataValues.nombre,
+                        imagen_usuario: parseInt(idUsuario) === mensaje.id_remitente ? 
+                            mensaje.destinatario.dataValues.imagen_usuario : mensaje.remitente.dataValues.imagen_usuario
                     }
                 };
-                
-                // Debug mejorado
-                console.table({
-                    ...chatData,
-                    usuario_actual: idUsuario,
-                    usuario_mostrado: `${chatData.usuario.id} (${chatData.usuario.nombre})`,
-                    tipo_usuario: parseInt(idUsuario) === mensaje.id_remitente ? 'Remitente' : 'Destinatario'
-                });
-
                 mensajesUnicos.set(key, chatData);
             }
         });
-
         return Array.from(mensajesUnicos.values());
     } catch (error) {
         console.error('Error al obtener datos del chat:', error.message);
         throw error;
     }
 }
-   
 
 async function manejarConexion(ws, req, wss, idUsuario) {
     try {
         const chatKey = `${idUsuario}`;
+
+        // Verificar si ya existe una conexión para este usuario
+        if (conexionesActivas.has(chatKey)) {
+            const conexionExistente = conexionesActivas.get(chatKey);
+            conexionExistente.close(); // Cerrar la conexión existente
+            conexionesActivas.delete(chatKey); // Eliminar la conexión existente del mapa
+            console.log(`Conexión existente para el usuario ${idUsuario} cerrada.`);
+        }
+
         conexionesActivas.set(chatKey, ws);
         console.log('Usuario conectado:', idUsuario);
         console.log('Conexiones activas:', Array.from(conexionesActivas.keys()));
+
+        // Consulta periódica a la base de datos
+        const intervalId = setInterval(async () => {
+            try {
+                const datosChat = await obtenerDatosChat(idUsuario);
+                ws.send(JSON.stringify({ tipo: 'datosChatActualizados', datos: datosChat }));
+            } catch (error) {
+                console.error('Error al obtener datos del chat:', error.message);
+            }
+        }, 10000); // Intervalo de 10 segundos
 
         ws.on('message', async (mensaje) => {
             try {
@@ -106,10 +113,8 @@ async function manejarConexion(ws, req, wss, idUsuario) {
                 // Notificar al destinatario si está conectado
                 const destinatarioKey = `${datosMensaje.id_destinatario}`;
                 const wsDestinatario = conexionesActivas.get(destinatarioKey);
-
                 console.log('Buscando destinatario:', destinatarioKey);
                 console.log('Destinatario encontrado:', !!wsDestinatario);
-
                 if (wsDestinatario && wsDestinatario.readyState === ws.OPEN) {
                     console.log('Enviando mensaje al destinatario');
                     wsDestinatario.send(JSON.stringify({
@@ -133,17 +138,15 @@ async function manejarConexion(ws, req, wss, idUsuario) {
         });
 
         ws.on('close', () => {
+            clearInterval(intervalId); // Detener la consulta periódica cuando se cierra la conexión
             conexionesActivas.delete(chatKey);
             console.log(`Usuario ${idUsuario} desconectado`);
             console.log('Conexiones activas restantes:', Array.from(conexionesActivas.keys()));
         });
-
     } catch (error) {
         console.error('Error en manejo de conexión:', error);
         ws.close();
     }
 }
-
-
 
 module.exports = { obtenerDatosChat, manejarConexion };

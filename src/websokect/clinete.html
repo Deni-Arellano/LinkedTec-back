@@ -166,10 +166,10 @@
                 console.log('Datos recibidos del servidor:', data);
                 
                 if (Array.isArray(data.mensajes)) {
-                    console.log('Recibidos mensajes históricos:', data.mensajes.length);
+                    
                     mostrarMensajesHistoricos(data.mensajes);
                 } else {
-                    console.log('Recibido mensaje nuevo:', data);
+                   
                     mostrarMensaje(data);
                 }
             };
@@ -188,23 +188,14 @@
             container.innerHTML = '';
             let currentDate = '';
             const miId = document.getElementById('idUsuario').value;
-            
-            // Debug para ver los mensajes que llegan
-            console.log('Mensajes recibidos:', mensajes);
+
             console.log('Mi ID:', miId);
             
             // Ordenar mensajes por fecha
             mensajes.sort((a, b) => new Date(a.fecha_envio) - new Date(b.fecha_envio));
             
             mensajes.forEach(mensaje => {
-                // Debug para cada mensaje
-                console.log('Procesando mensaje:', {
-                    remitente: mensaje.id_remitente,
-                    destinatario: mensaje.id_destinatario,
-                    esMiMensaje: mensaje.id_remitente == miId,
-                    mensaje: mensaje.mensaje,
-                    fecha: mensaje.fecha_envio
-                });
+
         
                 const messageDate = new Date(mensaje.fecha_envio).toLocaleDateString('es-ES');
                 if (messageDate !== currentDate) {

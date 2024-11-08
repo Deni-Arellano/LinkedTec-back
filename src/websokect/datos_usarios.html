@@ -10,6 +10,14 @@
             padding: 16px;
             margin: 10px;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .chat-card img {
+            border-radius: 50%;
+            margin-right: 16px;
+            width: 50px;
+            height: 50px;
         }
     </style>
 </head>
@@ -45,11 +53,9 @@
                 try {
                     const data = JSON.parse(event.data);
 
-                    if (data.tipo === 'datosChat') {
+                    if (data.tipo === 'datosChat' || data.tipo === 'datosChatActualizados') {
                         renderChats(data.datos);
-                    } else if (data.tipo === 'nuevoMensaje') {
-                        actualizarChat(data.mensaje);
-                    } else if (data.tipo === 'mensajeEnviado') {
+                    } else if (data.tipo === 'nuevoMensaje' || data.tipo === 'mensajeEnviado') {
                         actualizarChat(data.mensaje);
                     } else if (data.tipo === 'error') {
                         console.error('Error del servidor:', data.mensaje);
@@ -90,9 +96,12 @@
                         const carta = document.createElement('div');
                         carta.className = 'chat-card';
                         carta.innerHTML = `
-                            <p>${usuario.nombre}</p>
-                            <p>${chat.mensaje}</p>
-                            <p>${new Date(chat.fecha_envio).toLocaleString()}</p>
+                            <img src="${usuario.imagen_usuario}" alt="Imagen de ${usuario.nombre}">
+                            <div>
+                                <p>${usuario.nombre}</p>
+                                <p>${chat.mensaje}</p>
+                                <p>${new Date(chat.fecha_envio).toLocaleString()}</p>
+                            </div>
                         `;
                         contenedor.appendChild(carta);
                         usuariosProcesados.add(usuario.id);
@@ -116,9 +125,12 @@
                 const carta = document.createElement('div');
                 carta.className = 'chat-card';
                 carta.innerHTML = `
-                    <p>${mensaje.id_remitente}</p>
-                    <p>${mensaje.mensaje}</p>
-                    <p>${new Date(mensaje.fecha_envio).toLocaleString()}</p>
+                    <img src="${mensaje.imagen_usuario}" alt="Imagen de ${mensaje.id_remitente}">
+                    <div>
+                        <p>${mensaje.id_remitente}</p>
+                        <p>${mensaje.mensaje}</p>
+                        <p>${new Date(mensaje.fecha_envio).toLocaleString()}</p>
+                    </div>
                 `;
                 contenedor.appendChild(carta);
             }

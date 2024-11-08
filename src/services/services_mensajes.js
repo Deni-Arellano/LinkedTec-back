@@ -33,7 +33,7 @@ async function validarUsuarios(idRemitente, idDestinatario) {
 
 async function guardarMensaje(datosMensaje) {
     try {
-        console.log('Datos recibidos:', datosMensaje);
+      
 
         const usuariosValidos = await validarUsuarios(
             datosMensaje.idCliente, 
@@ -53,7 +53,7 @@ async function guardarMensaje(datosMensaje) {
             leido: false
         });
 
-        console.log('Mensaje guardado:', mensaje.toJSON());
+
         return mensaje;
     } catch (error) {
         console.error('Error detallado al guardar mensaje:', {
@@ -108,14 +108,6 @@ async function obtenerMensajes(idUsuario, idChat) {
             const mensajeJSON = mensaje.toJSON();
             const tipo = mensajeJSON.id_remitente === parseInt(idUsuario) ? 'enviado' : 'recibido';
             
-            console.log(`Mensaje ${tipo}:`, {
-                id: mensajeJSON.id,
-                remitente: mensajeJSON.remitente?.nombre,
-                destinatario: mensajeJSON.destinatario?.nombre,
-                mensaje: mensajeJSON.mensaje,
-                fecha: mensajeJSON.fecha_envio
-            });
-
             return {
                 id: mensajeJSON.id,
                 mensaje: mensajeJSON.mensaje,
@@ -127,10 +119,6 @@ async function obtenerMensajes(idUsuario, idChat) {
                 tipo: tipo
             };
         });
-
-        console.log(`Total mensajes encontrados: ${mensajesFormateados.length}`);
-        console.log(`Mensajes enviados: ${mensajesFormateados.filter(m => m.tipo === 'enviado').length}`);
-        console.log(`Mensajes recibidos: ${mensajesFormateados.filter(m => m.tipo === 'recibido').length}`);
 
         return mensajesFormateados;
 
@@ -146,8 +134,7 @@ async function manejarConexion(ws, req, wss, idUsuario, idChat) {
         // Guardar la conexión activa usando solo el ID del usuario
         const chatKey = `${idUsuario}`;
         conexionesActivas.set(chatKey, ws);
-        console.log('Usuario conectado:', idUsuario);
-        console.log('Conexiones activas:', Array.from(conexionesActivas.keys()));
+
 
         // Obtener historial de mensajes
         const mensajes = await obtenerMensajes(idUsuario, idChat);
@@ -158,7 +145,7 @@ async function manejarConexion(ws, req, wss, idUsuario, idChat) {
             try {
                 const datosMensaje = JSON.parse(mensaje);
                 const mensajeGuardado = await guardarMensaje(datosMensaje);
-                console.log('Mensaje guardado:', mensajeGuardado);
+               
 
                 // Enviar confirmación al remitente
                 ws.send(JSON.stringify(mensajeGuardado));

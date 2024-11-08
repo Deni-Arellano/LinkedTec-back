@@ -6,6 +6,7 @@ require('dotenv').config();
 const WebSocket = require('ws');
 const MensajesController = require('./controllers/mensajes_controller');
 const CartasMensajesController = require('./controllers/Cartasmensjes_controllers');
+const {procesarMensaje} = require('./services/services_Cartasmensajes');
 const url = require('url');
 
 
@@ -30,7 +31,7 @@ const routesEventos = require('./routes/routes_eventos');
 const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const routerImagenes = require('./routes/subidas_cloudinary');
-const { manejarConexion } = require('./services/services_mensajes');
+
 
 
 const app = express();
@@ -82,7 +83,7 @@ wss.on('connection', (ws, req) => {
     try {
         console.log('Nuevo cliente conectado');
         
-        // Obtener parámetros de la URL
+      
         const parameters = url.parse(req.url, true).query;
         const { idUsuario, idChat } = parameters;
 
@@ -92,7 +93,6 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
-        // Establecer conexión usando el controlador
         MensajesController.establecerConexionWS(ws, req, wss);
 
     } catch (error) {
@@ -208,7 +208,8 @@ wssCartas.on('connection', (ws, req) => {
 
 
 
-// Sincronización de la base de datos, prueba FTP y servidor
+
+
 sequelize.sync()
     .then(() => sequelize.authenticate())
     .then(() => testFTPConnection())
