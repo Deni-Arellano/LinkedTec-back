@@ -124,9 +124,11 @@ const obtenerTodosLosUsuarios = async (req, res) => {
 
 const eliminarUsuario = async (req, res) => {
   const { id } = req.params;
+  const contraseña = req.params.contraseña;
+
 
   try {
-      const resultado = await deleteUsuario(id);
+      const resultado = await deleteUsuario(id, contraseña);
       res.status(200).json(resultado);
   } catch (error) {
       res.status(400).json({ error: error.message });

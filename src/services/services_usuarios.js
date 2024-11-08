@@ -103,10 +103,14 @@ const obtenerTodosLosUsuarios = async () => {
   }
 };
 
-const deleteUsuario = async (id) => {
+const deleteUsuario = async (id, contraseñaRecibida) => {
   const usuario = await Usuario.findByPk(id);
   if (!usuario) {
       throw new Error('Usuario no encontrado');
+  }
+
+  if (usuario.contraseña != contraseñaRecibida) {
+      throw new Error('Contraseña incorrecta, no se puede eliminar el usuario');
   }
 
   if (usuario.role === 'Docentes') {
