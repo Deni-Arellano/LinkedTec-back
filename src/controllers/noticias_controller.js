@@ -128,27 +128,27 @@ exports.obtenerNoticiaPorId = async (req, res) => {
 
 exports.obtenerTodasLasNoticias = async (req, res) => {
     try {
-        // Obtener parámetros de paginación de la solicitud
-        const pagina = parseInt(req.query.pagina) || 1; // Página actual, por defecto 1
-        const limite = parseInt(req.query.limite) || 10; // Límite de elementos por página, por defecto 10
-        const offset = (pagina - 1) * limite; // Cálculo del offset
+       
+        const pagina = parseInt(req.query.pagina) || 1; 
+        const limite = parseInt(req.query.limite) || 10; 
+        const offset = (pagina - 1) * limite; 
 
-        // Obtener todas las noticias desde el servicio
+    
         const { success, data, error } = await NoticiaService.obtenerTodasLasNoticias();
 
-        // Revisar si se encontraron noticias
+      
         if (!success || data.length === 0) {
             return res.status(404).json({ message: "No se encontraron noticias." });
         }
 
-        // Calcular el total de noticias y las páginas
-        const total = data.length; // Total de noticias
-        const totalPaginas = Math.ceil(total / limite); // Total de páginas
+      
+        const total = data.length; 
+        const totalPaginas = Math.ceil(total / limite); 
 
-        // Obtener solo las noticias de la página actual
+        
         const noticiasPagina = data.slice(offset, offset + limite);
 
-        // Crear respuesta con paginación
+        
         const response = {
             total,
             pagina,
@@ -162,12 +162,12 @@ exports.obtenerTodasLasNoticias = async (req, res) => {
                 url: pagina > 1 ? `http://localhost:3000/noticias?pagina=${pagina - 1}&limite=${limite}` : null,
                 exists: pagina > 1
             },
-            noticias: noticiasPagina // Enviamos solo las noticias de la página actual
+            noticias: noticiasPagina 
         };
 
         return res.status(200).json(response);
     } catch (error) {
-        // Manejo de errores
+       
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };

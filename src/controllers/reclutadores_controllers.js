@@ -18,7 +18,7 @@ const crearReclutador = async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
   
-  // Validamos el objeto reclutador primero
+ 
 
   const { error1 } = validarReclutador(reclutador);
   if (error1) {
@@ -28,22 +28,20 @@ const crearReclutador = async (req, res) => {
 
 
   try {
-    // Validamos que el correo y el usuario no existan antes de continuar
+    
     await validarCorreoExistente(usuario.correo);
     
 
-    // Intentamos crear el reclutador si no hubo errores en las validaciones
+    
     const result = await crearReclutadorServicio(usuario, reclutador);
     return res.status(201).json(result);
 
   } catch (error) {
-    // Si el correo ya está en uso
+  
     if (error.name === 'EmailExistsError') {
       return res.status(409).json({ message: 'El correo ya está en uso' });
     }
-    // Si el usuario ya existe
 
-    // Otros errores
     console.error('Error al crear reclutador:', error);
     return res.status(500).json({ message: 'Error al crear reclutador', error: error.message });
   }
@@ -105,25 +103,25 @@ const obtenerReclutador = async (req, res) => {
 
 const obtenerTodosReclutadores = async (req, res) => {
   try {
-    // Obtener parámetros de paginación de la solicitud
-    const pagina = parseInt(req.query.pagina) || 1; // Página actual, por defecto 1
-    const limite = parseInt(req.query.limite) || 10; // Limite de elementos por página, por defecto 10
-    const offset = (pagina - 1) * limite; // Calcular el offset
+    
+    const pagina = parseInt(req.query.pagina) || 1; 
+    const limite = parseInt(req.query.limite) || 10; 
+    const offset = (pagina - 1) * limite; 
 
-    // Obtener todos los reclutadores
-    const reclutadores = await obtenerTodosReclutadoresServicio(); // Asegúrate de que esta función devuelva un arreglo
+   
+    const reclutadores = await obtenerTodosReclutadoresServicio(); 
 
-    // Validamos que los reclutadores existan
+  
     await validarUsuariosExistentes(reclutadores);
 
-    // Calcular el total de reclutadores y las páginas
-    const total = reclutadores.length; // Total de reclutadores
-    const totalPaginas = Math.ceil(total / limite); // Total de páginas
+    
+    const total = reclutadores.length; 
+    const totalPaginas = Math.ceil(total / limite); s
 
-    // Obtener solo los reclutadores de la página actual
+    
     const reclutadoresPagina = reclutadores.slice(offset, offset + limite);
 
-    // Crear respuesta con la estructura deseada
+    
     const response = {
       total,
       pagina,
@@ -140,7 +138,7 @@ const obtenerTodosReclutadores = async (req, res) => {
       reclutadores: reclutadoresPagina
     };
 
-    // Respuesta exitosa con los reclutadores obtenidos
+    
     res.status(200).json(response);
   } catch (error) {
     if (error.name === 'UserNotFoundError') {
@@ -154,25 +152,25 @@ const obtenerTodosReclutadores = async (req, res) => {
 
 const obtenerUsuariosYReclutadores = async (req, res) => {
   try {
-    // Obtener parámetros de paginación de la solicitud
-    const pagina = parseInt(req.query.pagina) || 1; // Usar 'pagina' de la URL
-    const limite = parseInt(req.query.limite) || 10; // Usar 'limite' de la URL
-    const offset = (pagina - 1) * limite; // Calcular el offset
+    
+    const pagina = parseInt(req.query.pagina) || 1; 
+    const limite = parseInt(req.query.limite) || 10; 
+    const offset = (pagina - 1) * limite; 
 
-    // Obtener todos los reclutadores
+    
     const reclutadores = await obtenerTodosUsuariosYReclutadores();
-    console.log('Reclutadores obtenidos:', reclutadores);
+    
 
     await validarUsuariosExistentes(reclutadores);
 
-    // Calcular el total de reclutadores
-    const total = reclutadores.length; // Total de reclutadores
-    const totalPaginas = Math.ceil(total / limite); // Total de páginas
+   
+    const total = reclutadores.length; 
+    const totalPaginas = Math.ceil(total / limite); 
 
-    // Obtener solo los reclutadores de la página actual
+    
     const reclutadoresPagina = reclutadores.slice(offset, offset + limite);
 
-    // Crear respuesta
+   
     const response = {
       total,
       pagina,
@@ -222,7 +220,7 @@ const obtenerUsuariosYReclutadores = async (req, res) => {
 
 
 
-//insomnia Obtener rol epecifico
+
 const obtenerReclutadorPorId = async (req, res) => {
   const { id } = req.params;
 
@@ -230,10 +228,10 @@ const obtenerReclutadorPorId = async (req, res) => {
     
     await validarUsuarioExistente(id);
     
-    // Obtiene el reclutador por ID
+   
     const reclutador = await obtenerReclutadorPorIdServicio(id);
 
-    // Si no lanza error, asume que se encontró el reclutador y responde con los datos
+
     res.status(200).json({
       id: reclutador.id,
       nombre_empresa: reclutador.nombre_empresa,
@@ -243,7 +241,6 @@ const obtenerReclutadorPorId = async (req, res) => {
 
   } catch (error) {
 
-    // Manejar errores específicos, como que el reclutador no se encuentre
     if (error.name === 'UserNotFoundError') {
       return res.status(404).json({ message: 'Reclutador no encontrado' });
      
@@ -258,15 +255,15 @@ const obtenerReclutadorPorId = async (req, res) => {
 
 
 
-// en insomnia Obtener usuario espeficio con rol
+
 const obtenerReclutadorDetalladoPorId = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Verifica si el usuario existe (esta función debería lanzar un error si no existe)
+   
     await validarUsuarioExistente(id);
 
-    // Obtiene los detalles del reclutador, si no existe debería lanzar un error
+  
     const reclutador = await obtenerReclutadorDetalladoPorIdServicio(id);
     console.log(id);
     if (!reclutador || !reclutador.Usuario) {
@@ -291,16 +288,16 @@ const obtenerReclutadorDetalladoPorId = async (req, res) => {
       giro: reclutador.giro
     };
 
-    // Respuesta exitosa con los detalles del reclutador
+   
     res.status(200).json(response);
   } catch (error) {
-    // Si el error es específico de que el usuario no fue encontrado, manejarlo aquí
+    
     if (error.name === 'UserNotFoundError') {
       return res.status(404).json({ message: 'Reclutador no encontrado' });
     }
 
-    // Para otros errores, devolver un 500
-    console.error('Error al obtener reclutador por ID:', error);
+
+
     res.status(500).json({ message: 'Error al obtener reclutador', error: error.message });
   }
 };
@@ -315,7 +312,7 @@ const actualizarReclutador = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
     
-    // Validamos el objeto reclutador primero
+  
   
     const { error1 } = validarReclutador(reclutador);
     if (error1) {
@@ -326,7 +323,7 @@ const actualizarReclutador = async (req, res) => {
     
     const resultado = await actualizarReclutadorServicio(id, usuario, reclutador);
 
-    // Responder con los datos actualizados
+
     res.status(200).json({
       message: 'Usuario y reclutador actualizados correctamente',
       usuario: resultado.usuario,

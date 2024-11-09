@@ -1,4 +1,4 @@
-// En services_mensajes.js
+
 const WebSocket = require('ws');
 const Mensaje = require('../models/mensaje');
 const Usuario = require('../models/usuarios');
@@ -66,7 +66,6 @@ async function guardarMensaje(datosMensaje) {
 // En services_mensajes.js
 async function obtenerMensajes(idUsuario, idChat) {
     try {
-        console.log(`Obteniendo mensajes para usuario ${idUsuario} con chat ${idChat}`);
         
         const mensajes = await Mensaje.findAll({
             where: {
@@ -128,37 +127,36 @@ async function obtenerMensajes(idUsuario, idChat) {
     }
 }
 const conexionesActivas = new Map();
-// En services_mensajes.js
+
 async function manejarConexion(ws, req, wss, idUsuario, idChat) {
     try {
-        // Guardar la conexión activa usando solo el ID del usuario
+       
         const chatKey = `${idUsuario}`;
         conexionesActivas.set(chatKey, ws);
 
 
-        // Obtener historial de mensajes
+       
         const mensajes = await obtenerMensajes(idUsuario, idChat);
         ws.send(JSON.stringify({ mensajes }));
 
-        // Manejar mensajes entrantes
+       
         ws.on('message', async (mensaje) => {
             try {
                 const datosMensaje = JSON.parse(mensaje);
                 const mensajeGuardado = await guardarMensaje(datosMensaje);
                
 
-                // Enviar confirmación al remitente
+                
                 ws.send(JSON.stringify(mensajeGuardado));
 
-                // Enviar al destinatario si está conectado
-                const destinatarioKey = `${datosMensaje.idChat}`; // Usar solo el ID del destinatario
+               
+                const destinatarioKey = `${datosMensaje.idChat}`; 
                 const wsDestinatario = conexionesActivas.get(destinatarioKey);
                 
-                console.log('Buscando destinatario:', destinatarioKey);
-                console.log('Destinatario encontrado:', !!wsDestinatario);
+       
 
                 if (wsDestinatario && wsDestinatario.readyState === WebSocket.OPEN) {
-                    console.log('Enviando mensaje al destinatario');
+                    
                     wsDestinatario.send(JSON.stringify(mensajeGuardado));
                 } else {
                     console.log('Destinatario no conectado o websocket cerrado');
@@ -179,8 +177,7 @@ async function manejarConexion(ws, req, wss, idUsuario, idChat) {
         // Limpiar conexión al cerrar
         ws.on('close', () => {
             conexionesActivas.delete(chatKey);
-            console.log(`Usuario ${idUsuario} desconectado`);
-            console.log('Conexiones activas restantes:', Array.from(conexionesActivas.keys()));
+
         });
 
     } catch (error) {

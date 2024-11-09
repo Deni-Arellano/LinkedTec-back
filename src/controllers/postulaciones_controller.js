@@ -4,14 +4,14 @@ const {validarUsuarioExistente}=require('../middlewares/validations/validaciones
 const {verificarEmpleoPorId}=require('../middlewares/validations/validaciones_empleos');
 
 
-//importacion de middlewares de validacion
+
 const validarUsuario = require('../middlewares/validations/validaciones_usuarios');
 const validarEmpleo = require('../middlewares/validations/validaciones_empleos');
 const validarpostulacion = require('../middlewares/validations/validaciones_postulaciones');
 
 
 
-//visulaicasion de usarios
+
 const obtenerPostulacionesDeUsuario = async (req, res) => {
   const id_usuario = req.params.id; 
   const { pagina = 1, limite = 10 } = req.query; 
@@ -70,7 +70,7 @@ const obtenerPostulacionCompleta = async (req, res) => {
 };
 
 
-//visualizacion de reclutadores
+
 const obtenerPostulantesPorEmpleoController = async (req, res) => {
   const { id_empleo } = req.params;
   const { pagina = 1, limite = 10 } = req.query;
@@ -150,9 +150,7 @@ const crearPostulacion = async (req, res) => {
 
     await validarUsuario.validarUsuarioExistente(informacionPostulacion.id_usuario);
     await validarEmpleo.verificarEmpleoPorId(informacionPostulacion.id_empleo);
-    
-    //await validarpostulacion.validarRecursoExistente(informacionPostulacion.cv);
-
+  
     const nuevaPostulacion = await postulacionServices.crearPostulacion(informacionPostulacion);
 
     return res.status(201).json(nuevaPostulacion);

@@ -15,36 +15,36 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
       throw new Error("Usuario no encontrado");
     }
 
-    // Consultar si el usuario ya ha reaccionado a la publicación
+ 
     const reaccionExistente = await ReaccionesUsuarios.findOne({
       where: { id_publicacion, id_usuario }
     });
 
-    let haReaccionado = false; // Bandera por defecto
+    let haReaccionado = false; 
 
     if (reaccionExistente) {
-      // Si ya hay una reacción existente, la eliminamos (es como quitar el like)
+     
       await reaccionExistente.destroy();
 
-      haReaccionado = false; // Ahora el usuario ya no tiene reacción
+      haReaccionado = false; 
 
-      // Actualizamos el conteo de reacciones en la publicación
+     
       if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
         publicacion.me_gusta -= 1;
       } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
         publicacion.disgusta -= 1;
       }
     } else {
-      // Si no hay reacción existente, se crea una nueva
+      
       await ReaccionesUsuarios.create({
         id_publicacion,
         id_usuario,
         tipo_reaccion
       });
 
-      haReaccionado = true; // El usuario ahora tiene una reacción
+      haReaccionado = true; 
 
-      // Actualizamos el conteo de reacciones en la publicación
+      
       if (tipo_reaccion === 'me_gusta') {
         publicacion.me_gusta += 1;
       } else if (tipo_reaccion === 'disgusta') {
@@ -54,7 +54,7 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
 
     await publicacion.save();
 
-    // Enviar actualización a los clientes WebSocket
+   t
     if (wssReacciones && wssReacciones.clients) {
       wssReacciones.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -68,7 +68,7 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
       });
     }
 
-    // Devolver la publicación junto con la bandera haReaccionado
+ 
     return { publicacion, haReaccionado };
   } catch (error) {
     throw error;

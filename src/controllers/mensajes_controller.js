@@ -61,11 +61,10 @@ class MensajesController {
         }
     }
 
-    // mensajes_controller2.js
-    // Modificar el método establecerConexionWS
+
     async establecerConexionWS(ws, req, wss) {
         try {
-            // Obtener parámetros de la URL query en lugar de params
+            
             const parameters = url.parse(req.url, true).query;
             const idUsuario = parseInt(parameters.idUsuario);
             const idChat = parseInt(parameters.idChat);

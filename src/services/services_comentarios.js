@@ -2,12 +2,11 @@ const Comentario = require('../models/comentarios');
 const Usuario = require('../models/usuarios'); 
 const {validarComentarioExistente} = require('../middlewares/validations/validaciones_comentarios');
 
-// Crear un comentario
+
 const crearComentario = async (data) => {
     return await Comentario.create(data);
 };
 
-// Eliminar un comentario
 const eliminarComentario = async (id) => {
     return await Comentario.destroy({
         where: { id_comentario: id }
@@ -28,12 +27,11 @@ const obtenerComentariosPorPublicacion = async (id_publicacion) => {
       ]
     });
 
-    // Verificar si no se encontraron comentarios
     if (comentarios.length === 0) {
       throw { name: 'CommentNotFoundError', message: 'No se encontraron comentarios para esta publicación' };
     }
 
-    // Transformar los comentarios para incluir la información del usuario
+    
     const comentariosConUsuario = comentarios.map(comentario => ({
       texto: comentario.texto, 
       fecha: comentario.fecha,

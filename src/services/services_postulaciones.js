@@ -10,7 +10,7 @@ const SubidaCloudinary = require('../services/services_cloudinary');
 
 
 
-//visulaicasion de usarios
+
 
 const obtenerPostulacionesDeUsuarioService = async (id_usuario, pagina = 1, limite = 10) => {
   const offset = (pagina - 1) * limite;
@@ -108,7 +108,7 @@ const obtenerPostulacionCompletaService = async (id_postulacion) => {
     },
   };
 };
-//visualizacion de reclutadores
+
 const obtenerPostulantesPorEmpleoService = async (id_empleo, pagina, limite) => {
   const offset = (pagina - 1) * limite;
 

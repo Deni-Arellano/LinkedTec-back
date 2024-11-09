@@ -13,7 +13,7 @@ const crearReclutadorServicio = async (usuarioData, reclutadorData) => {
   try {
     const nuevoUsuario = await Usuario.create(usuarioData);
 
-    console.log('ID del nuevo usuario:', nuevoUsuario.id);
+    
 
     const nuevoReclutador = await Reclutador.create({
       id: nuevoUsuario.id, 
@@ -47,7 +47,7 @@ const obtenerReclutadorServicio = async (id) => {
         {
           model: Usuario,
           attributes: ['nombre', 'apellido_paterno', 'apellido_materno', 'correo', 'telefono', 'fecha_nacimiento', 'sexo', 'role'],
-          // Asegúrate de que la asociación se haga con la clave foránea correcta
+         
         }
       ]
     });
@@ -139,7 +139,7 @@ const obtenerReclutadorDetalladoPorIdServicio = async (id) => {
     return reclutador;
   } catch (error) {
     console.error('Error al obtener reclutador por ID en el servicio:', error);
-    throw error; // Lanzamos el error para que sea manejado por el controlador
+    throw error; 
   }
 };
 
@@ -147,13 +147,13 @@ const obtenerReclutadorDetalladoPorIdServicio = async (id) => {
 
 const actualizarReclutadorServicio = async (id, datosUsuarioActualizados, datosReclutadorActualizados) => {
   try {
-    // Buscar el usuario por ID
+    
     const usuario = await Usuario.findOne({ where: { id } });
     if (!usuario) {
       throw new Error('Usuario no encontrado');
     }
 
-    // Actualizar los datos del usuario
+   
     await usuario.update({
       nombre: datosUsuarioActualizados.nombre,
       apellido_paterno: datosUsuarioActualizados.apellido_paterno,
@@ -166,7 +166,7 @@ const actualizarReclutadorServicio = async (id, datosUsuarioActualizados, datosR
       imagen_usuario: datosUsuarioActualizados.imagen_usuario
     });
 
-    // Buscar el reclutador por ID
+    
     const reclutador = await Reclutador.findOne({ where: { id } });
     if (!reclutador) {
       throw new Error('Reclutador no encontrado');
