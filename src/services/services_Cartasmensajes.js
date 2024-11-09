@@ -72,8 +72,7 @@ async function manejarConexion(ws, req, wss, idUsuario) {
         }
 
         conexionesActivas.set(chatKey, ws);
-        console.log('Usuario conectado:', idUsuario);
-        console.log('Conexiones activas:', Array.from(conexionesActivas.keys()));
+
 
         // Consulta periódica a la base de datos
         const intervalId = setInterval(async () => {
@@ -113,10 +112,8 @@ async function manejarConexion(ws, req, wss, idUsuario) {
                 // Notificar al destinatario si está conectado
                 const destinatarioKey = `${datosMensaje.id_destinatario}`;
                 const wsDestinatario = conexionesActivas.get(destinatarioKey);
-                console.log('Buscando destinatario:', destinatarioKey);
-                console.log('Destinatario encontrado:', !!wsDestinatario);
                 if (wsDestinatario && wsDestinatario.readyState === ws.OPEN) {
-                    console.log('Enviando mensaje al destinatario');
+                   
                     wsDestinatario.send(JSON.stringify({
                         tipo: 'nuevoMensaje',
                         mensaje: nuevoMensaje
@@ -140,8 +137,7 @@ async function manejarConexion(ws, req, wss, idUsuario) {
         ws.on('close', () => {
             clearInterval(intervalId); // Detener la consulta periódica cuando se cierra la conexión
             conexionesActivas.delete(chatKey);
-            console.log(`Usuario ${idUsuario} desconectado`);
-            console.log('Conexiones activas restantes:', Array.from(conexionesActivas.keys()));
+
         });
     } catch (error) {
         console.error('Error en manejo de conexión:', error);
