@@ -244,11 +244,46 @@ async function crearPostulacion(informacion_postulacion) {
   }
 }
 
+const cambiarEstadoPostulacion = async (id_postulacion, estado="Pendiente") => {
+  try {
+    const postulacion = await Postulacion.findByPk(id_postulacion);
+
+    if (!postulacion) {
+      throw new Error('Postulación no encontrada');
+    }
+
+    const nuevo_estado = await Estado.findOne({ where: { estado } });
+
+    if (!nuevo_estado) {
+      throw new Error('Estado no encontrado');
+    }
+
+    postulacion.id_estado = nuevo_estado.id_estado;
+
+    await postulacion.save();
+
+    return {
+      id_postulacion: postulacion.id_postulacion,
+      id_usuario: postulacion.id_usuario,
+      id_empleo: postulacion.id_empleo,
+      id_estado: postulacion.id_estado,
+      descripcion_personal: postulacion.descripcion_personal,
+      fecha_creacion: postulacion.fecha_creacion,
+      cv: postulacion.cv,
+    };
+
+  }
+  catch (error) {
+    console.error('Error al cambiar el estado de la postulación:', error);
+    throw new Error('Error al cambiar el estado de la postulación');
+  }
+}
 
 module.exports = {
   obtenerPostulacionesDeUsuarioService,
   obtenerPostulacionCompletaService,
   obtenerPostulantesPorEmpleoService,
   obtenerDetallesPostulantePorId,
-  crearPostulacion
+  crearPostulacion,
+  cambiarEstadoPostulacion
 };

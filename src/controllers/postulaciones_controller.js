@@ -148,7 +148,6 @@ const crearPostulacion = async (req, res) => {
     }
 
 
-    //Validaciones con metodos y excepciones especificos
     await validarUsuario.validarUsuarioExistente(informacionPostulacion.id_usuario);
     await validarEmpleo.verificarEmpleoPorId(informacionPostulacion.id_empleo);
     
@@ -177,6 +176,29 @@ const crearPostulacion = async (req, res) => {
 
 };
 
+const cambiarEstadoPostulacion = async (req, res) => {
+
+  try {
+    const  id_postulacion  = req.params.id_postulacion;
+    const  estado  = req.query.estado || 'Pendiente';
+
+    await validarPostulacionExistente(id_postulacion);
+
+
+    
+    const postulacion = await postulacionServices.cambiarEstadoPostulacion(id_postulacion, estado);
+    return res.status(200).json(postulacion);
+
+  } catch (error) {
+    if (error.name == 'PostulacionNotFoundError') {
+      return res.status(404).json({ error: error.message });
+    } else {
+      console.error('Error al cambiar el estado de la postulación:', error);
+      res.status(500).json({ error: "Error al cambiar el estado de la postulación", message: error.message });
+    }
+  }
+};
+
 
 
 
@@ -188,5 +210,6 @@ module.exports = {
     obtenerPostulacionCompleta,
     obtenerPostulantesPorEmpleoController,
     obtenerDetallesPostulanteController,
-    crearPostulacion
+    crearPostulacion,
+    cambiarEstadoPostulacion
 };

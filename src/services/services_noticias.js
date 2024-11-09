@@ -1,6 +1,7 @@
 const Noticia= require('../models/noticias.js');
-const db = require('../config/database');
-const sequelize = require('../config/database.js');
+const Notificaciones = require('../models/notificaciones');
+const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
+const { obtenerIdsUsuariosNoticias } = require('../services/services_notificaciones');
 
 /**
  * @async
@@ -11,11 +12,32 @@ const sequelize = require('../config/database.js');
 exports.crearNoticia = async (datosNoticia) => {
   try {
     const noticia = await Noticia.create(datosNoticia);
+
+    const mensajeNotificacion = `Se ha publicado una nueva noticia: "${noticia.titulo_noticia}"`;
+    
+    const notificacionCreada = await Notificaciones.create({
+        tipo: 'noticia',
+        mensaje: mensajeNotificacion,
+        id_creador: datosNoticia.id_usuario,
+        id_referencia_tipo: noticia.id_noticia,
+        fecha_creacion: new Date(),
+    });
+    
+
+    const idsUsuarios = await obtenerIdsUsuariosNoticias();
+    await Promise.all(idsUsuarios.map(id_usuario => 
+      NotificacionesUsuarios.create({
+          id_notificacion: notificacionCreada.id_notificacion,
+          id_usuario: id_usuario
+      })
+  ));
+
     return { success: true, data: noticia };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
+
 
 
 
@@ -76,7 +98,7 @@ exports.eliminarNoticia = async (id_noticia) => {
  * @throws {Error} - Lanza un error si ocurre algún problema durante la actualización de la noticia.
  */
 exports.actualizarNoticia = async (id_noticia, datosNoticia) => {
-  const sequelize = require('sequelize');
+  
   
   // Iniciar una transacción
   const t = await sequelize.transaction();

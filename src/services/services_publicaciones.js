@@ -1,6 +1,8 @@
 const Publicacion = require('../models/publicaciones'); 
+const Usuario = require('../models/usuarios');
 const { Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
+
 
 /**
  * Función para crear una nueva publicación.
@@ -46,7 +48,6 @@ const obtenerPublicacionesPorUsuarioService = async (id_usuario, pagina = 1, lim
       offset,
       order: [['fecha', 'DESC']] 
     });
-    console.log(publicacionesPorUsuario.rows);
     const totalPaginas = Math.ceil(publicacionesPorUsuario.count / limite);
 
     return {
@@ -95,20 +96,46 @@ const obtenerPublicacionPorIdService = async (id_publicacion) => {
  * @param {number} limit - Cantidad de publicaciones por página.
  * @returns {Promise<Object>} Lista paginada de publicaciones.
  */
-const obtenerTodasLasPublicacionesService = async (pagina = 1, limite = 10) => {
+const obtenerTodasLasPublicacionesService = async (pagina = 1, limite = 10, informacionCompleta = false) => {
   try {
     const offset = (pagina - 1) * limite;
 
-    // Busca todas las publicaciones con paginación y ordenadas por fecha
-    const publicaciones = await Publicacion.findAndCountAll({
+    // Preparamos la consulta base
+    const queryOptions = {
       limite,
       offset,
-      order: [['fecha', 'DESC']] // Ordena por fecha en orden descendente
-    });
+      order: [['fecha', 'DESC']], // Ordena por fecha en orden descendente
+      raw: true // Esto hace que los resultados vengan como objetos planos
+    };
+
+    // Si informacionCompleta es verdadero, incluye los datos del usuario como atributos adicionales
+    if (informacionCompleta) {
+      queryOptions.attributes = [
+        '*',  // Selecciona todos los campos de la publicación
+        [sequelize.fn('concat', 
+          sequelize.col('Usuario.nombre'), 
+          ' ', 
+          sequelize.col('Usuario.apellido_paterno'), 
+          ' ', 
+          sequelize.col('Usuario.apellido_materno')
+        ), 'nombreCompleto'],
+        [sequelize.col('Usuario.imagen_usuario'), 'fotoPerfil']
+      ];
+      
+      queryOptions.include = [{
+        model: Usuario,
+        attributes: [], // No incluimos atributos directamente del modelo Usuario
+        required: false
+      }];
+    }
+
+    // Busca todas las publicaciones con paginación y ordenadas por fecha
+    const publicaciones = await Publicacion.findAndCountAll(queryOptions);
 
     const totalPaginas = Math.ceil(publicaciones.count / limite);
 
-    return {
+    // Preparar la respuesta
+    const response = {
       "total": publicaciones.count,
       "pagina": pagina,
       "limite": limite,
@@ -127,13 +154,14 @@ const obtenerTodasLasPublicacionesService = async (pagina = 1, limite = 10) => {
         "url": null,
         "exists": false
       },
-      "publicaciones": publicaciones.rows,
+      "publicaciones": publicaciones.rows // Ya no necesitamos mapear porque los datos vienen planos
     };
+
+    return response;
   } catch (error) {
     throw new Error('Error al obtener todas las publicaciones: ' + error.message);
   }
 };
-
 
 /**
  * Función para actualizar completamente una publicación (PUT).
