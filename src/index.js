@@ -3,7 +3,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const WebSocket = require('ws');
 require('dotenv').config();
-const WebSocket = require('ws');
+
 const MensajesController = require('./controllers/mensajes_controller');
 const CartasMensajesController = require('./controllers/Cartasmensjes_controllers');
 
@@ -15,13 +15,6 @@ const { manejodeconexion_notificaciones } = require('./controllers/notificacione
 const { actualizarReaccion } = require('./services/services_reaccion'); 
 
 
-
-
-
-
-const { manejodeconexion_notificaciones } = require('./controllers/notificaciones_controller');
-
-const { actualizarReaccion } = require('./services/services_reaccion'); // Asegúrate de que la ruta esté correcta
 
 
 const comentariosRoutes = require('./routes/routes_comentarios');
