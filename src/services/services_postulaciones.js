@@ -5,6 +5,7 @@ const Empleo = require('../models/empleos');
 const SubidasCloudinary = require('../models/subidas_cloudinary');
 sequelize = require('../config/database');
 const SubidaCloudinary = require('../services/services_cloudinary');
+const { crearNotificacion, asociarNotificacionConUsuario } = require('../services/services_notificaciones');
 
 
 
@@ -244,8 +245,9 @@ async function crearPostulacion(informacion_postulacion) {
   }
 }
 
-const cambiarEstadoPostulacion = async (id_postulacion, estado="Pendiente") => {
+const cambiarEstadoPostulacion = async (id_postulacion, estado = "Pendiente") => {
   try {
+
     const postulacion = await Postulacion.findByPk(id_postulacion);
 
     if (!postulacion) {
@@ -259,8 +261,24 @@ const cambiarEstadoPostulacion = async (id_postulacion, estado="Pendiente") => {
     }
 
     postulacion.id_estado = nuevo_estado.id_estado;
-
     await postulacion.save();
+
+    const empleo = await Empleo.findByPk(postulacion.id_empleo);
+
+    if (!empleo) {
+      throw new Error('Empleo no encontrado');
+    }
+
+    const mensaje = `El estado de tu postulación para el empleo "${empleo.titulo}" ha cambiado a "${estado}"`;
+
+    const notificacion = await crearNotificacion({
+      tipo: 'postulacion',
+      mensaje,
+      id_creador: postulacion.id_usuario,
+      id_referencia_tipo: postulacion.id_postulacion,
+    });
+
+    await asociarNotificacionConUsuario(notificacion.id_notificacion, postulacion.id_usuario);
 
     return {
       id_postulacion: postulacion.id_postulacion,
@@ -272,12 +290,12 @@ const cambiarEstadoPostulacion = async (id_postulacion, estado="Pendiente") => {
       cv: postulacion.cv,
     };
 
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Error al cambiar el estado de la postulación:', error);
     throw new Error('Error al cambiar el estado de la postulación');
   }
-}
+};
+
 
 module.exports = {
   obtenerPostulacionesDeUsuarioService,
