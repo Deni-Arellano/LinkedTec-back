@@ -11,6 +11,7 @@ const url = require('url');
 
 
 const { manejodeconexion_notificaciones } = require('./controllers/notificaciones_controller');
+const { enviarNotificacionesPorWebSocket } = require('./services/services_notificaciones');
 
 const { actualizarReaccion } = require('./services/services_reaccion'); 
 
@@ -98,8 +99,13 @@ wss.on('connection', (ws, req) => {
 const wssNotificaciones = new WebSocket.Server({ port: 8081 });
 console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
 
-wssNotificaciones.on('connection', (ws) => {
+wssNotificaciones.on('connection', (ws, req) => {
     console.log('Cliente conectado al servidor de notificaciones');
+
+    const id_usuario = new URL(req.url, `http://${req.headers.host}`).searchParams.get('id_usuario');
+    ws.id_usuario = id_usuario;
+
+    enviarNotificacionesPorWebSocket(wssNotificaciones, id_usuario);
 
     ws.on('message', (message) => {
         try {

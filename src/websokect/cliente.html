@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente de Notificaciones</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5; /* Fondo neutro claro */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #1877f2; /* Azul Facebook */
+            font-size: 54px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        #idUsuarioInput {
+            padding: 18px;
+            font-size: 26px;
+            border: 2px solid #dcdfe3;
+            border-radius: 8px;
+            margin-right: 20px;
+            width: 400px;
+            background-color: #ffffff;
+            color: #050505;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #conectarBtn {
+            background-color: #1877f2;
+            color: white;
+            padding: 18px 36px;
+            border: none;
+            border-radius: 8px;
+            font-size: 26px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #conectarBtn:hover {
+            background-color: #145dbf;
+            transform: scale(1.05);
+        }
+
+        #notificaciones {
+            background-color: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            max-height: 400px; /* Limita la altura máxima */
+            overflow-y: auto; /* Agrega barra de desplazamiento cuando hay mucho contenido */
+        }
+
+        .notificacion {
+            background-color: #f7f8fa; /* Fondo claro */
+            border: 1px solid #e4e6eb;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .notificacion:hover {
+            background-color: #e8f0fe; /* Azul claro al pasar el ratón */
+        }
+
+        .notificacion strong {
+            color: #050505;
+            font-size: 22px;
+        }
+
+        .notificacion p {
+            margin: 0;
+            font-size: 20px;
+            color: #65676b;
+        }
+
+        .notificacion span {
+            font-size: 18px;
+            color: #8a8d91;
+        }
+
+        #notificaciones p {
+            text-align: center;
+            color: #65676b;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cliente de Notificaciones</h1>
+
+    <div class="input-group">
+        <input type="text" id="idUsuarioInput" placeholder="Ingresa tu ID de Usuario">
+        <button id="conectarBtn">Conectar</button>
+    </div>
+
+    <div id="notificaciones">
+        <p>Esperando notificaciones...</p>
+    </div>
+
+    <script>
+        let ws;
+
+        const conectarBtn = document.getElementById("conectarBtn");
+        const idUsuarioInput = document.getElementById("idUsuarioInput");
+        const notificacionesDiv = document.getElementById("notificaciones");
+
+        function conectarWebSocket(idUsuario) {
+            if (ws) {
+                ws.close();
+            }
+
+            ws = new WebSocket(`ws://localhost:8081?id_usuario=${idUsuario}`);
+
+            ws.onopen = () => {
+                console.log(`Conexión WebSocket establecida para el ID de usuario: ${idUsuario}`);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === 'notificaciones') {
+                        notificacionesDiv.innerHTML = '';
+                        data.notificaciones.forEach(notif => {
+                            const notificacionElem = document.createElement('div');
+                            notificacionElem.className = 'notificacion';
+
+                            notificacionElem.innerHTML = `
+                                <p><strong>Tipo:</strong> ${notif.tipo}</p>
+                                <p><strong>Mensaje:</strong> ${notif.mensaje}</p>
+                                <span><strong>Fecha:</strong> ${new Date(notif.fecha_creacion).toLocaleString()}</span>
+                            `;
+                            notificacionesDiv.appendChild(notificacionElem);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error procesando el mensaje:', error);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log("Conexión WebSocket cerrada.");
+            };
+
+            ws.onerror = (error) => {
+                console.error("Error en la conexión WebSocket:", error);
+            };
+        }
+
+        conectarBtn.addEventListener("click", () => {
+            const idUsuario = idUsuarioInput.value.trim();
+
+            if (idUsuario) {
+                conectarWebSocket(idUsuario);
+            } else {
+                alert("Por favor, ingresa un ID de usuario.");
+            }
+        });
+    </script>
+
+</body>
+</html>

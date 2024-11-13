@@ -35,7 +35,7 @@ NotificacionesUsuarios.init({
 });
 
 
-NotificacionesUsuarios.belongsTo(Notificaciones, { foreignKey: 'id_notificacion' });
+NotificacionesUsuarios.belongsTo(Notificaciones, { foreignKey: 'id_notificacion', as : 'Notificaciones' });
 NotificacionesUsuarios.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 module.exports = NotificacionesUsuarios;

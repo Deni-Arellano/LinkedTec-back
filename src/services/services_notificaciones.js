@@ -1,4 +1,4 @@
-const Notificacion = require('../models/notificaciones');
+const Notificaciones = require('../models/notificaciones');
 const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 const Usuario = require('../models/usuarios');
 const WebSocket = require('ws');
@@ -101,10 +101,75 @@ async function obtenerIdsUsuariosEmpleo() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Envía las notificaciones a un usuario conectado en el WebSocket.
+ * @param {WebSocket.Server} wss - El servidor WebSocket.
+ * @param {number} id_usuario - El ID del usuario.
+ */
+async function enviarNotificacionesPorWebSocket(wss, id_usuario) {
+    try {
+        const notificaciones = await obtenerNotificacionesPorUsuario(id_usuario);
+
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN && client.id_usuario === id_usuario) {
+                client.send(JSON.stringify({
+                    type: 'notificaciones',
+                    notificaciones
+                }));
+            }
+        });
+    } catch (error) {
+        console.error('Error al enviar notificaciones por WebSocket:', error);
+    }
+}
+
+/**
+ * Obtiene todas las notificaciones para un usuario específico.
+ * @param {number} id_usuario - El ID del usuario.
+ * @returns {Promise<Array<Object>>} Una promesa que resuelve con un arreglo de notificaciones.
+ */
+async function obtenerNotificacionesPorUsuario(id_usuario) {
+    try {
+        const notificacionesUsuarios = await NotificacionesUsuarios.findAll({
+            where: { id_usuario },
+            include: [
+                {
+                    model: Notificaciones,
+                    as: 'Notificaciones',
+                    attributes: ['tipo', 'mensaje', 'fecha_creacion']
+                }
+            ]
+        });
+
+        return notificacionesUsuarios.map(nu => nu.Notificaciones);
+    } catch (error) {
+        throw new Error('Error al obtener las notificaciones: ' + error.message);
+    }
+}
+
+
+
+
+
 module.exports = {
     asociarNotificacionConUsuario,
     procesarNotificaciones,
     crearNotificacion,
-    obtenerIdsUsuariosNoticias, 
+    obtenerIdsUsuariosNoticias,
     obtenerIdsUsuariosEmpleo,
+    obtenerNotificacionesPorUsuario,
+    enviarNotificacionesPorWebSocket
 };
