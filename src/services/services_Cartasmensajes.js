@@ -15,8 +15,8 @@ async function obtenerDatosChat(idUsuario) {
             },
             order: [['fecha_envio', 'DESC']],
             include: [
-                { model: Usuario, as: 'remitente', attributes: ['id', 'nombre', 'imagen_usuario'] },
-                { model: Usuario, as: 'destinatario', attributes: ['id', 'nombre', 'imagen_usuario'] }
+                { model: Usuario, as: 'remitente', attributes: ['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'imagen_usuario'] },
+                { model: Usuario, as: 'destinatario', attributes: ['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'imagen_usuario'] }
             ]
         });
 
@@ -26,8 +26,8 @@ async function obtenerDatosChat(idUsuario) {
             const key = `${Math.min(mensaje.id_remitente, mensaje.id_destinatario)}-${Math.max(mensaje.id_remitente, mensaje.id_destinatario)}`;
 
             if (!mensajesUnicos.has(key)) {
-                const remitenteData = mensaje.remitente ?? { id: null, nombre: 'Remitente desconocido', imagen_usuario: null };
-                const destinatarioData = mensaje.destinatario ?? { id: null, nombre: 'Destinatario desconocido', imagen_usuario: null };
+                const remitenteData = mensaje.remitente ?? { id: null, nombre: 'Remitente desconocido', apellido_paterno: '', apellido_materno: '', imagen_usuario: null };
+                const destinatarioData = mensaje.destinatario ?? { id: null, nombre: 'Destinatario desconocido', apellido_paterno: '', apellido_materno: '', imagen_usuario: null };
 
                 if (!remitenteData.id || !destinatarioData.id) {
                     console.error('Datos del chat incompletos:', { mensajeId: mensaje.id });
@@ -45,6 +45,9 @@ async function obtenerDatosChat(idUsuario) {
                             mensaje.destinatario.dataValues.id : mensaje.remitente.dataValues.id,
                         nombre: parseInt(idUsuario) === mensaje.id_remitente ? 
                             mensaje.destinatario.dataValues.nombre : mensaje.remitente.dataValues.nombre,
+                        apellido: parseInt(idUsuario) === mensaje.id_remitente ? 
+                            `${mensaje.destinatario.dataValues.apellido_paterno} ${mensaje.destinatario.dataValues.apellido_materno}` : 
+                            `${mensaje.remitente.dataValues.apellido_paterno} ${mensaje.remitente.dataValues.apellido_materno}`,
                         imagen_usuario: parseInt(idUsuario) === mensaje.id_remitente ? 
                             mensaje.destinatario.dataValues.imagen_usuario : mensaje.remitente.dataValues.imagen_usuario
                     }
