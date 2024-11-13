@@ -124,32 +124,34 @@
 
     <script>
         let ws;
-
+        let pingInterval;
+    
         const conectarBtn = document.getElementById("conectarBtn");
         const idUsuarioInput = document.getElementById("idUsuarioInput");
         const notificacionesDiv = document.getElementById("notificaciones");
-
+    
         function conectarWebSocket(idUsuario) {
             if (ws) {
                 ws.close();
             }
-
+    
             ws = new WebSocket(`ws://localhost:8081?id_usuario=${idUsuario}`);
-
+    
             ws.onopen = () => {
                 console.log(`Conexión WebSocket establecida para el ID de usuario: ${idUsuario}`);
+                iniciarPing();
             };
-
+    
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-
+    
                     if (data.type === 'notificaciones') {
                         notificacionesDiv.innerHTML = '';
                         data.notificaciones.forEach(notif => {
                             const notificacionElem = document.createElement('div');
                             notificacionElem.className = 'notificacion';
-
+    
                             notificacionElem.innerHTML = `
                                 <p><strong>Tipo:</strong> ${notif.tipo}</p>
                                 <p><strong>Mensaje:</strong> ${notif.mensaje}</p>
@@ -162,19 +164,33 @@
                     console.error('Error procesando el mensaje:', error);
                 }
             };
-
+    
             ws.onclose = () => {
-                console.log("Conexión WebSocket cerrada.");
+                console.log("Conexión WebSocket cerrada. Intentando reconectar...");
+                detenerPing();
+                setTimeout(() => conectarWebSocket(idUsuario), 5000);
             };
-
+    
             ws.onerror = (error) => {
                 console.error("Error en la conexión WebSocket:", error);
             };
         }
-
+    
+        function iniciarPing() {
+            pingInterval = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'ping' }));
+                }
+            }, 100);
+        }
+    
+        function detenerPing() {
+            clearInterval(pingInterval);
+        }
+    
         conectarBtn.addEventListener("click", () => {
             const idUsuario = idUsuarioInput.value.trim();
-
+    
             if (idUsuario) {
                 conectarWebSocket(idUsuario);
             } else {

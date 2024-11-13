@@ -100,8 +100,6 @@ const wssNotificaciones = new WebSocket.Server({ port: 8081 });
 console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
 
 wssNotificaciones.on('connection', (ws, req) => {
-    console.log('Cliente conectado al servidor de notificaciones');
-
     const id_usuario = new URL(req.url, `http://${req.headers.host}`).searchParams.get('id_usuario');
     ws.id_usuario = id_usuario;
 
@@ -113,20 +111,21 @@ wssNotificaciones.on('connection', (ws, req) => {
 
             if (data.type === 'nueva_notificacion') {
                 manejodeconexion_notificaciones(ws, data);
+            } else if (data.type === 'ping') {
+                ws.send(JSON.stringify({ type: 'pong' }));
             }
         } catch (error) {
-            console.error('Error al manejar notificación:', error);
             ws.send(JSON.stringify({ error: 'Error interno en notificaciones' }));
             ws.close();
         }
     });
 
     ws.on('close', () => {
-        console.log('Cliente desconectado del servidor de notificaciones');
+        // Cliente desconectado
     });
 
     ws.on('error', (error) => {
-        console.error('Error en conexión de notificaciones:', error);
+        // Error en conexión de notificaciones
     });
 });
 
