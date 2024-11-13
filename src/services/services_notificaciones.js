@@ -122,7 +122,7 @@ async function enviarNotificacionesPorWebSocket(wss, id_usuario) {
 }
 
 /**
- * Obtiene todas las notificaciones para un usuario específico.
+ * Obtiene todas las notificaciones para un usuario específico en orden descendente.
  * @param {number} id_usuario - El ID del usuario.
  * @returns {Promise<Array<Object>>} Una promesa que resuelve con un arreglo de notificaciones.
  */
@@ -136,7 +136,8 @@ async function obtenerNotificacionesPorUsuario(id_usuario) {
                     as: 'Notificaciones',
                     attributes: ['tipo', 'mensaje', 'fecha_creacion']
                 }
-            ]
+            ],
+            order: [[{ model: Notificaciones, as: 'Notificaciones' }, 'fecha_creacion', 'DESC']]
         });
 
         return notificacionesUsuarios.map(nu => nu.Notificaciones);
