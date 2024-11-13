@@ -35,7 +35,7 @@ async function procesarNotificaciones(wss, ws, message) {
  */
 async function crearNotificacion(data) {
     try {
-        const notificacionCreada = await Notificacion.create({
+        const notificacionCreada = await Notificaciones.create({
             tipo: data.tipo,
             mensaje: data.mensaje,
             id_creador: data.id_creador,
@@ -99,21 +99,6 @@ async function obtenerIdsUsuariosEmpleo() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * Envía las notificaciones a un usuario conectado en el WebSocket.
  * @param {WebSocket.Server} wss - El servidor WebSocket.
@@ -159,8 +144,6 @@ async function obtenerNotificacionesPorUsuario(id_usuario) {
         throw new Error('Error al obtener las notificaciones: ' + error.message);
     }
 }
-
-
 
 
 
