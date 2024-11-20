@@ -33,6 +33,7 @@ const reportesRoutes = require('./routes/routes_reportes');
 const routerpostulaciones = require('./routes/routes_postulaciones');
 const routerImagenes = require('./routes/subidas_cloudinary');
 const routesLogin = require('./routes/routes_login');
+const routesseguidores = require('./routes/routes_seguidores');
 
 const app = express();
 const port = 3000;
@@ -61,6 +62,7 @@ app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
 app.use('/subidas', routerImagenes);
 app.use('/acceso', routesLogin);
+app.use('/seguidores', routesseguidores);
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
