@@ -227,4 +227,14 @@ sequelize.sync()
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
         process.exit(1);
-    });      
+    });
+
+
+process.on('SIGINT', () => {
+    console.log('Cerrando servidores...');
+    wss.close();
+    wssNotificaciones.close();
+    wssReacciones.close();
+    wssCartas.close();
+    process.exit(0);
+});
