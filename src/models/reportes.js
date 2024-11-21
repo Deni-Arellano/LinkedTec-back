@@ -37,6 +37,11 @@ Reporte.init({
     titulo_reporte: {
         type: DataTypes.STRING(255),
         allowNull: false,
+    },
+    estado: {
+        type: DataTypes.ENUM('Atendido', 'En espera', 'Pendiente'),
+        allowNull: false,
+        defaultValue: 'Pendiente',
     }
 }, {
     sequelize,
