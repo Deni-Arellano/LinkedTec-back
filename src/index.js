@@ -62,7 +62,7 @@ app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
 app.use('/subidas', routerImagenes);
 app.use('/acceso', routesLogin);
-app.use('/seguidores', routesseguidores);
+app.use('/seguimientos', routesseguidores);
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
