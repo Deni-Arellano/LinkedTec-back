@@ -154,6 +154,9 @@ const obtenerImagenUsuario = async (req, res) => {
 }
 
 
+
+
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,

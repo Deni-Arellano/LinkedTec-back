@@ -6,6 +6,11 @@ const Usuario = require('../models/usuarios');
 const { obtenerIdsUsuariosEmpleo } = require('../services/services_notificaciones');
 const Notificaciones = require('../models/notificaciones');
 const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
+const { Sequelize } = require('sequelize');
+
+const { Op, fn, col } = require('sequelize');
+const util_estadisticas = require('../util/util_estadisticas'); // Si tienes una función para mapear meses
+
 
 /**
  * @async
@@ -157,3 +162,77 @@ exports.actualizarEmpleo = async (id_empleo, datosActualizados) => {
 };
 
 
+exports.obtenerCantidadEmpleos = async () => {
+
+    try {
+
+        const totalEmpleos = await Empleo.count();
+
+        return totalEmpleos
+
+
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener la cantidad de empleos');
+    }
+}
+
+
+exports.obtenerCantidadEmpleosPorMes = async () => {
+    try {
+        // Obtener los datos agrupados por año y mes
+        const results = await Empleo.findAll({
+            attributes: [
+                [fn('YEAR', col('fecha_creacion')), 'year'],
+                [fn('MONTH', col('fecha_creacion')), 'month'],
+                [fn('COUNT', col('*')), 'report_count']
+            ],
+            group: ['year', 'month'],
+            order: [[fn('YEAR', col('fecha_creacion')), 'DESC'], [fn('MONTH', col('fecha_creacion')), 'DESC']],
+        });
+
+        // Mapear los resultados a un formato más amigable
+        const groupedResults = results.reduce((acc, row) => {
+            const { year, month, report_count } = row.dataValues;
+
+            if (!acc[year]) {
+                acc[year] = [];
+            }
+
+            acc[year].push({ month: util_estadisticas.mapeoDeMeses(month), report_count });
+
+            return acc;
+        }, {});
+
+        return groupedResults;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener la cantidad de empleos por mes');
+    }
+};
+
+exports.obtenerPromedioEmpleosDiarios = async () => {
+    try {
+        // Contar el total de empleos
+        const totalEmpleos = await Empleo.count();
+
+        // Obtener la cantidad de días únicos en los que se han registrado empleos
+        const diasUnicos = await Empleo.findAll({
+            attributes: [
+                [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia_unico']
+            ],
+            group: ['dia_unico'],
+        });
+
+        // Verificar si diasUnicos tiene resultados
+        const diasUnicosArray = diasUnicos || [];
+
+        // Calcular el promedio de empleos diarios
+        const promedioDiario = diasUnicosArray.length > 0 ? totalEmpleos / diasUnicosArray.length : 0;
+
+        return promedioDiario;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el promedio de empleos diarios');
+    }
+};

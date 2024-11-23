@@ -154,10 +154,44 @@ const obtenerImagenUsuario = async (id) => {
 
 };
 
+
+
+const obtenerTotalUsuarios = async () => {
+    try {
+        const totalUsuarios = await Usuario.count();
+        return totalUsuarios;
+    } catch (error) {
+        throw new Error('Error al obtener el total de usuarios: ' + error.message);
+    }
+}
+
+
+const obtenerTotalUsuariosPorRol = async () => {
+
+  try {
+
+    const totalUsuariosPorRol = await sequelize.query(`
+            SELECT role, COUNT(*) AS total
+            FROM usuarios
+            GROUP BY role;
+        `);
+
+        return totalUsuariosPorRol;
+
+
+  }catch (error) {
+    throw new Error('Error al obtener el total de usuarios por rol: ' + error.message);
+  }
+}
+
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
   obtenerTodosLosUsuarios,
   obtenerImagenUsuario,
-  deleteUsuario
+  deleteUsuario,
+  obtenerTotalUsuarios,
+  obtenerTotalUsuariosPorRol
+
 };

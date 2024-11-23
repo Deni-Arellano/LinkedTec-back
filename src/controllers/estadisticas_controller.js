@@ -59,3 +59,16 @@ exports.obtenerGraficaReportes = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener los datos para la gráfica' });
     }
 };
+
+exports.obtenerDatosEstadisticas = async (req, res) => {
+    try {
+
+        const estadisticas = await services_estadisticas.obtenerEstadisticas();
+
+        return res.status(200).json(estadisticas);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los datos estadísticos' });
+    }
+}

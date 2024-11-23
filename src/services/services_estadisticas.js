@@ -3,6 +3,13 @@ const sequelize = require('../config/database');
 const reportes = require('../models/reportes');
 const { Op } = require('sequelize');
 const moment = require('moment');
+const { Sequelize } = require('sequelize');
+
+const services_usuarios = require('./services_usuarios');
+const services_noticias = require('./services_noticias');
+const services_publicaciones = require('./services_publicaciones');
+const services_empleos = require('./services_empleos');
+
 
 exports.obtenerCantidadReportesPorMes = async () => {
   try {
@@ -100,7 +107,7 @@ exports.obtenerReportesEnEspera = async () => {
 };
 
 
-const { Sequelize } = require('sequelize');
+
 
 exports.obtenerPromedioReportesDiarios = async () => {
     try {
@@ -129,8 +136,6 @@ exports.obtenerPromedioReportesDiarios = async () => {
 };
 
 
-
-
 exports.obtenerCantidadReportesPorTipo = async () => {
     try {
         const reportesPorTipo = await reportes.findAll({
@@ -146,5 +151,71 @@ exports.obtenerCantidadReportesPorTipo = async () => {
     } catch (error) {
         console.error(error);
         throw new Error('Error al obtener la cantidad de reportes por tipo');
+    }
+};
+
+exports.obtenerEstadisticas = async () => {
+    try {
+        const totalReportes = await this.obtenerTotalReportes();
+        const totalReportesSinAtender = await this.obteenerTotalreportesSinAtender();
+        const totalReportesAtendidos = await this.obtenerCantidadReportesAtendidos();
+        const reportesEnEspera = await this.obtenerReportesEnEspera();
+        const promedioDiario = await this.obtenerPromedioReportesDiarios();
+        const reportesPorTipo = await this.obtenerCantidadReportesPorTipo();
+        const reportesPorMes = await this.obtenerCantidadReportesPorMes();
+
+        // Publicaciones
+        const totalPublicaciones = await services_publicaciones.obtenerTotalPublicaciones();
+        const totalPublicacionesPorMes = await services_publicaciones.obtenerPublicacionesPorMes();
+        const promedioPublicacionesDiarias = await services_publicaciones.obtenerPromedioPublicacionesDiarias();
+
+        // Noticias
+        const totalNoticias = await services_noticias.ebtenerTotalNoticias();
+        const totalNoticiasPorMes = await services_noticias.obtenerTotalNoticiasPorMes();
+        const promedioNoticiasDiarias = await services_noticias.obtenerPromedioNoticiasDiarias();
+
+        // Empleos
+        const totalEmpleos = await services_empleos.obtenerCantidadEmpleos();
+        const totalEmpleosPorMes = await services_empleos.obtenerCantidadEmpleosPorMes();
+        const promedioEmpleosDiarios = await services_empleos.obtenerPromedioEmpleosDiarios();
+
+        // Usuarios
+        const totalUsuarios = await services_usuarios.obtenerTotalUsuarios();
+        const totalUsuariosPorRol = await services_usuarios.obtenerTotalUsuariosPorRol();
+
+        // Combinar los datos en un solo objeto JSON
+        return {
+            reportes: {
+                totalReportes,
+                totalReportesSinAtender,
+                totalReportesAtendidos,
+                reportesEnEspera,
+                promedioDiario,
+                reportesPorTipo,
+                reportesPorMes
+            },
+            publicaciones: {
+                totalPublicaciones,
+                totalPublicacionesPorMes,
+                promedioPublicacionesDiarias
+            },
+            noticias: {
+                totalNoticias,
+                totalNoticiasPorMes,
+                promedioNoticiasDiarias
+            },
+            empleos: {
+                totalEmpleos,
+                totalEmpleosPorMes,
+                promedioEmpleosDiarios
+            },
+            usuarios: {
+                totalUsuarios,
+                totalUsuariosPorRol
+            }
+        };
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener las estadísticas');
     }
 };

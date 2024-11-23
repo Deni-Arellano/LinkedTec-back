@@ -2,7 +2,8 @@ const Noticia= require('../models/noticias.js');
 const Notificaciones = require('../models/notificaciones');
 const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 const { obtenerIdsUsuariosNoticias } = require('../services/services_notificaciones');
-
+const sequelize = require('../config/database');
+const moment = require('moment');
 /**
  * @async
  * Servicio para crear una nueva noticia.
@@ -157,8 +158,53 @@ exports.obtenerTodasLasNoticias = async () => {
           return { success: false, message: "No se encontraron noticias" };
       }
 
-      return { success: true, data: noticias };
+      return { success: true, data: noticias.reverse() };
   } catch (error) {
       return { success: false, error: error.message };
   }
 };
+
+
+exports.ebtenerTotalNoticias = async () => {
+    try {
+        const totalNoticias = await Noticia.count();
+        return totalNoticias;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener la cantidad de noticias');
+    }
+
+}
+
+
+exports.obtenerTotalNoticiasPorMes = async () => {
+    try {
+        const [result] = await sequelize.query(`
+            SELECT COUNT(*) AS total_noticias
+            FROM noticias
+            WHERE fecha_noticia >= :fechaLimite;
+        `, {
+            replacements: {
+                fechaLimite: moment().subtract(30, 'days').toDate(),
+            },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        return result.total_noticias; // Retorna solo el número total
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el total de noticias por mes');
+    }
+};
+
+
+exports.obtenerPromedioNoticiasDiarias = async (dias) => {
+    try {
+        const totalNoticias = await Noticia.count();
+        const promedioDiario = totalNoticias / dias;
+        return promedioDiario;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el promedio de noticias diarias');
+    }
+}

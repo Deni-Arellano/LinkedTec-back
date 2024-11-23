@@ -19,5 +19,6 @@ router.delete('/:id', usuarioController.eliminarUsuario);
 
 router.get("/imagen/:id", usuarioController.obtenerImagenUsuario);
 
+
 // Exporta el router para que pueda ser utilizado en la aplicación principal
 module.exports = router;
