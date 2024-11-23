@@ -37,3 +37,4 @@ Seguimiento.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
 Seguimiento.belongsTo(Usuario, { foreignKey: 'id_perfil_a_seguir', as: 'perfilSeguido' });
 
 module.exports=Seguimiento;
+

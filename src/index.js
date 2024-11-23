@@ -62,7 +62,7 @@ app.use('/reportes', reportesRoutes);
 app.use('/postulaciones', routerpostulaciones);
 app.use('/subidas', routerImagenes);
 app.use('/acceso', routesLogin);
-app.use('/seguidores', routesseguidores);
+app.use('/seguimientos', routesseguidores);
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
@@ -229,4 +229,14 @@ sequelize.sync()
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
         process.exit(1);
-    });      
+    });
+
+
+process.on('SIGINT', () => {
+    console.log('Cerrando servidores...');
+    wss.close();
+    wssNotificaciones.close();
+    wssReacciones.close();
+    wssCartas.close();
+    process.exit(0);
+});

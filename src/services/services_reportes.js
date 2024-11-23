@@ -1,6 +1,8 @@
 const Reporte = require('../models/reportes');
 const Usuario = require('../models/usuarios');
 
+const sequelize = require('../config/database');
+
 const createReporteService = async (body) => {
     const { id_usuario, tipo_reporte, categoria_reporte, fecha, descripcion, id_elemento_reportado, titulo_reporte } = body;
 
@@ -27,7 +29,6 @@ const createReporteService = async (body) => {
 };
 
 
-
 /**
  * @async
  * Servicio para obtener todos los reportes con paginación usando SQL.
@@ -38,12 +39,12 @@ const createReporteService = async (body) => {
 const obtenerReportesPaginados = async (pagina = 1, limite = 10) => {
     const offset = (pagina - 1) * limite;
     try {
-        const [[{ total }]] = await db.query(`
+        const [[{ total }]] = await sequelize.query(`
             SELECT COUNT(*) AS total 
             FROM reportes
         `);
 
-        const [reportes] = await db.query(`
+        const [reportes] = await sequelize.query(`
             SELECT * FROM reportes
             ORDER BY fecha_reporte DESC
             LIMIT ${limite} OFFSET ${offset}
@@ -64,12 +65,6 @@ const obtenerReportesPaginados = async (pagina = 1, limite = 10) => {
         throw new Error('Error al obtener los reportes: ' + error.message);
     }
 };
-
-
-
-
-
-
 
 
 
