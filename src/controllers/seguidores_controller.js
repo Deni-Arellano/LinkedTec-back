@@ -1,6 +1,8 @@
 const seguidoresService = require('../services/services_seguidores');
 const Seguimiento = require('../models/seguidores');
+const { seguir, dejarDeSeguir } = require('../services/services_seguidores');
 const Usuario = require('../models/usuarios');
+
 
 
 const getUsuariosSeguidos = async (req, res) => {
@@ -77,32 +79,23 @@ const gestionarSeguimiento = async (req, res) => {
     });
 
     if (seguimientoExistente) {
-      await seguimientoExistente.destroy();
+      await dejarDeSeguir(seguimientoExistente);
       return res.status(200).json({
         message: "Has dejado de seguir al usuario.",
       });
+    } else {
+      const resultado = await seguir(id_usuario, id_perfil_a_seguir);
+      return res.status(200).json({
+        message: "Has comenzado a seguir al usuario.",
+        seguimiento: resultado.seguimiento,
+      });
     }
-
-    const nuevoSeguimiento = await Seguimiento.create({
-      id_usuario,
-      id_perfil_a_seguir,
-    });
-
-    return res.status(201).json({
-      message: "Has comenzado a seguir a este perfil.",
-      seguimiento: {
-        id_usuario: nuevoSeguimiento.id_usuario,
-        id_perfil_a_seguir: nuevoSeguimiento.id_perfil_a_seguir,
-        fecha_seguimiento: nuevoSeguimiento.fecha_seguimiento,
-      },
-    });
   } catch (error) {
-    console.error("Error al gestionar el seguimiento:", error);
     return res.status(500).json({
-      error: "Error interno del servidor.",
-      detalles: error.message,
+      message: 'Error al gestionar el seguimiento: ' + error.message,
     });
   }
 };
 
 module.exports = { gestionarSeguimiento, getUsuariosSeguidos,getPerfilUsuario };
+

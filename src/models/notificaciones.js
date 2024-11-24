@@ -16,7 +16,8 @@ Notificaciones.init({
       'empleo', 
       'noticia', 
       'postulacion', 
-      'me_gusta'
+      'me_gusta',
+      'seguimiento'
     ),
     allowNull: false
   },

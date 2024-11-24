@@ -3,6 +3,7 @@ const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 const Usuario = require('../models/usuarios');
 const WebSocket = require('ws');
 const { Op } = require('sequelize');
+const Seguimiento = require('../models/seguidores');
 
 /**
  * Procesa las notificaciones recibidas del cliente.
@@ -77,7 +78,6 @@ async function obtenerIdsUsuariosNoticias() {
     }
 }
 
-
 /**
  * Obtiene todos los IDs de usuarios con rol de Egresados y Estudiantes.
  * @returns {Promise<Array<number>>} Una promesa que resuelve con un arreglo de IDs de usuarios.
@@ -97,7 +97,6 @@ async function obtenerIdsUsuariosEmpleo() {
         throw new Error('Error al obtener los IDs de usuarios: ' + error.message);
     }
 }
-
 
 /**
  * Envía las notificaciones a un usuario conectado en el WebSocket.
@@ -134,18 +133,36 @@ async function obtenerNotificacionesPorUsuario(id_usuario) {
                 {
                     model: Notificaciones,
                     as: 'Notificaciones',
-                    attributes: ['tipo', 'mensaje', 'fecha_creacion']
+                    attributes: ['tipo', 'mensaje', 'fecha_creacion', 'id_creador']
                 }
             ],
             order: [[{ model: Notificaciones, as: 'Notificaciones' }, 'fecha_creacion', 'DESC']]
         });
 
-        return notificacionesUsuarios.map(nu => nu.Notificaciones);
+        const notificacionesFiltradas = [];
+        for (const nu of notificacionesUsuarios) {
+            const notificacion = nu.Notificaciones;
+
+            if (notificacion.tipo === 'postulacion') {
+                notificacionesFiltradas.push(notificacion);
+            } else if (notificacion.tipo === 'seguimiento') {
+                notificacionesFiltradas.push(notificacion);
+            } else {
+                const seguimiento = await Seguimiento.findOne({
+                    where: { id_usuario, id_perfil_a_seguir: notificacion.id_creador }
+                });
+
+                if (seguimiento && new Date(notificacion.fecha_creacion) > new Date(seguimiento.fecha_seguimiento)) {
+                    notificacionesFiltradas.push(notificacion);
+                }
+            }
+        }
+
+        return notificacionesFiltradas;
     } catch (error) {
         throw new Error('Error al obtener las notificaciones: ' + error.message);
     }
 }
-
 
 
 module.exports = {
