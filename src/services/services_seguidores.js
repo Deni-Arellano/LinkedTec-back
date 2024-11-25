@@ -6,23 +6,26 @@ const { crearNotificacion, asociarNotificacionConUsuario } = require('../service
 
 
 const getUsuariosSeguidosService = async (id_usuario, limit, offset) => {
-    const { count, rows: seguimientos } = await Seguimiento.findAndCountAll({
-        where: { id_usuario },
-        include: [{
-            model: Usuario,
-            as: 'perfilSeguido',
-            attributes: ['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'role', 'imagen_usuario']
-        }],
-        order: [['fecha_seguimiento', 'DESC']],
-        limit,
-        offset
-    });
+  const { count, rows: seguimientos } = await Seguimiento.findAndCountAll({
+      where: { id_usuario },
+      include: [{
+          model: Usuario,
+          as: 'perfilSeguido',
+          attributes: ['id', 'nombre', 'apellido_paterno', 'apellido_materno', 'role', 'imagen_usuario']
+      }],
+      order: [['fecha_seguimiento', 'DESC']],
+      limit,
+      offset
+  });
 
-    return {
-        total: count,
-        usuariosSeguidos: seguimientos.map(seguimiento => seguimiento.perfilSeguido)
-    };
+  return {
+      total: count,
+      usuariosSeguidos: seguimientos.map(seguimiento => seguimiento.perfilSeguido)
+  };
 };
+
+
+
 
 
 const getPerfilUsuarioService = async (id_usuario) => {
