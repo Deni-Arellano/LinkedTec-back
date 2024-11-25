@@ -48,6 +48,14 @@ Usuario.init({
   imagen_usuario: {
     type: DataTypes.STRING, // Tipo de dato para la imagen de usuario
   },
+  codigo_recuperacion: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  expiracion_codigo: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 }, {
   sequelize, 
   modelName: 'Usuario', 

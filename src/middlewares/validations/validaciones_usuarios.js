@@ -193,11 +193,30 @@ const validarUsuariosExistentes = async (usuarios) => {
 }
 
 
+const validarNuevaContraseña = (contraseña) => {
+  const schema = Joi.string()
+    .min(8)
+    .max(20)
+    .required()
+    .messages({
+      'string.base': 'La contraseña debe ser una cadena de texto.',
+      'string.empty': 'La contraseña no puede estar vacía.',
+      'string.min': 'La contraseña debe tener al menos 8 caracteres.',
+      'string.max': 'La contraseña debe tener menos de 20 caracteres.',
+      'any.required': 'La contraseña es requerida.'
+    });
+
+  const { error, value } = schema.validate(contraseña);
+  return { error, value };
+};
+
+
 module.exports = {
     validarRegistroUsuario,
     validarUsuarioEnUso,
     validarUsuarioExistente,
     validarCorreoExistente,
     validarUsuariosExistentes,
-    validarUsuarioEnUsoPlanB
+    validarUsuarioEnUsoPlanB,
+    validarNuevaContraseña
 }
