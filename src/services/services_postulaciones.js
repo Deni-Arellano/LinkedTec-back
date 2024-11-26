@@ -80,7 +80,7 @@ const obtenerPostulacionCompletaService = async (id_postulacion) => {
       {
         model: SubidasCloudinary,
         attributes: ['url_segura'],
-        where: { id: sequelize.col('Postulacion.cv') },
+        where: { id: sequelize.col('postulacion.cv') },
         required: false,
       },
     ],

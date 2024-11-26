@@ -17,20 +17,39 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
       throw new Error("Usuario no encontrado");
     }
 
-    let reaccionExistente = await ReaccionesUsuarios.findOne({
+    const reaccionExistente = await ReaccionesUsuarios.findOne({
       where: { id_publicacion, id_usuario }
     });
 
     let haReaccionado = false;
 
     if (reaccionExistente) {
-      await reaccionExistente.destroy();
-      haReaccionado = false;
+      if (reaccionExistente.tipo_reaccion === tipo_reaccion) {
 
-      if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
-        publicacion.me_gusta -= 1;
-      } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
-        publicacion.disgusta -= 1;
+        await reaccionExistente.destroy();
+        haReaccionado = false;
+
+       
+        if (tipo_reaccion === 'me_gusta' && publicacion.me_gusta > 0) {
+          publicacion.me_gusta -= 1;
+        } else if (tipo_reaccion === 'disgusta' && publicacion.disgusta > 0) {
+          publicacion.disgusta -= 1;
+        }
+      } else {
+        
+        const reaccionAnterior = reaccionExistente.tipo_reaccion;
+        reaccionExistente.tipo_reaccion = tipo_reaccion;
+        await reaccionExistente.save();
+        haReaccionado = true;
+
+        
+        if (tipo_reaccion === 'me_gusta') {
+          publicacion.me_gusta += 1;
+          if (publicacion.disgusta > 0) publicacion.disgusta -= 1; 
+        } else if (tipo_reaccion === 'disgusta') {
+          publicacion.disgusta += 1;
+          if (publicacion.me_gusta > 0) publicacion.me_gusta -= 1; 
+        }
       }
     } else {
       await ReaccionesUsuarios.create({
@@ -38,12 +57,10 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
         id_usuario,
         tipo_reaccion
       });
-
       haReaccionado = true;
 
       if (tipo_reaccion === 'me_gusta') {
         publicacion.me_gusta += 1;
-        await crearNotificacion(publicacion, usuario);
       } else if (tipo_reaccion === 'disgusta') {
         publicacion.disgusta += 1;
       }
@@ -57,7 +74,10 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
           client.send(JSON.stringify({
             type: 'actualizacion_reaccion',
             reaccion: tipo_reaccion,
-            conteo: tipo_reaccion === 'me_gusta' ? publicacion.me_gusta : publicacion.disgusta,
+            conteo: {
+              me_gusta: publicacion.me_gusta,
+              disgusta: publicacion.disgusta
+            },
             id_usuario: id_usuario
           }));
         }
@@ -69,6 +89,7 @@ const actualizarReaccion = async (id_publicacion, tipo_reaccion, wssReacciones, 
     throw error;
   }
 };
+
 
 async function crearNotificacion(publicacion, usuario) {
   try {
