@@ -1,50 +1,46 @@
 const util_estadisticas = require('../util/util_estadisticas');
 const sequelize = require('../config/database');
 const reportes = require('../models/reportes');
-const { Op } = require('sequelize');
+const {Op, INTEGER} = require('sequelize');
 const moment = require('moment');
-const { Sequelize } = require('sequelize');
+const {Sequelize} = require('sequelize');
 
 const services_usuarios = require('./services_usuarios');
 const services_noticias = require('./services_noticias');
 const services_publicaciones = require('./services_publicaciones');
 const services_empleos = require('./services_empleos');
 
-
+const SubirArchivosCloudinary = require('../util/SubirArchivosCloudinary');
 exports.obtenerCantidadReportesPorMes = async () => {
-  try {
-    const [results, metadata] = await sequelize.query(`
-      SELECT
-        YEAR(fecha_reporte) AS year,
-        MONTH(fecha_reporte) AS month,
-        COUNT(*) AS report_count
-      FROM
-        reportes
-      GROUP BY
-        YEAR(fecha_reporte), MONTH(fecha_reporte)
-      ORDER BY
-        year, month;
-    `);
+    try {
+        // Obtener el año actual
+        const anioActual = new Date().getFullYear();
 
-    // Agrupar los resultados por año y transformar el número del mes en nombre
-    const groupedResults = results.reduce((acc, row) => {
-      const { year, month, report_count } = row;
+        // Consulta SQL para obtener la cantidad de reportes por mes del año actual
+        const [results] = await sequelize.query(`
+            SELECT MONTH(fecha_reporte) AS mes,
+                   COUNT(*)             AS cantidad
+            FROM reportes
+            WHERE YEAR(fecha_reporte) = :anioActual
+            GROUP BY MONTH(fecha_reporte)
+            ORDER BY mes;
+        `, {
+            replacements: {anioActual}, // Reemplazar parámetro
+        });
 
-      if (!acc[year]) {
-        acc[year] = [];
-      }
+        // Transformar los datos para incluir el nombre del mes en español
+        const datosPorMes = results.map(row => ({
+            mes: util_estadisticas.mapeoDeMeses(row.mes), // Convertir número a nombre del mes
+            cantidad: row.cantidad, // Mantener clave en español
+        }));
 
-      acc[year].push({ month: util_estadisticas.mapeoDeMeses(month), report_count });
-
-      return acc;
-    }, {});
-
-    return groupedResults;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Error al obtener la cantidad de reportes por mes');
-  }
+        return datosPorMes; // Solo meses con sus valores
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener la cantidad de reportes por mes');
+    }
 };
+
 
 exports.obtenerTotalReportes = async () => {
     try {
@@ -77,18 +73,18 @@ exports.obteenerTotalreportesSinAtender = async () => {
 
 exports.obtenerCantidadReportesAtendidos = async () => {
 
-     try {
-          const totalReportesAtendidos = await reportes.count({
-                where: {
-                 estado: 'Atendido'
-                }
-          });
+    try {
+        const totalReportesAtendidos = await reportes.count({
+            where: {
+                estado: 'Atendido'
+            }
+        });
 
-          return totalReportesAtendidos;
-     } catch (error) {
-          console.error(error);
-          throw new Error('Error al obtener el total de reportes atendidos');
-     }
+        return totalReportesAtendidos;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el total de reportes atendidos');
+    }
 }
 
 exports.obtenerReportesEnEspera = async () => {
@@ -105,8 +101,6 @@ exports.obtenerReportesEnEspera = async () => {
         throw new Error('Error al obtener los reportes en espera');
     }
 };
-
-
 
 
 exports.obtenerPromedioReportesDiarios = async () => {
@@ -128,7 +122,7 @@ exports.obtenerPromedioReportesDiarios = async () => {
         // Calcular el promedio de reportes diarios
         const promedioDiario = diasUnicosArray.length > 0 ? totalReportes / diasUnicosArray.length : 0;
 
-        return promedioDiario;
+        return Math.round(promedioDiario);
     } catch (error) {
         console.error(error);
         throw new Error('Error al obtener el promedio de reportes diarios');
@@ -156,6 +150,9 @@ exports.obtenerCantidadReportesPorTipo = async () => {
 
 exports.obtenerEstadisticas = async () => {
     try {
+
+        const Cloudinary = new SubirArchivosCloudinary();
+
         const totalReportes = await this.obtenerTotalReportes();
         const totalReportesSinAtender = await this.obteenerTotalreportesSinAtender();
         const totalReportesAtendidos = await this.obtenerCantidadReportesAtendidos();
@@ -183,39 +180,79 @@ exports.obtenerEstadisticas = async () => {
         const totalUsuarios = await services_usuarios.obtenerTotalUsuarios();
         const totalUsuariosPorRol = await services_usuarios.obtenerTotalUsuariosPorRol();
 
+
+        //reportesportipo
+        //reportespormes
+        //publicacionespormes
+        //noticiasPorMes
+        //empleosPorMes
+        //TotalUsuariosPorRol
         // Combinar los datos en un solo objeto JSON
         return {
             reportes: {
-                totalReportes,
-                totalReportesSinAtender,
-                totalReportesAtendidos,
-                reportesEnEspera,
-                promedioDiario,
+
+                reportes: {
+                    totalReportes,
+                    totalReportesSinAtender,
+                    totalReportesAtendidos,
+                    reportesEnEspera,
+                    promedioDiario
+                },
                 reportesPorTipo,
                 reportesPorMes
+
             },
-            publicaciones: {
-                totalPublicaciones,
-                totalPublicacionesPorMes,
-                promedioPublicacionesDiarias
+            valores: {
+                reportes: {
+                    totalReportes,
+                    totalReportesSinAtender,
+                    totalReportesAtendidos,
+                    reportesEnEspera,
+                    promedioDiario
+                },
+                publicaciones: {
+                    totalPublicaciones,
+                    promedioPublicacionesDiarias
+                },
+                noticias: {
+                    totalNoticias,
+                    promedioNoticiasDiarias
+                },
+                empleos: {
+                    totalEmpleos,
+                    promedioEmpleosDiarios
+                },
+                usuarios: {
+                    totalUsuarios,
+                },
+
+
             },
-            noticias: {
-                totalNoticias,
-                totalNoticiasPorMes,
-                promedioNoticiasDiarias
+            datosGraficar: {
+                reportes: {
+                    reportesPorTipo,
+                    reportesPorMes
+                },
+                publicaciones: {
+                    totalPublicacionesPorMes
+                },
+                noticias: {
+                    totalNoticiasPorMes
+                },
+                empleos: {
+                    totalEmpleosPorMes
+                },
+                usuarios: {
+                    totalUsuariosPorRol
+                }
             },
-            empleos: {
-                totalEmpleos,
-                totalEmpleosPorMes,
-                promedioEmpleosDiarios
-            },
-            usuarios: {
-                totalUsuarios,
-                totalUsuariosPorRol
-            }
+            cloudinary: await Cloudinary.obtenerUsoDeCloudinary()
+
         };
-    } catch (error) {
+    } catch
+        (error) {
         console.error(error);
         throw new Error('Error al obtener las estadísticas');
     }
-};
+}
+;

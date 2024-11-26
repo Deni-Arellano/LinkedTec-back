@@ -230,7 +230,7 @@ exports.obtenerPromedioEmpleosDiarios = async () => {
         // Calcular el promedio de empleos diarios
         const promedioDiario = diasUnicosArray.length > 0 ? totalEmpleos / diasUnicosArray.length : 0;
 
-        return promedioDiario;
+        return Math.round(promedioDiario);
     } catch (error) {
         console.error(error);
         throw new Error('Error al obtener el promedio de empleos diarios');

@@ -176,7 +176,7 @@ const obtenerTotalUsuariosPorRol = async () => {
             GROUP BY role;
         `);
 
-        return totalUsuariosPorRol;
+        return totalUsuariosPorRol[0];
 
 
   }catch (error) {

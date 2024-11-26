@@ -2,6 +2,7 @@ const Publicacion = require('../models/publicaciones');
 const Usuario = require('../models/usuarios');
 const {Sequelize} = require('sequelize');
 const sequelize = require('../config/database');
+const util_estadisticas = require('../util/util_estadisticas'); // Importa tu archivo de utilidad para mapear meses, si es necesario
 
 
 /**
@@ -292,20 +293,35 @@ const obtenerTotalPublicaciones = async () => {
 
 const obtenerPublicacionesPorMes = async () => {
     try {
-        const publicacionesPorMes = await Publicacion.findAll({
-            attributes: [
-                [Sequelize.fn('MONTH', Sequelize.col('fecha')), 'mes'],
-                [Sequelize.fn('COUNT', Sequelize.col('id_publicacion')), 'total']
-            ],
-            group: ['mes']
+        // Obtener el año actual
+        const anioActual = new Date().getFullYear();
+
+        // Consulta SQL para obtener las publicaciones del año actual
+        const [results] = await sequelize.query(`
+            SELECT MONTH(fecha) AS mes,
+                   COUNT(*)      AS cantidad
+            FROM publicaciones
+            WHERE YEAR(fecha) = :anioActual
+            GROUP BY MONTH(fecha)
+            ORDER BY mes;
+        `, {
+            replacements: { anioActual }, // Sustituye el año en la consulta
         });
 
-        return publicacionesPorMes;
+        // Transformar los datos para incluir el nombre del mes en español
+        const datosPorMes = results.map(row => ({
+            mes: util_estadisticas.mapeoDeMeses(row.mes), // Convertir número a nombre del mes
+            cantidad: row.cantidad, // Clave en español
+        }));
+
+        return datosPorMes; // Retorna solo los meses con sus valores
     } catch (error) {
         console.error(error);
         throw new Error('Error al obtener la cantidad de publicaciones por mes');
     }
-}
+};
+
+
 
 const obtenerPromedioPublicacionesDiarias = async () => {
     try {
@@ -318,7 +334,7 @@ const obtenerPromedioPublicacionesDiarias = async () => {
         });
 
         const promedio = totalPublicaciones / diasUnicos.length;
-        return promedio;
+        return Math.round(promedio);
     } catch (error) {
         console.error(error);
         throw new Error('Error al obtener el promedio de publicaciones diarias');
