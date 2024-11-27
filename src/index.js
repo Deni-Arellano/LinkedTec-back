@@ -36,7 +36,7 @@ const routesLogin = require('./routes/routes_login');
 const routesseguidores = require('./routes/routes_seguidores');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Configuración de CORS
 app.use(cors({
