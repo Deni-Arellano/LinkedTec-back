@@ -1,5 +1,9 @@
 const Reporte = require('../models/reportes');
 const Usuario = require('../models/usuarios');
+const Noticia = require('../models/noticias');
+const Evento = require('../models/eventos');
+const Publicacion = require('../models/publicaciones');
+const Empleo = require('../models/empleos');
 
 const sequelize = require('../config/database');
 
@@ -36,19 +40,33 @@ const createReporteService = async (body) => {
  * @param {number} limite - Cantidad de reportes por página.
  * @returns {Promise<Object>} Devuelve un objeto con los reportes paginados.
  */
-const obtenerReportesPaginados = async (pagina = 1, limite = 10) => {
+const obtenerReportesPaginados = async (pagina = 1, limite = 10, filtros = {}) => {
     const offset = (pagina - 1) * limite;
-    try {
-        const [[{ total }]] = await sequelize.query(`
-            SELECT COUNT(*) AS total 
-            FROM reportes
-        `);
+    const { estado, tipo_reporte, categoria_reporte, fecha_inicio, fecha_fin, busqueda } = filtros;
 
-        const [reportes] = await sequelize.query(`
-            SELECT * FROM reportes
-            ORDER BY fecha_reporte DESC
-            LIMIT ${limite} OFFSET ${offset}
-        `);
+    const where = {};
+    if (estado) where.estado = estado;
+    if (tipo_reporte) where.tipo_reporte = tipo_reporte;
+    if (categoria_reporte) where.categoria_reporte = categoria_reporte;
+    if (fecha_inicio && fecha_fin) {
+        where.fecha_reporte = {
+            [Sequelize.Op.between]: [fecha_inicio, fecha_fin]
+        };
+    }
+    if (busqueda) {
+        where[Sequelize.Op.or] = [
+            { titulo_reporte: { [Sequelize.Op.like]: `%{busqueda}%` } },
+            { descripcion: { [Sequelize.Op.like]: `%{busqueda}%` } }
+        ];
+    }
+
+    try {
+        const { count: total, rows: reportes } = await Reporte.findAndCountAll({
+            where,
+            limit: limite,
+            offset,
+            order: [['fecha_reporte', 'DESC']]
+        });
 
         const totalPaginas = Math.ceil(total / limite);
 
@@ -69,6 +87,7 @@ const obtenerReportesPaginados = async (pagina = 1, limite = 10) => {
 
 
 
+
 /**
  * @async
  * Servicio para obtener un reporte por ID.
@@ -85,13 +104,94 @@ const obtenerReportePorId = async (id) => {
 };
 
 
+const actualizarEstadoReporte = async (id, estado) => {
+    try {
+        const reporte = await Reporte.findByPk(id);
+        if (!reporte) {
+            throw new Error('Reporte no encontrado.');
+        }
+
+        reporte.estado = estado;
+        await reporte.save();
+
+        return reporte;
+    } catch (error) {
+        throw new Error('Error al actualizar el reporte: ' + error.message);
+    }
+};
 
 
+const obtenerDetallesReporte = async (id) => {
+    try {
+        const reporte = await Reporte.findByPk(id, {
+            include: [
+                {
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre', 'correo']
+                }
+            ]
+        });
+
+        if (!reporte) {
+            throw new Error('Reporte no encontrado.');
+        }
+
+        let contenidoReportado = null;
+        let usuarioReportado = null;
+
+        switch (reporte.categoria_reporte) {
+            case 'noticias':
+                contenidoReportado = await Noticia.findByPk(reporte.id_elemento_reportado);
+                if (contenidoReportado) {
+                    usuarioReportado = await Usuario.findByPk(contenidoReportado.id_usuario, {
+                        attributes: ['id', 'nombre', 'correo']
+                    });
+                }
+                break;
+            case 'eventos':
+                contenidoReportado = await Evento.findByPk(reporte.id_elemento_reportado);
+                if (contenidoReportado) {
+                    usuarioReportado = await Usuario.findByPk(contenidoReportado.id_usuario, {
+                        attributes: ['id', 'nombre', 'correo']
+                    });
+                }
+                break;
+            case 'publicaciones':
+                contenidoReportado = await Publicacion.findByPk(reporte.id_elemento_reportado);
+                if (contenidoReportado) {
+                    usuarioReportado = await Usuario.findByPk(contenidoReportado.id_usuario, {
+                        attributes: ['id', 'nombre', 'correo']
+                    });
+                }
+                break;
+            case 'empleos':
+                contenidoReportado = await Empleo.findByPk(reporte.id_elemento_reportado);
+                if (contenidoReportado) {
+                    usuarioReportado = await Usuario.findByPk(contenidoReportado.id_usuario, {
+                        attributes: ['id', 'nombre', 'correo']
+                    });
+                }
+                break;
+            default:
+                contenidoReportado = null;
+                usuarioReportado = null;
+        }
+
+        return {
+            reporte,
+            contenidoReportado,
+            usuarioReportado
+        };
+    } catch (error) {
+        throw new Error('Error al obtener los detalles del reporte: ' + error.message);
+    }
+};
 
 module.exports = {
     obtenerReportePorId,
     createReporteService,
     obtenerReportesPaginados,
-    obtenerReportePorId
+    actualizarEstadoReporte,
+    obtenerDetallesReporte
 };
-

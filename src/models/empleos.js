@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-
+const Usuario = require('./usuarios');
 /**
  * Modelo de datos de Empleo
  */
@@ -55,5 +55,8 @@ Empleo.init({
   tableName: 'empleos',
   timestamps: false,
 });
+
+
+Empleo.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
 
 module.exports = Empleo;

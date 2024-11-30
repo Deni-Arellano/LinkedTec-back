@@ -1,5 +1,6 @@
-const{Model,DataTypes}=require('sequelize');
-const sequelize=require('../config/database');
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const Usuario = require('./usuarios');
 
 /**
  * Modelo de datos de Noticias
@@ -52,6 +53,10 @@ Noticia.init({
     id_usuario:{
         type:DataTypes.INTEGER,
         allowNull:false,
+        references: {
+            model: Usuario,
+            key: 'id',
+        }
     },
 },{
     sequelize,
@@ -60,4 +65,7 @@ Noticia.init({
     timestamps:false,
 });
 
-module.exports=Noticia;
+
+Noticia.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+
+module.exports = Noticia;

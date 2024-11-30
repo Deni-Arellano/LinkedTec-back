@@ -39,12 +39,13 @@ const Publicacion = sequelize.define('Publicacion', {
     defaultValue: 0 
   }
 }, {
-  tableName: 'publicaciones', // Nombre de la tabla en la base de datos
-  modelName: 'Publicacion', // Nombre del modelo
-  timestamps: false // Desactiva los timestamps automáticos
+  tableName: 'publicaciones',
+  modelName: 'Publicacion',
+  timestamps: false
 });
 
 Publicacion.belongsTo(Usuario, { foreignKey: 'id_usuario', targetKey: 'id' });
+Publicacion.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
 
-// Exporta el modelo para su uso en otras partes de la aplicación
+
 module.exports = Publicacion;
