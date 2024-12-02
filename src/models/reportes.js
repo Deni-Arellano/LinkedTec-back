@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Usuario = require('./usuarios');  // Ajusta la ruta si es necesario
+const Usuario = require('./usuarios');
 
 class Reporte extends Model {}
 
@@ -51,5 +51,6 @@ Reporte.init({
 });
 
 Reporte.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+Reporte.belongsTo(Usuario, { foreignKey: 'id_elemento_reportado', as: 'usuarioReportado', constraints: false });
 
 module.exports = Reporte;

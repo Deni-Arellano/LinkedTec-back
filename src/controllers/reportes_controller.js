@@ -2,7 +2,7 @@ const Reporte = require('../models/reportes');
 const Usuario = require('../models/usuarios');
 const { validarRegistroReportes } = require('../middlewares/validations/validaciones_reportes');
 const { createReporteService } = require('../services/services_reportes');
-
+const { obtenerDetallesReporte } = require('../services/services_reportes'); 
 const {validarReporteExistente,validarReportesExistentes } = require('../middlewares/validations/validaciones_reportes');
 const {obtenerReportesPaginados,obtenerReportePorId} = require('../services/services_reportes')
 
@@ -60,11 +60,25 @@ const getReportes = async (req, res) => {
 
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = parseInt(req.query.limite) || 10;
+
         if (pagina <= 0 || limite <= 0) {
             return res.status(400).json({ message: 'Los parámetros de paginación deben ser números positivos.' });
         }
 
-        const resultado = await obtenerReportesPaginados(pagina, limite);
+        const filtros = {
+            estado: req.query.estado,
+            tipo_reporte: req.query.tipo_reporte,
+            categoria_reporte: req.query.categoria_reporte,
+            fecha_inicio: req.query.fecha_inicio,
+            fecha_fin: req.query.fecha_fin,
+            busqueda: req.query.busqueda
+        };
+
+        const resultado = await obtenerReportesPaginados(pagina, limite, filtros);
+
+        if (resultado.total === 0) {
+            return res.status(404).json({ message: 'No hay reportes que coincidan con los criterios.' });
+        }
 
         if (pagina > resultado.total_paginas) {
             return res.status(404).json({ message: 'No se encontraron reportes en esta página.' });
@@ -119,4 +133,103 @@ const getReportePorId = async (req, res) => {
 
 
 
-module.exports = { createReporte, getReportes, getReportePorId };
+const aprobarReporte = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'El ID debe ser un número válido.' });
+        }
+
+        const { reporte, contenidoReportado } = await obtenerDetallesReporte(id);
+
+        if (!reporte) {
+            return res.status(404).json({ message: 'El reporte no existe.' });
+        }
+
+        reporte.estado = 'Atendido';
+        await reporte.save();
+
+
+        if (contenidoReportado) {
+            await contenidoReportado.destroy();
+        }
+
+        res.json({ message: 'Reporte aprobado y contenido reportado eliminado con éxito', reporte });
+    } catch (error) {
+        res.status(400).json({ message: 'Error al procesar el reporte', error: error.message });
+    }
+};
+
+const ponerEnEsperaReporte = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'El ID debe ser un número válido.' });
+        }
+
+        const reporte = await obtenerReportePorId(id);
+
+        if (!reporte) {
+            return res.status(404).json({ message: 'El reporte no existe.' });
+        }
+
+        reporte.estado = 'En espera';
+        await reporte.save();
+
+        res.json({ message: 'Reporte puesto en espera con éxito', reporte });
+    } catch (error) {
+        res.status(400).json({ message: 'Error al procesar el reporte', error: error.message });
+    }
+};
+
+
+
+const getDetallesReporte = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'El ID debe ser un número válido.' });
+        }
+
+        const { reporte, contenidoReportado, usuarioReportado } = await obtenerDetallesReporte(id);
+
+        res.json({
+            titulo: reporte.titulo_reporte,
+            descripcion: reporte.descripcion,
+            categoria: reporte.categoria_reporte,
+            tipo: reporte.tipo_reporte,
+            usuario: reporte.usuario,
+            usuarioReportado,
+            contenidoReportado: {
+                id: contenidoReportado.id,
+                id_publicacion: contenidoReportado.id_publicacion,
+                id_evento: contenidoReportado.id_evento,
+                id_empleo: contenidoReportado.id_empleo,
+                titulo: contenidoReportado.titulo,
+                id_noticia: contenidoReportado.id_noticia,
+                titulo_noticia: contenidoReportado.titulo_noticia,
+                empresa: contenidoReportado.empresa,
+                lugar: contenidoReportado.lugar,
+                salario: contenidoReportado.salario,
+                ubicacion: contenidoReportado.ubicacion,
+                descripcion: contenidoReportado.descripcion,
+                enlace_noticia: contenidoReportado.enlace_noticia,
+                enlace: contenidoReportado.enlace,
+                imagen: contenidoReportado.imagen,
+                imagen_noticia: contenidoReportado.imagen_noticia,
+                categoria_noticia: contenidoReportado.categoria_noticia,
+                fecha: contenidoReportado.fecha,
+                tipo_evento: contenidoReportado.tipo_evento,
+                me_gusta: contenidoReportado.me_gusta,
+                disgusta: contenidoReportado.disgusta
+            }
+        });
+    } catch (error) {
+        res.status(400).json({ message: 'Error al obtener los detalles del reporte', error: error.message });
+    }
+};
+
+
+
+
+module.exports = { createReporte, getReportes, getReportePorId, aprobarReporte, ponerEnEsperaReporte, getDetallesReporte };

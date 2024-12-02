@@ -9,8 +9,6 @@ router.post('/', reportesController.createReporte);
 
 
 
-
-
 /**
  * Ruta para obtener todos los reportes
  */
@@ -23,6 +21,12 @@ router.get('/:id', reportesController.getReportePorId);
 
 
 
+
+router.patch('/:id/espera', reportesController.ponerEnEsperaReporte);
+
+router.patch('/:id/aprobar', reportesController.aprobarReporte);
+
+router.get('/:id/detalles', reportesController.getDetallesReporte);
 
 
 
