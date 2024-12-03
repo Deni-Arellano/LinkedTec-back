@@ -91,7 +91,22 @@ const obtenerUsuarioPorId = async (req, res) => {
 
 
 
+const cambiarImagenUsuario = async (req, res) => {
 
+    try {
+        const { id } = req.body;
+        const { imagen_nueva } = req.body;
+        const {antigua_imagen} = req.body;
+
+
+
+        const resultado = await usuarioService.cambiarImagenPerfil(id, imagen_nueva, antigua_imagen);
+        res.status(200).json(resultado);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 
 
@@ -162,5 +177,6 @@ module.exports = {
   obtenerUsuarioPorId,
   obtenerTodosLosUsuarios,
   eliminarUsuario,
-  obtenerImagenUsuario
+  obtenerImagenUsuario,
+    cambiarImagenUsuario
 };

@@ -185,6 +185,26 @@ const obtenerTotalUsuariosPorRol = async () => {
 }
 
 
+const cambiarImagenPerfil = async (id_usuario, imagen, antiguaImagen) => {
+  try {
+      const usuario = await Usuario.findByPk(id_usuario);
+
+        if (!usuario) {
+            throw new Error('Usuario no encontrado');
+
+        } else {
+            await Usuario.update({ imagen_usuario: imagen }, { where: { id: id_usuario } });
+            return { message: 'Imagen de perfil actualizada con éxito' };
+        }
+
+
+  } catch (error) {
+      throw new Error('Error al actualizar la imagen de perfil: ' + error.message);
+  }
+}
+
+
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
@@ -192,6 +212,6 @@ module.exports = {
   obtenerImagenUsuario,
   deleteUsuario,
   obtenerTotalUsuarios,
-  obtenerTotalUsuariosPorRol
-
+  obtenerTotalUsuariosPorRol,
+  cambiarImagenPerfil
 };
