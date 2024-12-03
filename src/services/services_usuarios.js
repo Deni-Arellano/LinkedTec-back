@@ -154,10 +154,64 @@ const obtenerImagenUsuario = async (id) => {
 
 };
 
+
+
+const obtenerTotalUsuarios = async () => {
+    try {
+        const totalUsuarios = await Usuario.count();
+        return totalUsuarios;
+    } catch (error) {
+        throw new Error('Error al obtener el total de usuarios: ' + error.message);
+    }
+}
+
+
+const obtenerTotalUsuariosPorRol = async () => {
+
+  try {
+
+    const totalUsuariosPorRol = await sequelize.query(`
+            SELECT role, COUNT(*) AS total
+            FROM usuarios
+            GROUP BY role;
+        `);
+
+        return totalUsuariosPorRol[0];
+
+
+  }catch (error) {
+    throw new Error('Error al obtener el total de usuarios por rol: ' + error.message);
+  }
+}
+
+
+const cambiarImagenPerfil = async (id_usuario, imagen, antiguaImagen) => {
+  try {
+      const usuario = await Usuario.findByPk(id_usuario);
+
+        if (!usuario) {
+            throw new Error('Usuario no encontrado');
+
+        } else {
+            await Usuario.update({ imagen_usuario: imagen }, { where: { id: id_usuario } });
+            return { message: 'Imagen de perfil actualizada con éxito' };
+        }
+
+
+  } catch (error) {
+      throw new Error('Error al actualizar la imagen de perfil: ' + error.message);
+  }
+}
+
+
+
 module.exports = {
   crearUsuario,
   obtenerUsuarioPorId,
   obtenerTodosLosUsuarios,
   obtenerImagenUsuario,
-  deleteUsuario
+  deleteUsuario,
+  obtenerTotalUsuarios,
+  obtenerTotalUsuariosPorRol,
+  cambiarImagenPerfil
 };

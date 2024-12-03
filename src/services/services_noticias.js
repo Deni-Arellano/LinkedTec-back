@@ -2,7 +2,10 @@ const Noticia= require('../models/noticias.js');
 const Notificaciones = require('../models/notificaciones');
 const NotificacionesUsuarios = require('../models/notificaciones_usuarios');
 const { obtenerIdsUsuariosNoticias } = require('../services/services_notificaciones');
-
+const sequelize = require('../config/database');
+const moment = require('moment');
+const {Sequelize} = require("sequelize");
+const util_estadisticas = require('../util/util_estadisticas');
 /**
  * @async
  * Servicio para crear una nueva noticia.
@@ -157,8 +160,84 @@ exports.obtenerTodasLasNoticias = async () => {
           return { success: false, message: "No se encontraron noticias" };
       }
 
-      return { success: true, data: noticias };
+      return { success: true, data: noticias.reverse() };
   } catch (error) {
       return { success: false, error: error.message };
   }
 };
+
+
+exports.ebtenerTotalNoticias = async () => {
+    try {
+        const totalNoticias = await Noticia.count();
+        return totalNoticias;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener la cantidad de noticias');
+    }
+
+}
+
+
+exports.obtenerTotalNoticiasPorMes = async () => {
+    try {
+        // Obtener el año actual
+        const anioActual = new Date().getFullYear();
+
+        // Consulta SQL para obtener el conteo de noticias del año actual
+        const [results] = await sequelize.query(`
+            SELECT MONTH(fecha_noticia) AS mes,
+                   COUNT(*)            AS cantidad
+            FROM noticias
+            WHERE YEAR(fecha_noticia) = :anioActual
+            GROUP BY MONTH(fecha_noticia)
+            ORDER BY mes;
+        `, {
+            replacements: { anioActual }, // Sustituir el año actual en la consulta
+        });
+
+        // Transformar los resultados para incluir el nombre del mes en español
+        const datosPorMes = results.map(row => ({
+            mes: util_estadisticas.mapeoDeMeses(row.mes), // Convertir el número del mes al nombre en español
+            cantidad: row.cantidad, // Clave en español
+        }));
+
+        return datosPorMes; // Retornar los datos transformados
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el total de noticias por mes');
+    }
+};
+
+
+
+
+
+exports.obtenerPromedioNoticiasDiarias = async () => {
+    try {
+        // Contar el total de noticias
+        const totalNoticias = await Noticia.count();
+
+        // Obtener la cantidad de días únicos en los que se han registrado noticias
+        const diasUnicos = await Noticia.findAll({
+            attributes: [
+                [Sequelize.fn('DATE', Sequelize.col('fecha_noticia')), 'dia_unico']
+            ],
+            group: ['dia_unico'],
+            raw: true // Para que Sequelize devuelva los datos como objetos simples
+        });
+
+        // Verificar si diasUnicos tiene resultados
+        const diasUnicosArray = diasUnicos.map(dia => dia.dia_unico) || []; // Obtener solo los valores de los días
+
+        // Calcular el promedio de noticias diarias
+        // Evitamos dividir entre 0 (en caso de que no haya días únicos)
+        const promedioDiario = diasUnicosArray.length > 0 ? totalNoticias / diasUnicosArray.length : 0;
+
+        return Math.round(promedioDiario);
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al obtener el promedio de noticias diarias');
+    }
+};
+
