@@ -70,7 +70,7 @@ app.get('/', (req, res) => {
 });
 
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 9080 });
 console.log('Servidor WebSocket en funcionamiento en ws://localhost:8080');
 
 wss.on('connection', (ws, req) => {
@@ -98,7 +98,7 @@ wss.on('connection', (ws, req) => {
 
 
 
-const wssNotificaciones = new WebSocket.Server({ port: 8081 });
+const wssNotificaciones = new WebSocket.Server({ port: 9081 });
 console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
 
 wssNotificaciones.on('connection', (ws, req) => {
@@ -133,7 +133,7 @@ wssNotificaciones.on('connection', (ws, req) => {
 
 
 
-const wssReacciones = new WebSocket.Server({ port: 8082 });
+const wssReacciones = new WebSocket.Server({ port: 9082 });
 
 console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
 
@@ -188,7 +188,7 @@ app.post('/reaccionar', async (req, res) => {
   });
 
 
-const wssCartas = new WebSocket.Server({ port: 8083 });
+const wssCartas = new WebSocket.Server({ port: 9083 });
 console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:8083');
 
 wssCartas.on('connection', (ws, req) => {
@@ -222,7 +222,7 @@ wssCartas.on('connection', (ws, req) => {
 sequelize.sync()
     .then(() => sequelize.authenticate())
     .then(() => {
-        app.listen(port, () => {
+        app.listen(port, '0.0.0.0',() => {
             console.log(`Servidor escuchando en http://localhost:${port}`);
         });
     })
