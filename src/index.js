@@ -71,7 +71,7 @@ app.get('/', (req, res) => {
 
 
 const wss = new WebSocket.Server({ port: 9080 });
-console.log('Servidor WebSocket en funcionamiento en ws://localhost:8080');
+console.log('Servidor WebSocket en funcionamiento en ws://localhost:9080');
 
 wss.on('connection', (ws, req) => {
     try {
@@ -99,7 +99,7 @@ wss.on('connection', (ws, req) => {
 
 
 const wssNotificaciones = new WebSocket.Server({ port: 9081 });
-console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:8081');
+console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:9081');
 
 wssNotificaciones.on('connection', (ws, req) => {
     const id_usuario = new URL(req.url, `http://${req.headers.host}`).searchParams.get('id_usuario');
@@ -135,7 +135,7 @@ wssNotificaciones.on('connection', (ws, req) => {
 
 const wssReacciones = new WebSocket.Server({ port: 9082 });
 
-console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:8082');
+console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:9082');
 
 wssReacciones.on('connection', (ws) => {
     console.log('Cliente conectado al servidor de reacciones');
@@ -189,7 +189,7 @@ app.post('/reaccionar', async (req, res) => {
 
 
 const wssCartas = new WebSocket.Server({ port: 9083 });
-console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:8083');
+console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:9083');
 
 wssCartas.on('connection', (ws, req) => {
     try {
