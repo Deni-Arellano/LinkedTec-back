@@ -2,22 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const WebSocket = require('ws');
+const url = require('url');
 require('dotenv').config();
 
+// Controladores y servicios
 const MensajesController = require('./controllers/mensajes_controller');
 const CartasMensajesController = require('./controllers/Cartasmensjes_controllers');
-
-const url = require('url');
-
-
 const { manejodeconexion_notificaciones } = require('./controllers/notificaciones_controller');
 const { enviarNotificacionesPorWebSocket } = require('./services/services_notificaciones');
+const { actualizarReaccion } = require('./services/services_reaccion');
 
-const { actualizarReaccion } = require('./services/services_reaccion'); 
-
-
-
-
+// Importaciones de rutas
 const comentariosRoutes = require('./routes/routes_comentarios');
 const reclutadoresRoutes = require('./routes/routes_reclutadores');
 const egresadosRoutes = require('./routes/routes_egresados');
@@ -35,18 +30,22 @@ const routerImagenes = require('./routes/subidas_cloudinary');
 const routesLogin = require('./routes/routes_login');
 const routesseguidores = require('./routes/routes_seguidores');
 const routesEstadisticas = require('./routes/routes_estadisticas');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Configuración de CORS
 app.use(cors({
-    origin: 'http://localhost:3001'
+    origin: '*', // Permite cualquier origen
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
 }));
+
 
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Rutas de la API
+// Configuración de rutas
 app.use('/publicaciones', publicacionesRoutes);
 app.use('/publicaciones/comentarios', comentariosRoutes);
 app.use('/usuarios/reclutadores', reclutadoresRoutes);
@@ -64,48 +63,58 @@ app.use('/subidas', routerImagenes);
 app.use('/acceso', routesLogin);
 app.use('/seguimientos', routesseguidores);
 app.use('/estadisticas', routesEstadisticas);
+
 // Ruta de bienvenida
 app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
+// Crear un servidor WebSocket único con soporte para múltiples rutas
+const wss = new WebSocket.Server({ noServer: true });
 
-const wss = new WebSocket.Server({ port: 9080 });
-console.log('Servidor WebSocket en funcionamiento en ws://localhost:9080');
+// Manejador de conexiones WebSocket
+wss.on('connection', (ws, req, type) => {
+    switch(type) {
+        case 'mensajes':
+            handleMensajesConnection(ws, req, wss);
+            break;
+        case 'notificaciones':
+            handleNotificacionesConnection(ws, req);
+            break;
+        case 'reacciones':
+            handleReaccionesConnection(ws, req);
+            break;
+        case 'cartas':
+            handleCartasConnection(ws, req, wss);
+            break;
+        default:
+            ws.close();
+    }
+});
 
-wss.on('connection', (ws, req) => {
+// Funciones de manejo de conexiones WebSocket
+function handleMensajesConnection(ws, req, wssServer) {
     try {
-      
-        
-      
         const parameters = url.parse(req.url, true).query;
         const { idUsuario, idChat } = parameters;
 
         if (!idUsuario || !idChat) {
-            
             ws.close();
             return;
         }
 
-        MensajesController.establecerConexionWS(ws, req, wss);
-
+        MensajesController.establecerConexionWS(ws, req, wssServer);
     } catch (error) {
-        console.error('Error en la conexión:', error);
+        console.error('Error en conexión de mensajes:', error);
         ws.close();
     }
-});
+}
 
-
-
-
-const wssNotificaciones = new WebSocket.Server({ port: 9081 });
-console.log('Servidor WebSocket de Notificaciones en funcionamiento en ws://localhost:9081');
-
-wssNotificaciones.on('connection', (ws, req) => {
+function handleNotificacionesConnection(ws, req) {
     const id_usuario = new URL(req.url, `http://${req.headers.host}`).searchParams.get('id_usuario');
     ws.id_usuario = id_usuario;
 
-    enviarNotificacionesPorWebSocket(wssNotificaciones, id_usuario);
+    enviarNotificacionesPorWebSocket(wss, id_usuario);
 
     ws.on('message', (message) => {
         try {
@@ -121,23 +130,9 @@ wssNotificaciones.on('connection', (ws, req) => {
             ws.close();
         }
     });
+}
 
-    ws.on('close', () => {
-        // Cliente desconectado
-    });
-
-    ws.on('error', (error) => {
-        // Error en conexión de notificaciones
-    });
-});
-
-
-
-const wssReacciones = new WebSocket.Server({ port: 9082 });
-
-console.log('Servidor WebSocket de Reacciones en funcionamiento en ws://localhost:9082');
-
-wssReacciones.on('connection', (ws) => {
+function handleReaccionesConnection(ws) {
     console.log('Cliente conectado al servidor de reacciones');
 
     ws.on('message', async (message) => {
@@ -146,11 +141,9 @@ wssReacciones.on('connection', (ws) => {
 
             if (data.type === 'nueva_reaccion') {
                 const { id_publicacion, tipo_reaccion, id_usuario } = data;
-                
-                // Llamar a la función que maneja la reacción
-                const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wssReacciones, id_usuario);
-                
-                // Opcional: Responder al cliente sobre la reacción procesada (si es necesario)
+
+                const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wss, id_usuario);
+
                 ws.send(JSON.stringify({
                     type: 'respuesta_reaccion',
                     publicacion,
@@ -172,30 +165,10 @@ wssReacciones.on('connection', (ws) => {
     ws.on('error', (error) => {
         console.error('Error en conexión de reacciones:', error);
     });
-});
+}
 
-
-
-// Ruta de la API para reaccionar a una publicación
-app.post('/reaccionar', async (req, res) => {
+function handleCartasConnection(ws, req, wssServer) {
     try {
-      const { id_publicacion, tipo_reaccion, id_usuario } = req.body;
-      const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wssReacciones, id_usuario);
-      res.json({ publicacion, haReaccionado });
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
-  });
-
-
-const wssCartas = new WebSocket.Server({ port: 9083 });
-console.log('Servidor WebSocket de Cartas Mensajes en funcionamiento en ws://localhost:9083');
-
-wssCartas.on('connection', (ws, req) => {
-    try {
-        
-
-        // Extraer idUsuario de la solicitud (req) o del mensaje inicial
         const urlParams = new URLSearchParams(req.url.replace('/?', ''));
         const idUsuario = urlParams.get('idUsuario');
 
@@ -204,39 +177,69 @@ wssCartas.on('connection', (ws, req) => {
             ws.close();
             return;
         }
-        CartasMensajesController.manejarConexion(ws, req, wssCartas, idUsuario);
-
+        CartasMensajesController.manejarConexion(ws, req, wssServer, idUsuario);
     } catch (error) {
-        console.error('Error en la conexión de wssCartas:', error);
+        console.error('Error en la conexión de cartas:', error);
         ws.close();
+    }
+}
+
+// Ruta de la API para reaccionar a una publicación
+app.post('/reaccionar', async (req, res) => {
+    try {
+        const { id_publicacion, tipo_reaccion, id_usuario } = req.body;
+        const { publicacion, haReaccionado } = await actualizarReaccion(id_publicacion, tipo_reaccion, wss, id_usuario);
+        res.json({ publicacion, haReaccionado });
+    } catch (error) {
+        res.status(500).send(error.message);
     }
 });
 
+// Crear servidor HTTP con soporte de actualización de WebSocket
+const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Servidor escuchando en http://localhost:${port}`);
+});
 
+// Manejador de actualización de WebSocket
+server.on('upgrade', (request, socket, head) => {
+    const pathname = url.parse(request.url).pathname;
 
+    if (pathname === '/mensajes') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request, 'mensajes');
+        });
+    } else if (pathname === '/notificaciones') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request, 'notificaciones');
+        });
+    } else if (pathname === '/reacciones') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request, 'reacciones');
+        });
+    } else if (pathname === '/cartas') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request, 'cartas');
+        });
+    } else {
+        socket.destroy();
+    }
+});
 
-
-
-
-
+// Sincronización de base de datos
 sequelize.sync()
     .then(() => sequelize.authenticate())
-    .then(() => {
-        app.listen(port, '0.0.0.0',() => {
-            console.log(`Servidor escuchando en http://localhost:${port}`);
-        });
-    })
     .catch(err => {
         console.error('Error al iniciar la aplicación:', err);
         process.exit(1);
-    });
+    });
 
-
+// Manejo de cierre graciado
 process.on('SIGINT', () => {
-    console.log('Cerrando servidores...');
-    wss.close();
-    wssNotificaciones.close();
-    wssReacciones.close();
-    wssCartas.close();
-    process.exit(0);
+    console.log('Cerrando servidor...');
+    server.close(() => {
+        console.log('Servidor cerrado');
+        process.exit(0);
+    });
 });
+
+module.exports = { server, wss }; // Exportar para posibles usos en pruebas o modules
